@@ -319,6 +319,12 @@
             <li class="nav-item" onclick="trocarAba('sec-tickets-firebird', this)">
                 <a><i class="fa-solid fa-bolt"></i> Extração Tickets Firebird</a>
             </li>
+            <li class="nav-item" onclick="trocarAba('sec-fintech-tef', this)">
+                <a style="color: var(--accent-rose); font-weight: 700;"><i class="fa-solid fa-calculator"></i> Fintech & Auditoria TEF</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-assinaturas-tenants', this)">
+                <a style="color: var(--accent-cyan); font-weight: 700;"><i class="fa-solid fa-id-card-clip"></i> Assinaturas & Tenants SaaS</a>
+            </li>
             <li class="nav-item" onclick="trocarAba('sec-saude-financeira', this)">
                 <a><i class="fa-solid fa-heart-pulse"></i> Saúde Financeira & Caixa</a>
             </li>
@@ -609,6 +615,181 @@
                     Este módulo realiza uma varredura direta via TCP/IP nas portas dos bancos de dados Firebird dos açougues, importando os cupons unitários.
                 </p>
                 <div id="status-extracao-msg" style="margin-top: 1rem; font-weight: 700; color: var(--accent-cyan);"></div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: FINTECH & AUDITORIA DE TAXAS TEF E ADQUIRENTES -->
+        <section id="sec-fintech-tef" class="tab-section">
+            <div class="panel-box" style="margin-bottom: 1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-shield-halved" style="color: var(--accent-rose);"></i> Fintech & Auditoria Automática de Taxas de Cartão/TEF</div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <select id="tef-loja" class="form-input-saas">
+                            <option value="1">Excelência</option>
+                            <option value="2">Pit Stop</option>
+                            <option value="3">Cunha</option>
+                        </select>
+                        <input type="date" id="tef-data" class="form-input-saas" value="2026-08-09">
+                        <button class="btn-action" style="background: var(--accent-rose);" onclick="executarAuditoriaTEF()"><i class="fa-solid fa-magnifying-glass-dollar"></i> Auditar Taxas do Dia</button>
+                    </div>
+                </div>
+
+                <div class="kpi-grid" style="margin-top: 1rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>VENDAS EM CARTÃO AUDITADAS</span></div>
+                        <div class="kpi-value" id="tef-tot-vendas" style="color: var(--accent-cyan);">R$ 0,00</div>
+                        <div class="kpi-subtext" id="tef-tot-transacoes">0 Transações Processadas</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>TAXAS CONTRATADAS (ESPERADO)</span></div>
+                        <div class="kpi-value" id="tef-tot-esperado" style="color: var(--accent-green);">R$ 0,00</div>
+                        <div class="kpi-subtext">Base de Contrato da Adquirente</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>TAXAS EFETIVAS COBRADAS</span></div>
+                        <div class="kpi-value" id="tef-tot-cobrado" style="color: var(--accent-amber);">R$ 0,00</div>
+                        <div class="kpi-subtext">Retido nos Extratos</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>PREJUÍZO / DIVERGÊNCIA DETECTADA</span></div>
+                        <div class="kpi-value" id="tef-tot-prejuizo" style="color: var(--accent-rose);">R$ 0,00</div>
+                        <div class="kpi-subtext" id="tef-status-divergencia" style="color: var(--accent-rose);">⚠️ Alerta de Cobrança Indevida</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-list-check"></i> Relatório de Transações Auditadas e Divergências de Taxa</div>
+                </div>
+                <div class="table-responsive">
+                    <table id="table-tef-auditadas">
+                        <thead>
+                            <tr>
+                                <th>CUPOM</th>
+                                <th>DATA/HORA</th>
+                                <th>ADQUIRENTE / MODALIDADE</th>
+                                <th>VALOR BRUTO</th>
+                                <th>TAXA CONTRATADA</th>
+                                <th>TAXA COBRADA</th>
+                                <th>VALOR LIQUIDO</th>
+                                <th>PREJUÍZO DETECTADO</th>
+                                <th>STATUS AUDITORIA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-tef-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: GESTÃO DE ASSINATURAS & TENANTS MULTI-CLIENTE -->
+        <section id="sec-assinaturas-tenants" class="tab-section">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-header"><span>PLANO ATIVO</span></div>
+                    <div class="kpi-value" style="color: var(--accent-cyan);">🥇 ENTERPRISE</div>
+                    <div class="kpi-subtext">R$ 999,00 / mês • Lojas Ilimitadas</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header"><span>STATUS DA ASSINATURA</span></div>
+                    <div class="kpi-value" style="color: var(--accent-green);">🟢 ATIVA</div>
+                    <div class="kpi-subtext">Vencimento: em 30 dias</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header"><span>TENANTS CADASTRADOS</span></div>
+                    <div class="kpi-value" id="st-qtd-tenants" style="color: var(--accent-amber);">1 AÇOUGUE</div>
+                    <div class="kpi-subtext">Multi-Empresa Ativo</div>
+                </div>
+            </div>
+
+            <div class="panel-box" style="margin-bottom: 2rem;">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-store"></i> Minhas Unidades & Edição de Lojas</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>NOME DA UNIDADE</th>
+                                <th>CNPJ</th>
+                                <th>ENDEREÇO DA LOJA</th>
+                                <th>WHATSAPP / CONTATO</th>
+                                <th>AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-minhas-lojas-body">
+                            <tr>
+                                <td>#1</td>
+                                <td><strong>EXCELÊNCIA</strong></td>
+                                <td>15.439.136/0001-70</td>
+                                <td>Rua Francisco Pereira Coutinho, 1.279 - Parque Iguatemi</td>
+                                <td>(67) 99248-7022</td>
+                                <td><button class="btn-action" onclick="abrirModalEditarLoja(1, 'EXCELÊNCIA', '15.439.136/0001-70', 'Rua Francisco Pereira Coutinho, 1.279 - Parque Iguatemi', '(67) 99248-7022')"><i class="fa-solid fa-pen"></i> Editar</button></td>
+                            </tr>
+                            <tr>
+                                <td>#2</td>
+                                <td><strong>PIT STOP</strong></td>
+                                <td>20.123.456/0001-88</td>
+                                <td>Rua Abraão Anache, 8 - Jardim Anache</td>
+                                <td>(67) 99298-8507</td>
+                                <td><button class="btn-action" onclick="abrirModalEditarLoja(2, 'PIT STOP', '20.123.456/0001-88', 'Rua Abraão Anache, 8 - Jardim Anache', '(67) 99298-8507')"><i class="fa-solid fa-pen"></i> Editar</button></td>
+                            </tr>
+                            <tr>
+                                <td>#3</td>
+                                <td><strong>CUNHA</strong></td>
+                                <td>33.987.654/0001-12</td>
+                                <td>Av. Gualter Barbosa, 297 - Jardim Campo Belo</td>
+                                <td>(67) 99171-9841</td>
+                                <td><button class="btn-action" onclick="abrirModalEditarLoja(3, 'CUNHA', '33.987.654/0001-12', 'Av. Gualter Barbosa, 297 - Jardim Campo Belo', '(67) 99171-9841')"><i class="fa-solid fa-pen"></i> Editar</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MODAL FLUTUANTE DE EDIÇÃO DE LOJA (OVERLAY GLASSMORPHISM) -->
+            <div id="modal-edit-loja-overlay" style="display: none; position: fixed; inset: 0; background: rgba(9, 13, 22, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+                <div class="panel-box" style="width: 100%; max-width: 580px; border: 1px solid rgba(6, 182, 212, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+                    <div class="panel-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <div class="panel-title" style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
+                            <i class="fa-solid fa-pen-to-square"></i> Editar Cadastro da Unidade
+                        </div>
+                        <button class="btn-action" onclick="fecharModalEditarLoja()" style="background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.3);"><i class="fa-solid fa-xmark"></i> Fechar</button>
+                    </div>
+                    
+                    <form id="form-edit-loja" onsubmit="salvarEdicaoLoja(event)">
+                        <input type="hidden" id="edit-loja-id">
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Nome Fantasia da Unidade *</label>
+                                <input type="text" id="edit-loja-nome" class="form-input-saas" required style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">CNPJ da Loja *</label>
+                                    <input type="text" id="edit-loja-cnpj" class="form-input-saas" required style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">WhatsApp / Telefone *</label>
+                                    <input type="text" id="edit-loja-telefone" class="form-input-saas" required style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Endereço Completo (Campo Grande/MS) *</label>
+                                <input type="text" id="edit-loja-endereco" class="form-input-saas" required style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+                            </div>
+                        </div>
+
+                        <div id="toast-edit-status" style="display: none; padding: 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; margin-bottom: 1rem; text-align: center;"></div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="button" class="btn-action" onclick="fecharModalEditarLoja()" style="flex: 1; background: var(--bg-body); border: 1px solid var(--border-color);">Cancelar</button>
+                            <button type="submit" id="btn-salvar-loja-submit" class="btn-action" style="flex: 2; background: var(--accent-green); font-weight: 800; font-size: 0.95rem;"><i class="fa-solid fa-floppy-disk"></i> Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </section>
 
@@ -1295,6 +1476,115 @@
                 },
                 options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
             });
+        }
+
+        function abrirModalEditarLoja(id, nome, cnpj, endereco, telefone) {
+            document.getElementById('edit-loja-id').value = id;
+            document.getElementById('edit-loja-nome').value = nome;
+            document.getElementById('edit-loja-cnpj').value = cnpj;
+            document.getElementById('edit-loja-endereco').value = endereco;
+            document.getElementById('edit-loja-telefone').value = telefone;
+            document.getElementById('toast-edit-status').style.display = 'none';
+            document.getElementById('modal-edit-loja-overlay').style.display = 'flex';
+        }
+
+        function fecharModalEditarLoja() {
+            document.getElementById('modal-edit-loja-overlay').style.display = 'none';
+        }
+
+        async function salvarEdicaoLoja(e) {
+            if (e) e.preventDefault();
+            const id = document.getElementById('edit-loja-id').value;
+            const btnSubmit = document.getElementById('btn-salvar-loja-submit');
+            const toastDiv = document.getElementById('toast-edit-status');
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+            const dto = {
+                nome: document.getElementById('edit-loja-nome').value.toUpperCase(),
+                cnpj: document.getElementById('edit-loja-cnpj').value,
+                endereco: document.getElementById('edit-loja-endereco').value,
+                telefone: document.getElementById('edit-loja-telefone').value,
+                ativo: true
+            };
+
+            try {
+                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/lojas/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto)
+                });
+                const data = await res.json();
+                
+                toastDiv.style.display = 'block';
+                toastDiv.style.background = 'rgba(16, 185, 129, 0.2)';
+                toastDiv.style.color = 'var(--accent-green)';
+                toastDiv.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+                toastDiv.innerHTML = `🎉 ${data.mensagem}`;
+
+                setTimeout(() => {
+                    fecharModalEditarLoja();
+                    carregarModulosSaaS();
+                }, 1200);
+            } catch (err) {
+                toastDiv.style.display = 'block';
+                toastDiv.style.background = 'rgba(244, 63, 94, 0.2)';
+                toastDiv.style.color = 'var(--accent-rose)';
+                toastDiv.style.border = '1px solid rgba(244, 63, 94, 0.4)';
+                toastDiv.innerHTML = '⚠️ Erro de conexão ao salvar alterações da unidade!';
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
+            }
+        }
+
+        async function executarAuditoriaTEF() {
+            const lojaId = document.getElementById('tef-loja').value;
+            const dataVal = document.getElementById('tef-data').value;
+            
+            try {
+                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/auditar-tef?lojaId=${lojaId}&dataInicio=${dataVal}&dataFim=${dataVal}`);
+                const data = await res.json();
+
+                document.getElementById('tef-tot-vendas').innerText = 'R$ ' + data.totalVendasProcessadas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('tef-tot-transacoes').innerText = `${data.transacoesAuditadasCount} Transações Processadas`;
+
+                document.getElementById('tef-tot-esperado').innerText = 'R$ ' + data.totalTaxasContratadas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('tef-tot-cobrado').innerText = 'R$ ' + data.totalTaxasCobradasEfetivas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                
+                document.getElementById('tef-tot-prejuizo').innerText = 'R$ ' + data.prejuizoTotalDetectado.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('tef-status-divergencia').innerText = `⚠️ ${data.transacoesComDivergenciaCount} Cobranças Indevidas Detectadas`;
+
+                const tbody = document.getElementById('table-tef-body');
+                tbody.innerHTML = '';
+
+                data.divergenciasCriticas.forEach(t => {
+                    const dtStr = new Date(t.dataHora).toLocaleString('pt-BR');
+                    const badgeStatus = t.divergenciaDetectada
+                        ? `<span class="badge-payment badge-voucher" style="background: rgba(244, 63, 94, 0.2); color: var(--accent-rose);">⚠️ DIVERGÊNCIA (${t.taxaEfetivaCobradaPct.toFixed(2)}%)</span>`
+                        : `<span class="badge-payment badge-dinheiro">🟢 CONTRATADA (${t.taxaContratadaPct.toFixed(2)}%)</span>`;
+
+                    const prejuízoTxt = t.divergenciaDetectada
+                        ? `<span style="color: var(--accent-rose); font-weight: 800;">- R$ ${t.prejuizoTaxaIncorreta.toFixed(2)}</span>`
+                        : `<span style="color: var(--accent-green); font-weight: 700;">R$ 0,00 (OK)</span>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 700; color: var(--primary);">#${t.cupomId}</td>
+                            <td>${dtStr}</td>
+                            <td style="font-weight: 700;">${t.adquirente} (${t.modalidade})</td>
+                            <td style="font-weight: 700;">R$ ${t.valorVendaBruto.toFixed(2)}</td>
+                            <td>${t.taxaContratadaPct.toFixed(2)}% (R$ ${t.valorTaxaContratada.toFixed(2)})</td>
+                            <td style="font-weight: 700; color: var(--accent-amber);">${t.taxaEfetivaCobradaPct.toFixed(2)}% (R$ ${t.valorTaxaCobrada.toFixed(2)})</td>
+                            <td style="font-weight: 700; color: var(--accent-green);">R$ ${t.valorLiquidoRecebido.toFixed(2)}</td>
+                            <td>${prejuízoTxt}</td>
+                            <td>${badgeStatus}</td>
+                        </tr>`;
+                });
+            } catch (err) {
+                console.error("Erro ao auditar taxas TEF:", err);
+            }
         }
 
         // Trava de Autenticação Inicial
