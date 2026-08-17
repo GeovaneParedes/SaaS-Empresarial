@@ -3,6 +3,11 @@
 ![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.0-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Firebird](https://img.shields.io/badge/Firebird-5.0-FF0000?style=for-the-badge&logo=firebird&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800?style=for-the-badge&logo=grafana&logoColor=white)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Tracing-000000?style=for-the-badge&logo=opentelemetry&logoColor=white)
+![Seq](https://img.shields.io/badge/Seq-Serilog_Logs-4054B2?style=for-the-badge&logo=databricks&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-Tunnels-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Desenvolvido por SoftwareParedes](https://img.shields.io/badge/Desenvolvido%20por-SoftwareParedes-10b981?style=for-the-badge&logo=codefactor&logoColor=white)
 ![License](https://img.shields.io/badge/Licen%C3%A7a-Propriet%C3%A1ria-red?style=for-the-badge)
@@ -21,24 +26,27 @@ Eu, **SoftwareParedes**, projetei e construí esta plataforma SaaS de nível **E
 
 ---
 
-## 🎯 As 6 Grandes Funcionalidades Enterprise que Eu Construí
+## 🎯 As 7 Grandes Funcionalidades Enterprise que Eu Construí
 
 ### 1. 🥩 Módulo de Desossa & Rendimento de Carcaça (Res-Casada)
 Eu desenvolvi o motor de cálculo técnico de custo ponderado por kg do boi/suíno, considerando a substituição tributária (ST), peso líquido dos cortes nobres, descarte de sebo/pelanca e cálculo automático de margem de contribuição (Tabela vs. Oferta).
 
 ### 2. 💳 Fintech Embutida & Auditoria de Taxas TEF/Adquirentes
-Eu criei o robô de auditoria financeira que cruza cada cupom emitido no PDV com o contrato das maquininhas (Stone, PagBank, Cielo, Rede, Ticket, Sodexo). O sistema detecta automaticamente divergências de alíquotas cobradas indevidamente e calcula o valor exato a ser recuperado em reais.
+Eu criei o robô de auditoria financeira que cruza cada cupom emitido no PDV com o contrato das maquininhas (Stone, PagBank, Cielo, Rede, Ticket, Sodexo). O sistema possui **painel de configuração de taxas contratadas personalizadas por loja** e detecta automaticamente divergências de alíquotas cobradas indevidamente.
 
-### 3. 🏢 Gerenciador Multi-Tenant & Assinaturas SaaS (Recurring MRR)
+### 3. 📊 Ecossistema de Observabilidade & Performance (Prometheus + Grafana + MemoryCache)
+Eu integrei a stack moderna de observabilidade nativa no C# .NET 8 (`prometheus-net.AspNetCore`), expus o endpoint `/metrics` com métricas em tempo real de uso de CPU, memória RAM, alocação do GC, taxa de requisições (RPS) e latência HTTP. Além disso, implementei a camada de aceleração em memória `IMemoryCache` para respostas ultra rápidas (< 1ms).
+
+### 4. 🏢 Gerenciador Multi-Tenant & Assinaturas SaaS (Recurring MRR)
 Eu estruturei a arquitetura multi-empresa com gestão de planos (Starter, Pro, Enterprise) e isolamento de dados por loja, permitindo que cada cliente administre suas unidades com autenticação JWT e edição de cadastro completa.
 
-### 4. 🤖 Assistente Preditivo de Reposição de Estoque (AI Purchasing)
+### 5. 🤖 Assistente Preditivo de Reposição de Estoque (AI Purchasing)
 Eu implementei o algoritmo de inteligência de compras que analisa os últimos 14 dias de vendas no Firebird, aplica peso preditivo de fim de semana (Sexta, Sábado e Domingo) e calcula exatamente a **quantidade de Carcaças de Boi Casado** e quilos por corte nobre que o açougueiro precisa encomendar do frigorífico.
 
-### 5. 📱 Hub WhatsApp Bot & Cardápio Digital em Tempo Real
+### 6. 📱 Hub WhatsApp Bot & Cardápio Digital em Tempo Real
 Eu criei o gerador de cotação formatada com disparo direto para o WhatsApp dos clientes e um cardápio digital dinâmico com preços normais e promocionais (`% OFF`).
 
-### 6. 📊 DRE Gerencial Completo & Curva ABC de Cortes (80/20)
+### 7. 📊 DRE Gerencial Completo & Curva ABC de Cortes (80/20)
 Eu projetei o Demonstrativo de Resultado do Exercício (Receita Bruta ➔ Impostos/Taxas ➔ Receita Líquida ➔ CMV ➔ Margem Bruta ➔ OpEx ➔ EBITDA ➔ Lucro Líquido Real) e a Curva ABC 80/20 dos cortes de alto giro.
 
 ---
