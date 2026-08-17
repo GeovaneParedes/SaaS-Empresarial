@@ -362,6 +362,85 @@
             font-weight: 600;
             outline: none;
         }
+
+        /* Card Grid Responsivo para Gestão de Tenants (Mobile, Tablet, Desktop) */
+        .tenant-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.25rem;
+        }
+
+        .tenant-card {
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .tenant-card:hover {
+            border-color: var(--primary-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .tenant-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .tenant-card-title {
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tenant-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .tenant-card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .tenant-card-actions .btn-action {
+            flex: 1;
+            min-width: 130px;
+            justify-content: center;
+            font-size: 0.8rem;
+            padding: 0.55rem 0.75rem;
+        }
+
+        @media (max-width: 640px) {
+            .tenant-card-grid {
+                grid-template-columns: 1fr;
+            }
+            .tenant-card-actions {
+                flex-direction: column;
+            }
+            .tenant-card-actions .btn-action {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1012,6 +1091,47 @@
                     <div class="kpi-value" id="st-qtd-tenants" style="color: var(--accent-amber);">1 AÇOUGUE</div>
                     <div class="kpi-subtext">Multi-Empresa Ativo</div>
                 </div>
+            </div>
+
+            <!-- PAINEL DO ADMINISTRADOR MASTER DO SAAS (CRIAÇÃO, REVOGAÇÃO E RENOVAÇÃO DE CLIENTES) -->
+            <div class="panel-box" style="margin-bottom: 2rem; border: 1px solid var(--primary-glow);">
+                <div class="panel-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div class="panel-title" style="color: var(--primary); font-size: 1.15rem;"><i class="fa-solid fa-user-shield"></i> Painel do Administrador Master (Gestão de Clientes SaaS)</div>
+                    <button class="btn-action" style="background: var(--primary); font-weight: 800;" onclick="toggleFormNovoTenant()"><i class="fa-solid fa-plus"></i> Novo Cliente / Açougue</button>
+                </div>
+
+                <!-- FORMULÁRIO DE CADASTRO DE NOVO TENANT CLIENTE -->
+                <div id="form-novo-tenant-box" style="display: none; margin-top: 1.5rem; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 1.25rem;">
+                    <div style="font-weight: 800; color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-building-user"></i> Cadastrar Novo Açougue & Liberar Acesso Inicial</div>
+                    <form id="form-novo-tenant" onsubmit="salvarNovoTenant(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
+                        <div>
+                            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">NOME FANTASIA DO AÇOUGUE *</label>
+                            <input type="text" id="nt-nome" class="form-input-saas" placeholder="Ex: Açougue Boi Gordo" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">RAZÃO SOCIAL *</label>
+                            <input type="text" id="nt-razao" class="form-input-saas" placeholder="Ex: Boi Gordo Carnes Ltda" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">CNPJ *</label>
+                            <input type="text" id="nt-cnpj" class="form-input-saas" placeholder="00.000.000/0001-00" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">E-MAIL DE ACESSO DO CLIENTE *</label>
+                            <input type="email" id="nt-email" class="form-input-saas" placeholder="cliente@boigordo.com" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">WHATSAPP / CONTATO *</label>
+                            <input type="text" id="nt-telefone" class="form-input-saas" placeholder="(67) 99999-9999" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <button type="submit" class="btn-action" style="background: var(--accent-green); font-weight: 800; width: 100%;"><i class="fa-solid fa-check"></i> Criar & Liberar Acesso</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- CONTAINER DE CARDS RESPONSIVOS PARA MOBILE, TABLET E DESKTOP -->
+                <div id="tenant-cards-container" class="tenant-card-grid"></div>
             </div>
 
             <div class="panel-box" style="margin-bottom: 2rem;">
@@ -1868,8 +1988,124 @@
                         </tr>`;
                 });
 
+                // Carregar Tenants no Painel Master do Administrador
+                carregarTenantsMaster();
+
             } catch (err) {
                 console.error("Erro ao carregar Módulos SaaS:", err);
+            }
+        }
+
+        async function carregarTenantsMaster() {
+            try {
+                const resTenants = await fetchWithAuth('/ModulosSaaS/tenants');
+                const tenants = await resTenants.json();
+                
+                const resAss = await fetchWithAuth('/ModulosSaaS/assinaturas');
+                const assinaturas = await resAss.json();
+
+                const container = document.getElementById('tenant-cards-container');
+                if (!container) return;
+                container.innerHTML = '';
+
+                document.getElementById('st-qtd-tenants').innerText = `${tenants.length} CLIENTE(S)`;
+
+                tenants.forEach(t => {
+                    const ass = assinaturas.find(a => a.tenantId === t.id) || {};
+                    const isAtivo = t.ativo && (ass.statusAssinatura === 'ATIVA' || !ass.statusAssinatura);
+
+                    const statusBadge = isAtivo 
+                        ? `<span class="badge-payment badge-dinheiro" style="font-size: 0.7rem;">🟢 LIBERADO</span>` 
+                        : `<span class="badge-payment badge-voucher" style="background: rgba(244, 63, 94, 0.2); color: var(--accent-rose); font-size: 0.7rem;">🔴 REVOGADO/SUSPENSO</span>`;
+
+                    const btnAcao = isAtivo 
+                        ? `<button class="btn-action" style="background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.3);" onclick="alternarStatusTenant(${t.id})"><i class="fa-solid fa-lock"></i> Revogar Acesso</button>` 
+                        : `<button class="btn-action" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3);" onclick="alternarStatusTenant(${t.id})"><i class="fa-solid fa-key"></i> Liberar Acesso</button>`;
+
+                    const dtVenc = ass.dataVencimento ? new Date(ass.dataVencimento).toLocaleDateString('pt-BR') : '30 dias';
+
+                    const card = document.createElement('div');
+                    card.className = 'tenant-card';
+                    card.innerHTML = `
+                        <div>
+                            <div class="tenant-card-header">
+                                <div class="tenant-card-title">
+                                    <i class="fa-solid fa-store" style="color: var(--primary);"></i>
+                                    <span>${sanitizeHTML(t.nomeFantasia)}</span>
+                                </div>
+                                <div>${statusBadge}</div>
+                            </div>
+                            <div class="tenant-card-body" style="margin-top: 0.75rem;">
+                                <div><i class="fa-solid fa-id-card" style="width: 16px;"></i> <strong>CNPJ:</strong> ${sanitizeHTML(t.cnpj)}</div>
+                                <div><i class="fa-solid fa-envelope" style="width: 16px;"></i> <strong>Login:</strong> <span style="color: var(--accent-cyan); font-weight: 600;">${sanitizeHTML(t.emailContato)}</span></div>
+                                <div><i class="fa-solid fa-cube" style="width: 16px;"></i> <strong>Plano:</strong> ${sanitizeHTML(ass.planoNome || 'PRO')}</div>
+                                <div><i class="fa-solid fa-calendar-day" style="width: 16px;"></i> <strong>Vencimento:</strong> ${dtVenc}</div>
+                            </div>
+                        </div>
+                        <div class="tenant-card-actions">
+                            ${btnAcao}
+                            <button class="btn-action" style="background: var(--bg-card-hover); border: 1px solid var(--border-color);" onclick="renovarAssinaturaTenant(${t.id})"><i class="fa-solid fa-rotate-right"></i> Renovar +30d</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar lista de Tenants Master:", err);
+            }
+        }
+
+        function toggleFormNovoTenant() {
+            const box = document.getElementById('form-novo-tenant-box');
+            if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function salvarNovoTenant(e) {
+            if (e) e.preventDefault();
+            
+            const dto = {
+                nomeFantasia: document.getElementById('nt-nome').value.trim().toUpperCase(),
+                razaoSocial: document.getElementById('nt-razao').value.trim().toUpperCase(),
+                cnpj: document.getElementById('nt-cnpj').value.trim(),
+                emailContato: document.getElementById('nt-email').value.trim().toLowerCase(),
+                telefoneWhatsApp: document.getElementById('nt-telefone').value.trim(),
+                ativo: true
+            };
+
+            try {
+                const res = await fetchWithAuth('/ModulosSaaS/tenants', {
+                    method: 'POST',
+                    body: JSON.stringify(dto)
+                });
+                const data = await res.json();
+
+                alert(`🎉 Cliente ${data.tenant.nomeFantasia} cadastrado com sucesso! Acesso gerado com e-mail ${data.tenant.emailContato}`);
+                document.getElementById('form-novo-tenant').reset();
+                toggleFormNovoTenant();
+                carregarTenantsMaster();
+            } catch (err) {
+                alert("❌ Erro ao cadastrar novo cliente. Verifique os dados!");
+            }
+        }
+
+        async function alternarStatusTenant(tenantId) {
+            try {
+                const res = await fetchWithAuth(`/ModulosSaaS/tenants/${tenantId}/toggle-status`, { method: 'PATCH' });
+                const data = await res.json();
+                alert(`ℹ️ ${data.mensagem}`);
+                carregarTenantsMaster();
+            } catch (err) {
+                alert("❌ Erro ao alterar status do cliente.");
+            }
+        }
+
+        async function renovarAssinaturaTenant(tenantId) {
+            try {
+                const res = await fetchWithAuth(`/ModulosSaaS/tenants/${tenantId}/renovar?dias=30`, { method: 'POST' });
+                const data = await res.json();
+                alert(`🎉 ${data.mensagem}`);
+                carregarTenantsMaster();
+            } catch (err) {
+                alert("❌ Erro ao renovar assinatura do cliente.");
             }
         }
 
