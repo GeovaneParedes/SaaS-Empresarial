@@ -2848,26 +2848,41 @@
 
             containerPDF.querySelector('#pdf-conteudo-body').appendChild(clone);
 
-            // Ajusta tabelas e textos do clone para ficarem perfeitos em fundo branco no PDF
+            // Ajusta tabelas, cards e textos do clone para ficarem perfeitos em fundo branco no PDF e sem cortar elementos
+            clone.querySelectorAll('.panel-box, .kpi-card, tr, .kpi-grid').forEach(el => {
+                el.style.pageBreakInside = 'avoid';
+                el.style.breakInside = 'avoid';
+            });
+
             clone.querySelectorAll('*').forEach(el => {
                 el.style.color = '#0f172a';
                 if (el.tagName === 'TABLE' || el.classList.contains('panel-box') || el.classList.contains('kpi-card')) {
-                    el.style.background = '#f8fafc';
-                    el.style.border = '1px solid #e2e8f0';
+                    el.style.background = '#ffffff';
+                    el.style.border = '1px solid #cbd5e1';
                     el.style.boxShadow = 'none';
+                    el.style.marginBottom = '12px';
+                }
+                if (el.tagName === 'TABLE') {
+                    el.style.width = '100%';
+                    el.style.fontSize = '10px';
                 }
                 if (el.tagName === 'TH') {
-                    el.style.background = '#e2e8f0';
+                    el.style.background = '#f1f5f9';
                     el.style.color = '#1e293b';
+                    el.style.padding = '6px';
+                }
+                if (el.tagName === 'TD') {
+                    el.style.padding = '5px';
                 }
             });
 
             const opt = {
-                margin:       [10, 10, 10, 10],
+                margin:       [8, 8, 8, 8],
                 filename:     `Relatorio_${tituloRelatorio.replace(/\s+/g, '_')}_${lojaInfo.nome.replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
             try {
