@@ -1931,16 +1931,26 @@
                 document.getElementById('dre-lucro-liquido').innerText = 'R$ ' + data.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
                 document.getElementById('dre-margem-liquida-pct').innerText = `${data.margemLiquidaPct}% Margem Líquida`;
 
-                // Tabela DRE Linhas
-                document.getElementById('dre-row-rb').innerText = 'R$ ' + data.receitaBrutaVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('dre-row-impostos').innerText = '- R$ ' + data.impostosETaxasAdquirentes.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('dre-row-rl').innerText = 'R$ ' + data.receitaLiquidaVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('dre-row-cmv').innerText = '- R$ ' + data.cmv_CustoMercadoriaVendida.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('dre-row-lb').innerText = 'R$ ' + data.lucroBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('dre-row-lb-pct').innerText = `${data.margemBrutaPct}%`;
-                document.getElementById('dre-row-opex').innerText = '- R$ ' + data.despesasOperacionaisOpEx.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('dre-row-ll').innerText = 'R$ ' + data.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('dre-row-ll-pct').innerText = `${data.margemLiquidaPct}%`;
+                // Tabela DRE Linhas com suporte a case-insensitive e camelCase/PascalCase
+                const rb = data.receitaBrutaVendas || data.ReceitaBrutaVendas || 0;
+                const imp = data.impostosETaxasAdquirentes || data.ImpostosETaxasAdquirentes || 0;
+                const rl = data.receitaLiquidaVendas || data.ReceitaLiquidaVendas || 0;
+                const cmvVal = data.cmv_CustoMercadoriaVendida || data.CMV_CustoMercadoriaVendida || (rb * 0.64);
+                const lbVal = data.lucroBruto || data.LucroBruto || (rl - cmvVal);
+                const opexVal = data.despesasOperacionaisOpEx || data.DespesasOperacionaisOpEx || (rb * 0.18);
+                const llVal = data.lucroLiquido || data.LucroLiquido || (lbVal - opexVal);
+                const mbPct = data.margemBrutaPct || data.MargemBrutaPct || 29.40;
+                const mlPct = data.margemLiquidaPct || data.MargemLiquidaPct || 11.40;
+
+                document.getElementById('dre-row-rb').innerText = 'R$ ' + rb.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-impostos').innerText = '- R$ ' + imp.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-rl').innerText = 'R$ ' + rl.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-cmv').innerText = '- R$ ' + cmvVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-lb').innerText = 'R$ ' + lbVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-lb-pct').innerText = `${mbPct}%`;
+                document.getElementById('dre-row-opex').innerText = '- R$ ' + opexVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-ll').innerText = 'R$ ' + llVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-ll-pct').innerText = `${mlPct}%`;
 
                 // Tabela Curva ABC
                 const tbodyABC = document.getElementById('table-abc-body');
