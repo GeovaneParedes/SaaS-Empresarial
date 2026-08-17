@@ -1,8 +1,8 @@
 using Xunit;
-using HarrisonSaaS.Core.Entities;
+using SaaS.Core.Entities;
 using System.Collections.Generic;
 
-namespace HarrisonSaaS.Tests
+namespace SaaS.Tests
 {
     public class DesossaCarcacaTests
     {

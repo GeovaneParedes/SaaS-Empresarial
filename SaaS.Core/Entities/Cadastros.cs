@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HarrisonSaaS.Core.Entities
+namespace SaaS.Core.Entities
 {
     public class Tenant
     {
