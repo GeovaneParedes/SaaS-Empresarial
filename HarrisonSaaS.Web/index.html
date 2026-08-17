@@ -684,18 +684,20 @@
                     </table>
                 </div>
             </div>
+        </section>
+
         <!-- SEÇÃO: AI PURCHASING - SUGESTÃO PREDITIVA DE COMPRAS DE BOI & CORTE -->
         <section id="sec-ai-purchasing" class="tab-section">
             <div class="panel-box" style="margin-bottom: 1.5rem;">
-                <div class="panel-header">
-                    <div class="panel-title"><i class="fa-solid fa-brain" style="color: var(--accent-amber);"></i> Assistente Preditivo de Reposição de Estoque (AI Purchasing)</div>
-                    <div style="display: flex; gap: 0.75rem;">
-                        <select id="ai-loja" class="form-input-saas">
-                            <option value="1">Excelência</option>
-                            <option value="2">Pit Stop</option>
-                            <option value="3">Cunha</option>
+                <div class="panel-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div class="panel-title" style="font-size: 1.15rem; font-weight: 800;"><i class="fa-solid fa-brain" style="color: var(--accent-amber);"></i> Assistente Preditivo de Reposição de Estoque (AI Purchasing)</div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <select id="ai-loja" class="form-input-saas" style="padding: 0.6rem 1rem; font-weight: 700;">
+                            <option value="1">Loja Excelência</option>
+                            <option value="2">Loja Pit Stop</option>
+                            <option value="3">Loja Cunha</option>
                         </select>
-                        <button class="btn-action" style="background: var(--accent-amber); color: var(--bg-body); font-weight: 800;" onclick="gerarOrdemCompraAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Ordem de Compra IA</button>
+                        <button class="btn-action" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; font-size: 0.95rem; padding: 0.7rem 1.4rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); border: none;" onclick="gerarOrdemCompraAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> GERAR ORDEM DE COMPRA IA</button>
                     </div>
                 </div>
 
@@ -1176,6 +1178,14 @@
             
             document.getElementById(secId).classList.add('active');
             if (elem) elem.classList.add('active');
+
+            if (secId === 'sec-ai-purchasing') {
+                gerarOrdemCompraAI();
+            } else if (secId === 'sec-fintech-tef') {
+                executarAuditoriaTEF();
+            } else if (secId === 'sec-assinaturas-tenants') {
+                carregarModulosSaaS();
+            }
         }
 
         async function carregarDashboardSaaS() {
