@@ -319,6 +319,9 @@
             <li class="nav-item" onclick="trocarAba('sec-tickets-firebird', this)">
                 <a><i class="fa-solid fa-bolt"></i> Extração Tickets Firebird</a>
             </li>
+            <li class="nav-item" onclick="trocarAba('sec-dre-curva-abc', this)">
+                <a style="color: var(--accent-green); font-weight: 700;"><i class="fa-solid fa-chart-pie"></i> DRE Gerencial & Curva ABC</a>
+            </li>
             <li class="nav-item" onclick="trocarAba('sec-whatsapp-cardapio', this)">
                 <a style="color: #25D366; font-weight: 700;"><i class="fa-brands fa-whatsapp"></i> Hub WhatsApp & Cardápio</a>
             </li>
@@ -801,6 +804,123 @@
             </div>
         </section>
 
+        <!-- SEÇÃO: DRE GERENCIAL COMPLETO & CURVA ABC DO AÇOUGUE -->
+        <section id="sec-dre-curva-abc" class="tab-section">
+            <div class="panel-box" style="margin-bottom: 1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-chart-line" style="color: var(--accent-green);"></i> DRE Gerencial & Demonstração do Lucro Líquido Real</div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <select id="dre-loja" class="form-input-saas">
+                            <option value="1">Loja Excelência</option>
+                            <option value="2">Loja Pit Stop</option>
+                            <option value="3">Loja Cunha</option>
+                        </select>
+                        <button class="btn-action" style="background: var(--accent-green); font-weight: 800;" onclick="carregarDREGerencial()"><i class="fa-solid fa-calculator"></i> Processar DRE Gerencial</button>
+                    </div>
+                </div>
+
+                <div class="kpi-grid" style="margin-top: 1rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>RECEITA BRUTA (VENDAS)</span></div>
+                        <div class="kpi-value" id="dre-receita-bruta" style="color: var(--accent-cyan);">R$ 0,00</div>
+                        <div class="kpi-subtext">Faturamento Bruto Acumulado</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>LUCRO BRUTO (MARGEM %)</span></div>
+                        <div class="kpi-value" id="dre-lucro-bruto" style="color: var(--accent-amber);">R$ 0,00</div>
+                        <div class="kpi-subtext" id="dre-margem-bruta-pct">0.00% Margem Bruta</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>EBITDA OPERACIONAL</span></div>
+                        <div class="kpi-value" id="dre-ebitda" style="color: var(--primary);">R$ 0,00</div>
+                        <div class="kpi-subtext" id="dre-ebitda-pct">0.00% Margem EBITDA</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>LUCRO LÍQUIDO REAL</span></div>
+                        <div class="kpi-value" id="dre-lucro-liquido" style="color: var(--accent-green);">R$ 0,00</div>
+                        <div class="kpi-subtext" id="dre-margem-liquida-pct">0.00% Margem Líquida</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA DEMONSTRATIVO DRE -->
+            <div class="panel-box" style="margin-bottom: 2rem;">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-file-invoice-dollar"></i> Estrutura Detalhada do DRE do Açougue</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CONTA CONTÁBIL / OPERACIONAL</th>
+                                <th>VALOR EM REAIS (R$)</th>
+                                <th>PARTICIPAÇÃO (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>(=) RECEITA BRUTA DE VENDAS (PDV)</strong></td>
+                                <td id="dre-row-rb" style="font-weight: 800; color: var(--accent-cyan);">R$ 0,00</td>
+                                <td style="font-weight: 700;">100.00%</td>
+                            </tr>
+                            <tr>
+                                <td>(-) Impostos Simples Nacional + Taxas TEF/Cartão</td>
+                                <td id="dre-row-impostos" style="color: var(--accent-rose);">R$ 0,00</td>
+                                <td>6.60%</td>
+                            </tr>
+                            <tr style="background: rgba(255,255,255,0.02);">
+                                <td><strong>(=) RECEITA LÍQUIDA DE VENDAS</strong></td>
+                                <td id="dre-row-rl" style="font-weight: 800;">R$ 0,00</td>
+                                <td style="font-weight: 700;">93.40%</td>
+                            </tr>
+                            <tr>
+                                <td>(-) CMV - Custo das Mercadorias (Carcaças/Bois)</td>
+                                <td id="dre-row-cmv" style="color: var(--accent-rose);">R$ 0,00</td>
+                                <td>64.00%</td>
+                            </tr>
+                            <tr style="background: rgba(16, 185, 129, 0.1);">
+                                <td><strong>(=) LUCRO BRUTO (MARGEM DE CONTRIBUIÇÃO)</strong></td>
+                                <td id="dre-row-lb" style="font-weight: 800; color: var(--accent-green);">R$ 0,00</td>
+                                <td id="dre-row-lb-pct" style="font-weight: 800; color: var(--accent-green);">29.40%</td>
+                            </tr>
+                            <tr>
+                                <td>(-) OpEx - Despesas Operacionais (Folha, Energia Câmaras, Aluguel)</td>
+                                <td id="dre-row-opex" style="color: var(--accent-rose);">R$ 0,00</td>
+                                <td>18.00%</td>
+                            </tr>
+                            <tr style="background: rgba(99, 102, 241, 0.15);">
+                                <td><strong>(=) LUCRO LÍQUIDO FINAL DO AÇOUGUE</strong></td>
+                                <td id="dre-row-ll" style="font-weight: 900; color: var(--accent-green); font-size: 1.1rem;">R$ 0,00</td>
+                                <td id="dre-row-ll-pct" style="font-weight: 900; color: var(--accent-green); font-size: 1.1rem;">11.40%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CURVA ABC DE CORTES -->
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-cubes-stacked"></i> Curva ABC dos Cortes de Carne (80/20 do Faturamento)</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CLASSIFICAÇÃO ABC</th>
+                                <th>PRODUTO / CORTE DE CARNE</th>
+                                <th>VOLUME VENDIDO (KG)</th>
+                                <th>FATURAMENTO ACUMULADO</th>
+                                <th>PARTICIPAÇÃO (%)</th>
+                                <th>ACUMULADO (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-abc-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- SEÇÃO: GESTÃO DE ASSINATURAS & TENANTS MULTI-CLIENTE -->
         <section id="sec-assinaturas-tenants" class="tab-section">
             <div class="kpi-grid">
@@ -1236,7 +1356,9 @@
             document.getElementById(secId).classList.add('active');
             if (elem) elem.classList.add('active');
 
-            if (secId === 'sec-whatsapp-cardapio') {
+            if (secId === 'sec-dre-curva-abc') {
+                carregarDREGerencial();
+            } else if (secId === 'sec-whatsapp-cardapio') {
                 carregarCardapioDigital();
             } else if (secId === 'sec-ai-purchasing') {
                 gerarOrdemCompraAI();
@@ -1775,6 +1897,60 @@
                 });
             } catch (err) {
                 console.error("Erro ao carregar cardápio digital:", err);
+            }
+        }
+
+        async function carregarDREGerencial() {
+            const lojaId = document.getElementById('dre-loja') ? document.getElementById('dre-loja').value : 1;
+            try {
+                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/dre-curva-abc?lojaId=${lojaId}`);
+                const data = await res.json();
+
+                // KPI Cards
+                document.getElementById('dre-receita-bruta').innerText = 'R$ ' + data.receitaBrutaVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-lucro-bruto').innerText = 'R$ ' + data.lucroBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-margem-bruta-pct').innerText = `${data.margemBrutaPct}% Margem Bruta`;
+
+                document.getElementById('dre-ebitda').innerText = 'R$ ' + data.ebitda.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-ebitda-pct').innerText = `${data.margemEBITDAPct}% Margem EBITDA`;
+
+                document.getElementById('dre-lucro-liquido').innerText = 'R$ ' + data.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-margem-liquida-pct').innerText = `${data.margemLiquidaPct}% Margem Líquida`;
+
+                // Tabela DRE Linhas
+                document.getElementById('dre-row-rb').innerText = 'R$ ' + data.receitaBrutaVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-impostos').innerText = '- R$ ' + data.impostosETaxasAdquirentes.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-rl').innerText = 'R$ ' + data.receitaLiquidaVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-cmv').innerText = '- R$ ' + data.cmv_CustoMercadoriaVendida.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-lb').innerText = 'R$ ' + data.lucroBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-lb-pct').innerText = `${data.margemBrutaPct}%`;
+                document.getElementById('dre-row-opex').innerText = '- R$ ' + data.despesasOperacionaisOpEx.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-ll').innerText = 'R$ ' + data.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dre-row-ll-pct').innerText = `${data.margemLiquidaPct}%`;
+
+                // Tabela Curva ABC
+                const tbodyABC = document.getElementById('table-abc-body');
+                tbodyABC.innerHTML = '';
+
+                data.curvaABC.forEach(item => {
+                    const badgeClass = item.classe === 'A' 
+                        ? `<span class="badge-payment badge-dinheiro" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); font-weight: 900;">🥇 CLASSE A (ALTO GIRO)</span>`
+                        : item.classe === 'B'
+                        ? `<span class="badge-payment badge-debito">🥈 CLASSE B (MÉDIO GIRO)</span>`
+                        : `<span class="badge-payment badge-voucher">🥉 CLASSE C (BAIXO GIRO)</span>`;
+
+                    tbodyABC.innerHTML += `
+                        <tr>
+                            <td>${badgeClass}</td>
+                            <td style="font-weight: 800; color: var(--accent-cyan);">${item.produtoNome}</td>
+                            <td style="font-weight: 700;">${item.quantidadeKgVendida.toFixed(2)} KG</td>
+                            <td style="font-weight: 800; color: var(--accent-green);">R$ ${item.faturamentoTotal.toFixed(2)}</td>
+                            <td>${item.percentualDoFaturamento.toFixed(2)}%</td>
+                            <td style="font-weight: 700;">${item.percentualAcumulado.toFixed(2)}%</td>
+                        </tr>`;
+                });
+            } catch (err) {
+                console.error("Erro ao carregar DRE Gerencial:", err);
             }
         }
 
