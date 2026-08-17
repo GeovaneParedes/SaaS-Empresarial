@@ -431,10 +431,10 @@
         const DADOS_LOJAS = {
             "1": {
                 nome: "CASA DE CARNES EXCELÊNCIA",
-                subtitulo: "Unidade Moreninhas • Carnes Frescas & Cortes Especiais",
+                subtitulo: "Unidade Nova Lima / Moreninhas • Carnes Frescas & Cortes Especiais",
                 logo: "excelencia_logo_edited_edited.png",
-                whatsapp: "5567992988507",
-                endereco: "Rua Guaimbé, 622 - Vila Moreninha II - Campo Grande/MS"
+                whatsapp: "5567992487022",
+                endereco: "R. Francisco Pereira Coutinho, 1279 - Nova Lima - Campo Grande/MS"
             },
             "2": {
                 nome: "PIT STOP DA CARNE",
@@ -460,6 +460,16 @@
         document.getElementById('btn-pedir-whatsapp').href = `https://wa.me/${configLoja.whatsapp}`;
         document.getElementById('footer-loja-nome').innerText = configLoja.nome;
         document.getElementById('footer-loja-endereco').innerText = configLoja.endereco;
+
+        // Atualiza dinamicamente o link do WhatsApp de TODOS os botões de cada card de carne para a loja selecionada
+        document.querySelectorAll('a[href^="https://wa.me/"]').forEach(btn => {
+            const currentHref = btn.getAttribute('href');
+            if (currentHref) {
+                const textMatch = currentHref.match(/text=(.+)$/);
+                const textParam = textMatch ? textMatch[1] : '';
+                btn.setAttribute('href', `https://wa.me/${configLoja.whatsapp}?text=${textParam}`);
+            }
+        });
     </script>
 </body>
 </html>
