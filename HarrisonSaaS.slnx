@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="HarrisonSaaS.Api/HarrisonSaaS.Api.csproj" />
+  <Project Path="HarrisonSaaS.Core/HarrisonSaaS.Core.csproj" />
+  <Project Path="HarrisonSaaS.Data/HarrisonSaaS.Data.csproj" />
+  <Project Path="HarrisonSaaS.Tests/HarrisonSaaS.Tests.csproj" />
+</Solution>

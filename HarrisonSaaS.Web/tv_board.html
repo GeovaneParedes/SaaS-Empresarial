@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel TV - Açougue Harrison</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            cursor: none;
+            background-color: #030712;
+            font-family: 'Outfit', sans-serif;
+        }
+        .font-mono-price { font-family: 'JetBrains Mono', monospace; }
+
+        /* Animação de virada Split-Flap Aeroporto */
+        .flip-container { perspective: 1200px; }
+        .flip-row {
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: top center;
+        }
+        .flip-row.animating {
+            opacity: 0.2;
+            transform: rotateX(-45deg) scale(0.98);
+        }
+
+        .glow-red { box-shadow: 0 0 20px rgba(220, 38, 38, 0.35); }
+        .glow-gold { box-shadow: 0 0 15px rgba(251, 191, 36, 0.25); }
+
+        @keyframes pageTimer {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .progress-active { animation: pageTimer 6s linear infinite; }
+    </style>
+</head>
+<body class="text-slate-100 h-screen w-screen overflow-hidden flex flex-col justify-between p-3 select-none bg-gradient-to-br from-slate-950 via-slate-900 to-red-950/40">
+
+    <!-- SCRIPT DE EXECUÇÃO IMEDIATA -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const LOJA_ID = urlParams.get('loja') || "1";
+
+        const NOME_LOJAS_MAP = {
+            "1": "AÇOUGUE EXCELÊNCIA",
+            "2": "AÇOUGUE PIT STOP",
+            "3": "AÇOUGUE CUNHA"
+        };
+
+        const INITIAL_LOJA_NOME = NOME_LOJAS_MAP[LOJA_ID] || `AÇOUGUE (LOJA ${LOJA_ID})`;
+    </script>
+
+    <!-- HEADER ULTRA COMPACTO DINÂMICO DA LOJA -->
+    <header class="flex justify-between items-center border-b border-slate-800/80 pb-2 px-2">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center text-xl shadow-lg border border-red-500/50 glow-red">
+                🥩
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 id="nome-loja-header" class="text-2xl sm:text-3xl font-black tracking-tight text-white uppercase drop-shadow-md">
+                        <script>document.write(INITIAL_LOJA_NOME);</script>
+                    </h1>
+                    <span id="badge-loja-id" class="text-[10px] font-black uppercase tracking-widest bg-red-600/20 text-red-400 border border-red-500/40 px-2.5 py-0.5 rounded-full">
+                        <script>document.write(`UNIDADE ${LOJA_ID}`);</script>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <span class="text-[9px] text-emerald-400 font-mono tracking-widest uppercase bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 inline-flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TRANSMISSÃO AO VIVO
+                </span>
+                <div id="relogio" class="text-xl font-black text-amber-400 font-mono-price tracking-wider drop-shadow">
+                    00:00:00
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL OTIMIZADA PARA MAIS ITENS -->
+    <main class="flex-1 my-2 flex flex-col gap-3 overflow-hidden">
+        
+        <!-- SEÇÃO 1: HERO OFERTAS DO DIA COMPACTA -->
+        <div>
+            <div class="flex items-center justify-between mb-1.5 px-1">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-red-500 text-lg animate-bounce">🔥</span>
+                    <h2 class="text-xs font-black uppercase tracking-widest text-slate-200">Destaques & Ofertas Especiais</h2>
+                </div>
+                <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                    Preços Válidos para Hoje
+                </span>
+            </div>
+            <div id="grid-ofertas" class="grid grid-cols-3 gap-3">
+                <!-- Injetado via JS -->
+            </div>
+        </div>
+
+        <!-- SEÇÃO 2: TABELA DINÂMICA COMPACTA (CALCULA QUANTOS ITENS CABEM NA TELA) -->
+        <div class="flex-1 bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col justify-between backdrop-blur-md shadow-2xl relative overflow-hidden">
+            <!-- Barra de Progresso de 6s -->
+            <div class="absolute top-0 left-0 h-1 bg-gradient-to-r from-red-600 via-amber-500 to-red-600 w-full">
+                <div id="timer-progress" class="h-full bg-amber-400 progress-active"></div>
+            </div>
+
+            <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-1 px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <span>🥩 CORTE / DESCRIÇÃO DO PRODUTO</span>
+                <span>PREÇO BALCÃO (KG)</span>
+            </div>
+
+            <!-- GRID DOS CORTES DINÂMICOS COMPACTOS -->
+            <div id="painel-aeroporto" class="flex-1 flex flex-col justify-around gap-1 flip-container">
+                <!-- Injetado via JS dinamicamente calculando espaço -->
+            </div>
+
+            <!-- RODAPÉ COMPACTO -->
+            <div class="mt-1.5 flex items-center justify-between border-t border-slate-800/60 pt-1 px-2">
+                <span class="text-[10px] text-slate-400 font-medium">
+                    Atualização automática instantânea de balança & caixa
+                </span>
+                <span id="indicador-pagina" class="text-[10px] font-mono-price font-bold text-amber-400 bg-amber-500/10 px-3 py-0.5 rounded-full border border-amber-500/30 glow-gold">
+                    Carregando tabela...
+                </span>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER TICKER ULTRA COMPACTO -->
+    <footer class="bg-gradient-to-r from-red-700 via-red-600 to-red-800 rounded-xl p-1.5 text-center font-black text-xs tracking-widest uppercase text-white shadow-xl border border-red-500/40 flex items-center justify-center gap-3">
+        <span>🥩 CARNES SELECIONADAS DE PRIMEIRA</span>
+        <span>•</span>
+        <span>DESOSSADOS DIARIAMENTE</span>
+        <span>•</span>
+        <span>ATENDIMENTO PERSONALIZADO</span>
+    </footer>
+
+    <!-- SCRIPT COMPACTO DINÂMICO -->
+    <script>
+        let listaTabela = [];
+        let ofertasAtivas = [];
+        let indiceAtual = 0;
+        let itensPorPagina = 8; // Aumentado dinamicamente para exibir mais produtos na tela!
+
+        document.title = `Painel TV - ${INITIAL_LOJA_NOME}`;
+
+        // Relógio
+        setInterval(() => {
+            const agora = new Date();
+            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+        }, 1000);
+
+        // Calcula dinamicamente a quantidade de itens ajustados estritamente entre 6 e 8 por página
+        function calcularItensPorPagina() {
+            const container = document.getElementById('painel-aeroporto');
+            if (!container) {
+                itensPorPagina = 7;
+                return;
+            }
+            const alturaDisponivel = container.clientHeight;
+            const calculados = Math.floor(alturaDisponivel / 55);
+            // Trava o intervalo estritamente entre 6 e 8 produtos
+            itensPorPagina = Math.min(8, Math.max(6, calculados));
+        }
+
+        window.addEventListener('resize', () => {
+            calcularItensPorPagina();
+            atualizarPainelAeroporto(true);
+        });
+
+        async function carregarDadosTV() {
+            try {
+                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/tv-ofertas/${LOJA_ID}`);
+                const data = await res.json();
+                
+                if (data.sucesso) {
+                    const nomeFinal = data.loja_nome || INITIAL_LOJA_NOME;
+                    document.getElementById('nome-loja-header').innerText = nomeFinal;
+                    document.getElementById('badge-loja-id').innerText = `UNIDADE ${LOJA_ID}`;
+                    document.title = `Painel TV - ${nomeFinal}`;
+
+                    ofertasAtivas = data.ofertas || [];
+                    listaTabela = data.tabela || [];
+
+                    renderizarOfertas();
+                    calcularItensPorPagina();
+
+                    if (indiceAtual === 0 || indiceAtual >= listaTabela.length) {
+                        indiceAtual = 0;
+                        atualizarPainelAeroporto();
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao carregar dados da TV:", err);
+            }
+        }
+
+        function renderizarOfertas() {
+            const grid = document.getElementById('grid-ofertas');
+            if (!ofertasAtivas || ofertasAtivas.length === 0) {
+                grid.innerHTML = `<div class="col-span-3 bg-slate-900/60 border border-dashed border-slate-800 rounded-xl p-2 text-center text-slate-500 text-[10px] italic">Sem ofertas ativas no momento.</div>`;
+                return;
+            }
+
+            grid.innerHTML = ofertasAtivas.slice(0, 3).map(of => `
+                <div class="bg-gradient-to-br from-red-950/90 via-slate-900 to-slate-950 border border-red-500/70 rounded-xl p-2 flex justify-between items-center shadow-lg glow-red relative overflow-hidden">
+                    <div class="absolute -right-3 -bottom-3 text-3xl opacity-10 select-none">🥩</div>
+                    <div>
+                        <span class="text-[9px] font-black uppercase tracking-wider bg-red-600 text-white px-1.5 py-0.5 rounded shadow">🔥 OFERTA</span>
+                        <h3 class="text-sm sm:text-base font-black text-white uppercase mt-0.5 tracking-tight truncate max-w-[170px]">${of.nome}</h3>
+                    </div>
+                    <div class="text-right z-10">
+                        <span class="text-[8px] font-bold text-slate-400 block uppercase">PREÇO / KG</span>
+                        <span class="text-xl sm:text-2xl font-black text-amber-400 font-mono-price tracking-tight">R$ ${of.preco_oferta}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Transição Split-Flap Aeroporto Compacta
+        function atualizarPainelAeroporto(semIncremento = false) {
+            const painel = document.getElementById('painel-aeroporto');
+            if (!listaTabela || listaTabela.length === 0) return;
+
+            const totalPaginas = Math.ceil(listaTabela.length / itensPorPagina);
+            const paginaAtual = Math.floor(indiceAtual / itensPorPagina) + 1;
+
+            document.getElementById('indicador-pagina').innerText = `CATÁLOGO • PÁGINA ${paginaAtual} DE ${totalPaginas}`;
+
+            const fatia = listaTabela.slice(indiceAtual, indiceAtual + itensPorPagina);
+
+            painel.classList.add('animating');
+
+            setTimeout(() => {
+                painel.innerHTML = fatia.map(item => `
+                    <div class="flip-row bg-slate-800/80 border border-slate-700/60 hover:border-amber-500/50 rounded-xl px-4 py-1.5 flex justify-between items-center shadow transition-all duration-200">
+                        <div class="flex items-center gap-2.5 overflow-hidden">
+                            <div class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow shrink-0"></div>
+                            <span class="text-base sm:text-lg md:text-xl font-black text-white tracking-wide uppercase truncate">${item.produto}</span>
+                        </div>
+                        <div class="bg-slate-950 px-4 py-1 rounded-lg border border-slate-800 flex items-baseline gap-1 shadow-inner shrink-0">
+                            <span class="text-xs text-amber-400 font-bold">R$</span>
+                            <span class="text-xl sm:text-2xl font-black text-amber-400 tracking-wider font-mono-price">${item.preco}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                painel.classList.remove('animating');
+            }, 200);
+
+            const progressBar = document.getElementById('timer-progress');
+            if (progressBar) {
+                progressBar.classList.remove('progress-active');
+                void progressBar.offsetWidth;
+                progressBar.classList.add('progress-active');
+            }
+
+            if (!semIncremento) {
+                indiceAtual += itensPorPagina;
+                if (indiceAtual >= listaTabela.length) {
+                    indiceAtual = 0;
+                }
+            }
+        }
+
+        carregarDadosTV();
+
+        // Rotaciona a cada 6 segundos
+        setInterval(() => {
+            if (listaTabela.length > 0) {
+                atualizarPainelAeroporto();
+            }
+        }, 6000);
+
+        setInterval(carregarDadosTV, 30000);
+    </script>
+</body>
+</html>

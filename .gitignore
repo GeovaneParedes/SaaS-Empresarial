@@ -1,0 +1,26 @@
+# Variáveis de Ambiente & Arquivos de Configuração Sensíveis
+.env
+.env.*
+!.env.example
+appsettings*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Compilação & Build .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE & Editores
+.vs/
+.idea/
+.vscode/
+*.swp
+*~
+
+# Dependências Node.js
+node_modules/
+npm-debug.log

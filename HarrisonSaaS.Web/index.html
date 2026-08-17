@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Enterprise — Painel Empresarial de Gestão de Açougues & Varejo</title>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js para gráficos dinâmicos de alta performance -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-body: #090d16;
+            --bg-card: #111827;
+            --bg-card-hover: #1f293d;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+            --accent-green: #10b981;
+            --accent-cyan: #06b6d4;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-width: 260px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Glassmorphism */
+        aside.sidebar {
+            width: var(--sidebar-width);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1.25rem;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .brand-title {
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-item.active a, .nav-item a:hover {
+            background: rgba(99, 102, 241, 0.12);
+            color: #fff;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-item.active a i { color: var(--primary); }
+
+        /* Main Content */
+        main.content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2rem 2.5rem;
+        }
+
+        header.topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title h1 { font-size: 1.65rem; font-weight: 800; }
+        .page-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+
+        .user-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-badge {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .tab-section { display: none; }
+        .tab-section.active { display: block; }
+
+        /* Grid Metrics KPI */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .kpi-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+
+        .kpi-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0.5rem 0 0.25rem 0;
+        }
+
+        .kpi-subtext {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* Grid Charts & Table */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .panel-title { font-weight: 700; font-size: 1.05rem; }
+
+        /* Tabela Estilizada */
+        .table-responsive { width: 100%; overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+
+        th {
+            color: var(--text-muted);
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        tr:hover td { background: var(--bg-card-hover); }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+            color: #fff;
+            border: none;
+            padding: 0.65rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .badge-payment {
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-pix { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+        .badge-debito { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
+        .badge-credito { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+        .badge-voucher { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+        .badge-dinheiro { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+
+        .form-input-saas {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            padding: 0.65rem 1rem;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navegação SaaS Completo -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-drumstick-bite"></i></div>
+            <div>
+                <div class="brand-title">SaaS Empresarial</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Enterprise .NET 8</div>
+            </div>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="trocarAba('sec-dashboard', this)">
+                <a><i class="fa-solid fa-chart-pie"></i> Dashboard Geral</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-vendas-diarias', this)">
+                <a><i class="fa-solid fa-cash-register"></i> Resumo Vendas Diárias</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-itens-vendidos', this)">
+                <a><i class="fa-solid fa-cart-shopping"></i> Itens Vendidos (Filtro)</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-tickets-firebird', this)">
+                <a><i class="fa-solid fa-bolt"></i> Extração Tickets Firebird</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-saude-financeira', this)">
+                <a><i class="fa-solid fa-heart-pulse"></i> Saúde Financeira & Caixa</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-lancamentos', this)">
+                <a><i class="fa-solid fa-receipt"></i> Lançamentos & Boletos</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-ofertas', this)">
+                <a><i class="fa-solid fa-tags"></i> Agendamento Ofertas</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-desossa', this)">
+                <a style="color: var(--accent-green); font-weight: 700;"><i class="fa-solid fa-cow"></i> Desossa & Carcaça</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-rateio', this)">
+                <a><i class="fa-solid fa-calculator"></i> Precificação & Rateio</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-unidades', this)">
+                <a><i class="fa-solid fa-store"></i> Unidades & Lojas</a>
+            </li>
+            <li class="nav-item" onclick="trocarAba('sec-balanca', this)">
+                <a><i class="fa-solid fa-scale-balanced"></i> Carga de Balança Toledo</a>
+            </li>
+            <li class="nav-item">
+                <a href="tv_board.html?loja=1" target="_blank" style="color: var(--accent-amber);"><i class="fa-solid fa-tv"></i> Painel TV (Excelência)</a>
+            </li>
+            <li class="nav-item">
+                <a href="tv_board.html?loja=2" target="_blank" style="color: var(--accent-amber);"><i class="fa-solid fa-tv"></i> Painel TV (Pit Stop)</a>
+            </li>
+            <li class="nav-item">
+                <a href="tv_board.html?loja=3" target="_blank" style="color: var(--accent-amber);"><i class="fa-solid fa-tv"></i> Painel TV (Cunha)</a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="content">
+        <header class="topbar">
+            <div class="page-title">
+                <h1 id="header-titulo">Painel de Controle Empresarial</h1>
+                <p id="header-subtitulo">Plataforma SaaS de Gestão de Açougues e Conciliação de Caixa em Tempo Real</p>
+            </div>
+            <div class="user-status">
+                <div class="status-badge"></div>
+                <span id="user-display" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">devgege</span>
+                <button onclick="fazerLogout()" style="background: none; border: none; color: var(--accent-rose); cursor: pointer; font-size: 0.9rem; margin-left: 0.5rem;" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </header>
+
+        <!-- SEÇÃO 1: DASHBOARD GERAL COM SELETOR DE LOJA E DATA -->
+        <section id="sec-dashboard" class="tab-section active">
+            <div class="panel-box" style="margin-bottom: 1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-filter"></i> Filtro de Vendas por Loja e Período</div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <select id="dash-loja" class="form-input-saas">
+                            <option value="1">Excelência (Loja 1)</option>
+                            <option value="2">Pit Stop (Loja 2)</option>
+                            <option value="3">Cunha (Loja 3)</option>
+                        </select>
+                        <input type="date" id="dash-data" class="form-input-saas" value="2026-08-16">
+                        <button class="btn-action" onclick="carregarDashboardSaaS()"><i class="fa-solid fa-sync"></i> Filtrar Dashboard</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span>FATURAMENTO DO DIA</span>
+                        <div class="kpi-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--primary);">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-value" id="kpi-faturamento">R$ 9.204,11</div>
+                    <div class="kpi-subtext" id="kpi-cupons-txt"><i class="fa-solid fa-arrow-up"></i> 108 Cupons Processados</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span>DÉBITO / CRÉDITO TEF</span>
+                        <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-amber);">
+                            <i class="fa-solid fa-credit-card"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-value" id="kpi-cartoes">R$ 5.770,56</div>
+                    <div class="kpi-subtext">Cartões TEF Liquidados</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span>PIX MAQUININHA</span>
+                        <div class="kpi-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-value" id="kpi-pix">R$ 1.873,23</div>
+                    <div class="kpi-subtext">0% de Taxas Retidas</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span>TAXAS DE MAQUININHA</span>
+                        <div class="kpi-icon" style="background: rgba(244, 63, 94, 0.15); color: var(--accent-rose);">
+                            <i class="fa-solid fa-percent"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-value" style="color: var(--accent-rose);" id="kpi-taxas">- R$ 96,75</div>
+                    <div class="kpi-subtext" style="color: var(--accent-rose);">Retido pelas Adquirentes</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid (Gráficos) -->
+            <div class="dashboard-grid">
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div class="panel-title">Divisão de Faturamento por Meio de Pagamento</div>
+                    </div>
+                    <canvas id="chartPagamentos" height="130"></canvas>
+                </div>
+
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div class="panel-title">Distribuição de Taxas Retidas</div>
+                    </div>
+                    <canvas id="chartTaxas" height="220"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabela da Totalidade de Cupons Vendidos sem Trava de 10 Itens -->
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Totalidade dos Cupons Vendidos da Unidade Selecionada</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CUPOM ID</th>
+                                <th>PRODUTOS COMPRADOS</th>
+                                <th>VALOR TOTAL</th>
+                                <th>FORMA DE PAGAMENTO</th>
+                                <th>TAXA EST.</th>
+                                <th>VALOR LÍQUIDO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-cupons-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 2: RESUMO VENDAS DIÁRIAS (CAIXA DINÂMICO) -->
+        <section id="sec-vendas-diarias" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Resumo do Fechamento do Caixa Diário</div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <select id="vd-loja" class="form-input-saas">
+                            <option value="1">Excelência</option>
+                            <option value="2">Pit Stop</option>
+                            <option value="3">Cunha</option>
+                        </select>
+                        <input type="date" id="vd-data" class="form-input-saas" value="2026-08-16">
+                        <button class="btn-action" onclick="carregarResumoVendasDiarias()"><i class="fa-solid fa-search"></i> Carregar Caixa</button>
+                    </div>
+                </div>
+
+                <div class="kpi-grid" style="margin-top: 1rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>DINHEIRO GAVETA</span></div>
+                        <div class="kpi-value" id="vd-dinheiro" style="color: var(--accent-green);">R$ 1.172,33</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>CARTÃO VENDIDO</span></div>
+                        <div class="kpi-value" id="vd-cartao-vendido">R$ 5.770,56</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>PIX VENDIDO</span></div>
+                        <div class="kpi-value" id="vd-pix-vendido" style="color: var(--accent-cyan);">R$ 1.873,23</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>TOTAL GAVETA</span></div>
+                        <div class="kpi-value" id="vd-total-gaveta" style="color: var(--primary);">R$ 9.204,11</div>
+                    </div>
+                </div>
+
+                <div class="table-responsive" style="margin-top: 1rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>FORMA DE LANÇAMENTO</th>
+                                <th>VALOR VENDIDO</th>
+                                <th>VALOR RECEBIDO / LIQUIDADO</th>
+                                <th>TAXA / SANGRIA</th>
+                                <th>DIFERENÇA / QUEBRA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>DINHEIRO EM ESPÉCIE</strong></td>
+                                <td id="row-din-v">R$ 1.172,33</td>
+                                <td id="row-din-r">R$ 1.172,33</td>
+                                <td>Sangria: R$ 0,00</td>
+                                <td style="color: var(--accent-green);">R$ 0,00 (OK)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CARTÃO DE DÉBITO / CRÉDITO</strong></td>
+                                <td id="row-card-v">R$ 5.770,56</td>
+                                <td id="row-card-r">R$ 5.673,81</td>
+                                <td>Tarifa: R$ 96,75</td>
+                                <td style="color: var(--accent-green);">R$ 0,00 (OK)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PIX MAQUININHA / TEF</strong></td>
+                                <td id="row-pix-v">R$ 1.873,23</td>
+                                <td id="row-pix-r">R$ 1.873,23</td>
+                                <td>Tarifa: R$ 0,00</td>
+                                <td style="color: var(--accent-green);">R$ 0,00 (OK)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 3: ITENS VENDIDOS -->
+        <section id="sec-itens-vendidos" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Consulta de Itens Vendidos por Período e Unidade</div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <select id="iv-loja" class="form-input-saas">
+                            <option value="1">Excelência</option>
+                            <option value="2">Pit Stop</option>
+                            <option value="3">Cunha</option>
+                        </select>
+                        <input type="date" id="iv-data" class="form-input-saas" value="2026-08-16">
+                        <button class="btn-action" onclick="puxarVendasDoDia()"><i class="fa-solid fa-download"></i> Puxar Vendas do Dia</button>
+                    </div>
+                </div>
+
+                <!-- KPI CARDS DE CONFERÊNCIA EXATA DOS ITENS VENDIDOS -->
+                <div class="kpi-grid" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>TOTAL DE ITENS VENDIDOS</span></div>
+                        <div class="kpi-value" id="iv-tot-itens-qtd" style="color: var(--accent-cyan);">0 ITENS</div>
+                        <div class="kpi-subtext">Todas as Linhas de Produtos do Dia</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>SOMA DOS ITENS (R$)</span></div>
+                        <div class="kpi-value" id="iv-tot-itens-val" style="color: var(--accent-green);">R$ 0,00</div>
+                        <div class="kpi-subtext">Soma Exata dos Itens de Venda</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>FATURAMENTO GAVETA / CUPONS</span></div>
+                        <div class="kpi-value" id="iv-tot-faturamento-val" style="color: var(--accent-amber);">R$ 0,00</div>
+                        <div class="kpi-subtext" id="iv-status-conciliacao">🟢 100% Batido com Cupons</div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="table-itens-vendidos">
+                        <thead>
+                            <tr>
+                                <th onclick="ordenarTabela('table-itens-vendidos', 0, 'string')" style="cursor: pointer;" title="Clique para ordenar">DATA VENDA <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="ordenarTabela('table-itens-vendidos', 1, 'string')" style="cursor: pointer;" title="Clique para ordenar">UNIDADE <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="ordenarTabela('table-itens-vendidos', 2, 'string')" style="cursor: pointer;" title="Clique para ordenar">PRODUTO / CORTE <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="ordenarTabela('table-itens-vendidos', 3, 'string')" style="cursor: pointer;" title="Clique para ordenar">UNIDADE MEDIDA <i class="fa-solid fa-sort"></i></th>
+                                <th onclick="ordenarTabela('table-itens-vendidos', 4, 'number')" style="cursor: pointer; color: var(--accent-amber);" title="Clique para ordenar Maior > Menor">QUANTIDADE VENDIDA <i class="fa-solid fa-sort-amount-down"></i></th>
+                                <th onclick="ordenarTabela('table-itens-vendidos', 5, 'currency')" style="cursor: pointer; color: var(--accent-amber);" title="Clique para ordenar Maior > Menor">PREÇO UNITÁRIO <i class="fa-solid fa-sort-amount-down"></i></th>
+                                <th onclick="ordenarTabela('table-itens-vendidos', 6, 'currency')" style="cursor: pointer; color: var(--accent-green);" title="Clique para ordenar Maior > Menor">TOTAL VENDIDO <i class="fa-solid fa-sort-amount-down"></i></th>
+                                <th onclick="ordenarTabela('table-itens-vendidos', 7, 'string')" style="cursor: pointer;" title="Clique para ordenar">STATUS OFERTA <i class="fa-solid fa-sort"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-itens-vendidos-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 4: EXTRAÇÃO TICKETS FIREBIRD -->
+        <section id="sec-tickets-firebird" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Extração em Tempo Real dos Tickets / Cupons de Vendas do Firebird</div>
+                    <button class="btn-action" onclick="executarExtracaoTicketsFirebird()"><i class="fa-solid fa-bolt"></i> Extrair & Lançar no Banco de Dados</button>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    Este módulo realiza uma varredura direta via TCP/IP nas portas dos bancos de dados Firebird dos açougues, importando os cupons unitários.
+                </p>
+                <div id="status-extracao-msg" style="margin-top: 1rem; font-weight: 700; color: var(--accent-cyan);"></div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 5: SAÚDE FINANCEIRA & AUDITORIA DJANGO -->
+        <section id="sec-saude-financeira" class="tab-section">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-header"><span>FATURAMENTO MÊS ATUAL (ITENS)</span></div>
+                    <div class="kpi-value" id="sf-faturamento" style="color: var(--accent-green);">R$ 320.285,87</div>
+                    <div class="kpi-subtext">Soma Total Auditada do Django</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span>PROJEÇÃO FIM DO MÊS</span></div>
+                    <div class="kpi-value" id="sf-projecao" style="color: var(--accent-cyan);">R$ 653.939,17</div>
+                    <div class="kpi-subtext">Calculado via Média Móvel</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span>CUSTO TOTAL (BALANÇO)</span></div>
+                    <div class="kpi-value" id="sf-custos" style="color: var(--accent-rose);">R$ 307.424,66</div>
+                    <div class="kpi-subtext" style="color: var(--accent-green);">🟢 Ponto de Equilíbrio Atingido</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span>COBERTURA DE CAIXA</span></div>
+                    <div class="kpi-value" id="sf-solvencia" style="color: var(--accent-green);">4.83x</div>
+                    <div class="kpi-subtext">🟢 Operação Saudável e Coberta</div>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Auditoria de Margem Líquida Real</div>
+                </div>
+                <div style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan);">
+                    💰 MARGEM LÍQUIDA REAL: <span style="color: var(--accent-green); font-size: 1.4rem;">2.84%</span> (Saldo Liquidado no Período)
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 6: LANÇAMENTOS E BOLETOS -->
+        <section id="sec-lancamentos" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Lançamento e Controle de Boletos, Despesas e Pagamentos</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>AÇOUGUE</th>
+                                <th>DATA</th>
+                                <th>DESCRIÇÃO DO CUSTO / FORNECEDOR</th>
+                                <th>VENCIMENTO</th>
+                                <th>A PAGAR (BOLETO)</th>
+                                <th>VALOR PAGO</th>
+                                <th>FORMA PGTO</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-lancamentos-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 7: AGENDAMENTO DE OFERTAS FORMULÁRIO COMPLETO -->
+        <section id="sec-ofertas" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-plus-circle"></i> Novo Agendamento de Oferta</div>
+                </div>
+                <form id="form-nova-oferta" onsubmit="salvarAgendamentoOferta(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">SELECIONAR LOJA</label>
+                        <select id="of-loja" class="form-input-saas" style="width: 100%;">
+                            <option value="1">Excelência (Loja 1)</option>
+                            <option value="2">Pit Stop (Loja 2)</option>
+                            <option value="3">Cunha (Loja 3)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">NOME DO PRODUTO</label>
+                        <input type="text" id="of-produto" class="form-input-saas" placeholder="Ex: PERNIL SUINO" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">PREÇO OFERTA (R$)</label>
+                        <input type="number" step="0.01" id="of-preco" class="form-input-saas" placeholder="13.99" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">DATA INÍCIO</label>
+                        <input type="date" id="of-data-ini" class="form-input-saas" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">DATA FIM</label>
+                        <input type="date" id="of-data-fim" class="form-input-saas" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn-action" style="width: 100%; justify-content: center; background: linear-gradient(135deg, var(--accent-green), var(--primary));"><i class="fa-solid fa-save"></i> Agendar Oferta</button>
+                    </div>
+                </form>
+                <div id="status-oferta-msg" style="margin-top: 1rem; font-weight: 700; display: none;"></div>
+            </div>
+
+            <div class="panel-box">
+                <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
+                    <div class="panel-title"><i class="fa-solid fa-list"></i> Ofertas Programadas (Vigentes Hoje & Amanhã)</div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">FILTRAR POR LOJA:</label>
+                        <select id="filtro-oferta-loja" class="form-input-saas" onchange="carregarModulosSaaS()">
+                            <option value="0">TODAS AS LOJAS</option>
+                            <option value="1">EXCELÊNCIA (LOJA 1)</option>
+                            <option value="2">PIT STOP (LOJA 2)</option>
+                            <option value="3">CUNHA (LOJA 3)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>LOJA</th>
+                                <th>PRODUTO DE CARNE</th>
+                                <th>PLU BALANÇA</th>
+                                <th>PREÇO OFERTA (R$)</th>
+                                <th>DATA INÍCIO (00:00)</th>
+                                <th>DATA FIM (22:00)</th>
+                                <th>STATUS / VIGÊNCIA</th>
+                                <th>BALANÇA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-ofertas-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 8: PRECIFICAÇÃO & SIMULADOR DE RATEIO -->
+        <section id="sec-rateio" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Simulador de Rateio de Margem & Absorção do Rombo de Ofertas</div>
+                    <button class="btn-action" onclick="executarSimulacaoRateioRombo()"><i class="fa-solid fa-calculator"></i> Ratear Rombo nas Carnes Mais Vendidas</button>
+                </div>
+                <div id="resultado-rateio-box" style="display: none; margin-bottom: 1.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); padding: 1rem; border-radius: 12px;">
+                    <div style="font-weight: 800; color: var(--accent-green); font-size: 1.05rem;" id="txt-rombo-total">Rombo Total de Oferta a Absorver: R$ 450,00</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CORTE DE CARNE (ESPONJA)</th>
+                                <th>PREÇO BASE ATUAL (R$)</th>
+                                <th>ACRÉSCIMO SUGERIDO / KG</th>
+                                <th>NOVO PREÇO REAJUSTADO</th>
+                                <th>% AUMENTO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-rateio-simulacao-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO NOVA: DESOSSA & RENDIMENTO DE CARCAÇA (PLANILHA OFICIAL) -->
+        <section id="sec-desossa" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-cow"></i> Módulo de Desossa & Análise de Rendimento da Carcaça (Res-Casada & Cortes)</div>
+                    <button class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary));" onclick="executarSimulacaoDesossa()"><i class="fa-solid fa-calculator"></i> Processar Desossa & Margens</button>
+                </div>
+                
+                <form id="form-desossa" onsubmit="event.preventDefault(); executarSimulacaoDesossa();" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">CARCAÇA / TIPO</label>
+                        <select id="des-tipo" class="form-input-saas" style="width: 100%;">
+                            <option value="CASADA">CASADA (Boi Inteiro 218.0kg)</option>
+                            <option value="CASADA ESPECIAL">CASADA ESPECIAL (277.2kg)</option>
+                            <option value="TRASEIRO COMUM">TRASEIRO COMUM (89.5kg)</option>
+                            <option value="DIANTEIRO COMUM">DIANTEIRO COMUM (31.3kg)</option>
+                            <option value="PORCO">SUÍNO COMPLETO (30.7kg)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">PREÇO / KG (R$)</label>
+                        <input type="number" step="0.01" id="des-preco-kg" class="form-input-saas" value="25.30" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">ST / KG (R$)</label>
+                        <input type="number" step="0.01" id="des-st-kg" class="form-input-saas" value="0.65" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">PESO REFERÊNCIA (KG)</label>
+                        <input type="number" step="0.1" id="des-peso-ref" class="form-input-saas" value="218.0" required style="width: 100%;">
+                    </div>
+                </form>
+
+                <!-- KPI CARDS DO BALANÇO COMPLETO DA DESOSSA -->
+                <div class="kpi-grid" style="margin-top: 1rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>VALOR PAGO TOTAL</span></div>
+                        <div class="kpi-value" id="des-val-pago" style="color: var(--accent-rose);">R$ 5.657,48</div>
+                        <div class="kpi-subtext" id="des-custo-kg-txt">Custo Kg: R$ 25,95 (Com ST)</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>VENDA BRUTA (TABELA)</span></div>
+                        <div class="kpi-value" id="des-venda-tab" style="color: var(--accent-green);">R$ 7.570,99</div>
+                        <div class="kpi-subtext" id="des-lucro-tab-txt">Lucro Líquido: R$ 1.913,51 (25,27%)</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>VENDA BRUTA (OFERTAS)</span></div>
+                        <div class="kpi-value" id="des-venda-of" style="color: var(--accent-cyan);">R$ 7.280,96</div>
+                        <div class="kpi-subtext" id="des-lucro-of-txt">Lucro Líquido: R$ 1.623,48 (22,30%)</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>CUSTO FINAL LÍQUIDO / KG</span></div>
+                        <div class="kpi-value" id="des-custo-final" style="color: var(--accent-amber);">R$ 30,26</div>
+                        <div class="kpi-subtext" id="des-peso-liq-txt">Peso Líquido Limpo: 186.96 KG</div>
+                    </div>
+                </div>
+
+                <div class="panel-title" style="font-size: 1rem; margin: 1.5rem 0 0.75rem 0;"><i class="fa-solid fa-list-ol"></i> Tabela Completa de Rendimento por Corte (Tabela vs Oferta)</div>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>PRODUTOS / CORTES</th>
+                                <th>% PESO</th>
+                                <th>PESO (KG)</th>
+                                <th>PREÇO TABELA (R$)</th>
+                                <th>DESCONTO (R$)</th>
+                                <th>SUGESTÃO OFERTA</th>
+                                <th>OFERTA PRATICADA</th>
+                                <th>TOTAL VENDIDO (TABELA)</th>
+                                <th>TOTAL VENDIDO (OFERTA)</th>
+                                <th>DIFERENÇA / DESCONTO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-desossa-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 9: UNIDADES & LOJAS -->
+        <section id="sec-unidades" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Lojas e Açougues Cadastrados no SaaS</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>NOME FANTASIA</th>
+                                <th>CNPJ</th>
+                                <th>ENDEREÇO</th>
+                                <th>CONTATO</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-lojas-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 10: CARGA DE BALANÇA TOLEDO -->
+        <section id="sec-balanca" class="tab-section">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title">Módulo de Automação de Carga para Balanças (Toledo MGV6 / MGV7)</div>
+                </div>
+                <button class="btn-action" onclick="dispararCargaBalanca()"><i class="fa-solid fa-file-export"></i> Gerar e Transmitir Carga CADTXT.TXT</button>
+                <div id="status-balanca-msg" style="margin-top: 1rem; font-weight: 600; color: var(--accent-green);"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE VISUALIZAÇÃO DE DETALHES DO CUPOM (SEM EDIÇÃO) -->
+    <div id="modal-detalhes-cupom" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 999; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; width: 90%; max-width: 650px; padding: 1.75rem; box-shadow: 0 0 30px rgba(0,0,0,0.8); position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); pb-3; margin-bottom: 1rem;">
+                <h3 id="modal-cupom-titulo" style="font-size: 1.25rem; font-weight: 800; color: var(--primary);">Detalhes do Cupom #0000</h3>
+                <button onclick="fecharModalCupom()" style="background: none; border: none; color: var(--accent-rose); font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+                <div><strong>Forma de Pagamento:</strong> <span id="modal-cupom-forma" style="color: #fff; font-weight: 700;">-</span></div>
+                <div><strong>Valor Total da Venda:</strong> <span id="modal-cupom-total" style="color: var(--accent-green); font-weight: 800;">-</span></div>
+            </div>
+
+            <div class="panel-title" style="font-size: 0.95rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-list-check"></i> Produtos Comprados neste Ticket:</div>
+            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>PRODUTO / CORTE</th>
+                            <th>UN</th>
+                            <th>QTD</th>
+                            <th>PREÇO UNIT.</th>
+                            <th>TOTAL ITEM</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-cupom-itens-body"></tbody>
+                </table>
+            </div>
+
+            <div style="text-align: right; margin-top: 1.25rem;">
+                <button class="btn-action" onclick="fecharModalCupom()" style="background: var(--bg-card-hover); border: 1px solid var(--border-color);"><i class="fa-solid fa-check"></i> Fechar Consulta</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script JavaScript Completo de Roteamento e Comunicação C# -->
+    <script>
+        function trocarAba(secId, elem) {
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-menu .nav-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(secId).classList.add('active');
+            if (elem) elem.classList.add('active');
+        }
+
+        async function carregarDashboardSaaS() {
+            try {
+                const lojaId = document.getElementById('dash-loja') ? document.getElementById('dash-loja').value : "1";
+                const dataVal = document.getElementById('dash-data') ? document.getElementById('dash-data').value : "2026-08-16";
+
+                const res = await fetch(`http://localhost:5205/api/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
+                const data = await res.json();
+
+                document.getElementById('kpi-faturamento').innerText = 'R$ ' + data.faturamentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('kpi-cupons-txt').innerHTML = `<i class="fa-solid fa-arrow-up"></i> ${data.totalCupons} Cupons Processados`;
+                document.getElementById('kpi-cartoes').innerText = 'R$ ' + (data.resumoPorMeioPagamento.debito + data.resumoPorMeioPagamento.credito).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('kpi-pix').innerText = 'R$ ' + data.resumoPorMeioPagamento.pix.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('kpi-taxas').innerText = '- R$ ' + data.custoTaxasMaquininha.totalPerdidoEmTaxas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+                window.cuponsCache = data.amostraCupons;
+
+                const tbody = document.getElementById('table-cupons-body');
+                tbody.innerHTML = '';
+                data.amostraCupons.forEach((cupom, idx) => {
+                    const pgto = cupom.pagamentos[0] || {};
+                    let badgeClass = 'badge-dinheiro';
+                    const formaLimpa = (pgto.formaPagamento || 'DINHEIRO').toUpperCase().replace('CONVNIO', 'CONVENIO').replace('CARTO', 'CARTAO').replace('CRDITO', 'CREDITO').replace('DBITO', 'DEBITO');
+                    
+                    if (formaLimpa.includes('PIX')) badgeClass = 'badge-pix';
+                    else if (formaLimpa.includes('DEBITO')) badgeClass = 'badge-debito';
+                    else if (formaLimpa.includes('CREDITO')) badgeClass = 'badge-credito';
+
+                    const produtosStr = cupom.itens.map(i => `${i.quantidade} ${i.unidade} ${i.produtoDescricao}`).join(', ') || 'Produtos Diversos';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: 700;">
+                            <a onclick="abrirModalCupom(${idx})" style="color: var(--accent-cyan); text-decoration: underline; cursor: pointer;" title="Clique para ver os itens detalhados">#${cupom.id}</a>
+                        </td>
+                        <td style="max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${produtosStr}</td>
+                        <td style="font-weight: 700;">R$ ${cupom.totalVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td><span class="badge-payment ${badgeClass}">${formaLimpa}</span></td>
+                        <td style="color: var(--accent-rose); font-weight: 600;">${pgto.taxaPercentualEstimada}%</td>
+                        <td style="color: var(--accent-green); font-weight: 700;">R$ ${pgto.valorLiquidoRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                renderizarGraficos(data.resumoPorMeioPagamento);
+            } catch (err) {
+                console.error("Erro ao carregar Dashboard:", err);
+            }
+        }
+
+        async function carregarResumoVendasDiarias() {
+            const lojaId = document.getElementById('vd-loja').value;
+            const dataVal = document.getElementById('vd-data').value;
+
+            const res = await fetch(`http://localhost:5205/api/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
+            const data = await res.json();
+
+            document.getElementById('vd-dinheiro').innerText = 'R$ ' + data.resumoPorMeioPagamento.dinheiro.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('vd-cartao-vendido').innerText = 'R$ ' + (data.resumoPorMeioPagamento.debito + data.resumoPorMeioPagamento.credito).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('vd-pix-vendido').innerText = 'R$ ' + data.resumoPorMeioPagamento.pix.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('vd-total-gaveta').innerText = 'R$ ' + data.faturamentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            document.getElementById('row-din-v').innerText = 'R$ ' + data.resumoPorMeioPagamento.dinheiro.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('row-din-r').innerText = 'R$ ' + data.resumoPorMeioPagamento.dinheiro.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('row-card-v').innerText = 'R$ ' + (data.resumoPorMeioPagamento.debito + data.resumoPorMeioPagamento.credito).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('row-card-r').innerText = 'R$ ' + (data.resumoPorMeioPagamento.debito + data.resumoPorMeioPagamento.credito - data.custoTaxasMaquininha.totalPerdidoEmTaxas).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('row-pix-v').innerText = 'R$ ' + data.resumoPorMeioPagamento.pix.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('row-pix-r').innerText = 'R$ ' + data.resumoPorMeioPagamento.pix.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        }
+
+        let ordenacaoDirecao = {};
+
+        function ordenarTabela(tableId, colIndex, tipo) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            if (rows.length === 0) return;
+
+            const chave = tableId + '_' + colIndex;
+            // Alterna entre decrescente (Maior > Menor) e crescente
+            const ehDecrescente = ordenacaoDirecao[chave] === undefined ? true : !ordenacaoDirecao[chave];
+            ordenacaoDirecao[chave] = ehDecrescente;
+
+            rows.sort((a, b) => {
+                let cellA = a.children[colIndex] ? a.children[colIndex].innerText.trim() : '';
+                let cellB = b.children[colIndex] ? b.children[colIndex].innerText.trim() : '';
+
+                if (tipo === 'currency' || tipo === 'number') {
+                    // Extrai apenas números e vírgulas/pontos decimais para ordenar corretamente valores financeiros e quantidades
+                    let valA = parseFloat(cellA.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
+                    let valB = parseFloat(cellB.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
+                    return ehDecrescente ? (valB - valA) : (valA - valB);
+                } else {
+                    return ehDecrescente ? cellB.localeCompare(cellA) : cellA.localeCompare(cellB);
+                }
+            });
+
+            tbody.innerHTML = '';
+            rows.forEach(r => tbody.appendChild(r));
+        }
+
+        async function puxarVendasDoDia() {
+            const lojaId = document.getElementById('iv-loja').value;
+            const dataVal = document.getElementById('iv-data').value;
+            const res = await fetch(`http://localhost:5205/api/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
+            const data = await res.json();
+            
+            const tbody = document.getElementById('table-itens-vendidos-body');
+            tbody.innerHTML = '';
+            
+            let listaItens = [];
+            let somaItensReais = 0;
+
+            data.amostraCupons.forEach(cupom => {
+                cupom.itens.forEach(item => {
+                    somaItensReais += item.valorTotal;
+                    listaItens.push({
+                        data: dataVal,
+                        lojaId: lojaId,
+                        produtoDescricao: item.produtoDescricao,
+                        unidade: item.unidade,
+                        quantidade: item.quantidade,
+                        precoUnitario: item.precoUnitario,
+                        valorTotal: item.valorTotal
+                    });
+                });
+            });
+
+            // Atualiza os KPI Cards de Conferência Exata
+            document.getElementById('iv-tot-itens-qtd').innerText = `${listaItens.length} ITENS`;
+            document.getElementById('iv-tot-itens-val').innerText = 'R$ ' + somaItensReais.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('iv-tot-faturamento-val').innerText = 'R$ ' + data.faturamentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            const diff = Math.abs(somaItensReais - data.faturamentoBruto);
+            if (diff <= 0.05) {
+                document.getElementById('iv-status-conciliacao').innerText = '🟢 100% Batido com Cupons';
+                document.getElementById('iv-status-conciliacao').style.color = 'var(--accent-green)';
+            } else {
+                document.getElementById('iv-status-conciliacao').innerText = `⚠️ Diferença: R$ ${diff.toFixed(2)}`;
+                document.getElementById('iv-status-conciliacao').style.color = 'var(--accent-amber)';
+            }
+
+            // Ordena da MAIOR VENDA PARA A MENOR VENDA (Maior > Menor)
+            listaItens.sort((a, b) => b.valorTotal - a.valorTotal);
+
+            listaItens.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.data}</td>
+                        <td style="font-weight: 700;">LOJA #${item.lojaId}</td>
+                        <td style="font-weight: 700; color: var(--accent-cyan);">${item.produtoDescricao}</td>
+                        <td>${item.unidade}</td>
+                        <td style="font-weight: 700;">${item.quantidade}</td>
+                        <td>R$ ${item.precoUnitario.toFixed(2)}</td>
+                        <td style="font-weight: 800; color: var(--accent-green);">R$ ${item.valorTotal.toFixed(2)}</td>
+                        <td><span class="badge-payment badge-dinheiro">NORMAL</span></td>
+                    </tr>`;
+            });
+        }
+
+        async function salvarAgendamentoOferta(e) {
+            if (e) e.preventDefault();
+            
+            const prodVal = document.getElementById('of-produto').value.trim();
+            const precoVal = parseFloat(document.getElementById('of-preco').value);
+            const dataIniVal = document.getElementById('of-data-ini').value;
+            const dataFimVal = document.getElementById('of-data-fim').value;
+
+            if (!prodVal || isNaN(precoVal) || !dataIniVal || !dataFimVal) {
+                alert("⚠️ Por favor, preencha todos os campos do formulário (Produto, Preço, Data Início e Data Fim)!");
+                return;
+            }
+
+            const dto = {
+                lojaId: parseInt(document.getElementById('of-loja').value),
+                produtoNome: prodVal.toUpperCase(),
+                precoOferta: precoVal,
+                dataInicio: dataIniVal,
+                dataFim: dataFimVal,
+                codigoBalanca: "000" + Math.floor(Math.random() * 900 + 100)
+            };
+
+            try {
+                const res = await fetch('http://localhost:5205/api/ModulosSaaS/ofertas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto)
+                });
+                const data = await res.json();
+
+                const msgDiv = document.getElementById('status-oferta-msg');
+                if (msgDiv) {
+                    msgDiv.style.display = 'block';
+                    msgDiv.style.color = 'var(--accent-green)';
+                    msgDiv.innerText = `✅ Oferta para ${data.produtoNome} (R$ ${data.precoOferta.toFixed(2)}) agendada com sucesso para a Loja ${data.lojaNome}! Balanças sincronizadas.`;
+                }
+                
+                alert(`✅ Oferta para ${data.produtoNome} agendada com sucesso para a Loja ${data.lojaNome}!`);
+
+                // Limpa o formulário
+                document.getElementById('of-produto').value = '';
+                document.getElementById('of-preco').value = '';
+                
+                // Recarrega a tabela de ofertas imediatamente
+                carregarModulosSaaS();
+            } catch (err) {
+                console.error("Erro ao agendar oferta:", err);
+                alert("❌ Erro ao conectar com o servidor C#. Verifique se a API está online!");
+            }
+        }
+
+        async function carregarModulosSaaS() {
+            try {
+                // Carregar Lojas Reais
+                const resLojas = await fetch('http://localhost:5205/api/ModulosSaaS/lojas');
+                const lojas = await resLojas.json();
+                const tbodyLojas = document.getElementById('table-lojas-body');
+                tbodyLojas.innerHTML = '';
+                lojas.forEach(l => {
+                    tbodyLojas.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 700; color: var(--primary);">#${l.id}</td>
+                            <td style="font-weight: 700;">${l.nome}</td>
+                            <td>${l.cnpj}</td>
+                            <td>${l.endereco}</td>
+                            <td>${l.telefone}</td>
+                            <td><span class="badge-payment badge-dinheiro">ATIVO</span></td>
+                        </tr>`;
+                });
+
+                // Carregar Ofertas com Filtro de Loja Seletor
+                const lojaFiltroId = document.getElementById('filtro-oferta-loja') ? document.getElementById('filtro-oferta-loja').value : '0';
+                const urlOfertas = 'http://localhost:5205/api/ModulosSaaS/ofertas?lojaId=' + lojaFiltroId;
+                
+                const resOfertas = await fetch(urlOfertas);
+                const ofertas = await resOfertas.json();
+                const tbodyOfertas = document.getElementById('table-ofertas-body');
+                tbodyOfertas.innerHTML = '';
+                
+                // Data local YYYY-MM-DD precisa respeitar o fuso horário local do navegador
+                const agora = new Date();
+                const anoL = agora.getFullYear();
+                const mesL = String(agora.getMonth() + 1).padStart(2, '0');
+                const diaL = String(agora.getDate()).padStart(2, '0');
+                const hojeStr = `${anoL}-${mesL}-${diaL}`;
+
+                ofertas.forEach(o => {
+                    const dtIniStr = o.dataInicio ? o.dataInicio.split('T')[0] : '';
+                    const dtFimStr = o.dataFim ? o.dataFim.split('T')[0] : '';
+                    
+                    let badgeVigencia = '<span class="badge-payment badge-voucher">EXPIRADA</span>';
+                    
+                    if (o.ativo) {
+                        if (dtIniStr === hojeStr) {
+                            badgeVigencia = '<span class="badge-payment badge-dinheiro">HOJE (ATIVA)</span>';
+                        } else if (dtIniStr > hojeStr) {
+                            badgeVigencia = '<span class="badge-payment badge-debito">AMANHÃ (PROGRAMADA)</span>';
+                        } else {
+                            badgeVigencia = '<span class="badge-payment badge-voucher">ENCERRADA</span>';
+                        }
+                    }
+
+                    tbodyOfertas.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 700;">${o.lojaNome}</td>
+                            <td style="font-weight: 700; color: var(--accent-cyan);">${o.produtoNome}</td>
+                            <td><code>${o.codigoBalanca}</code></td>
+                            <td style="font-weight: 800; color: var(--accent-green);">R$ ${o.precoOferta.toFixed(2)}</td>
+                            <td style="font-weight: 700;">${dtIniStr} (00:00)</td>
+                            <td style="font-weight: 700; color: var(--accent-amber);">${dtFimStr} (22:00)</td>
+                            <td>${badgeVigencia}</td>
+                            <td><span class="badge-payment badge-pix">SINCRONIZADO</span></td>
+                        </tr>`;
+                });
+
+                // Carregar Lançamentos
+                const resLanc = await fetch('http://localhost:5205/api/ModulosSaaS/lancamentos');
+                const lancs = await resLanc.json();
+                const tbodyLanc = document.getElementById('table-lancamentos-body');
+                tbodyLanc.innerHTML = '';
+                lancs.forEach(l => {
+                    const statusBadge = l.confirmado ? '<span class="badge-payment badge-dinheiro">PAGO</span>' : '<span class="badge-payment badge-voucher">A VENCER</span>';
+                    tbodyLanc.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 700; color: var(--primary);">#${l.id}</td>
+                            <td style="font-weight: 700;">${l.lojaNome}</td>
+                            <td>${l.data.split('T')[0]}</td>
+                            <td style="font-weight: 600;">${l.descricao}</td>
+                            <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
+                            <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toFixed(2)}</td>
+                            <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toFixed(2)}</td>
+                            <td><span class="badge-payment badge-debito">${l.formaPagamento}</span></td>
+                            <td>${statusBadge}</td>
+                        </tr>`;
+                });
+
+            } catch (err) {
+                console.error("Erro ao carregar Módulos SaaS:", err);
+            }
+        }
+
+        async function executarSimulacaoRateioRombo() {
+            const res = await fetch('http://localhost:5205/api/ModulosSaaS/simular-rateio', { method: 'POST' });
+            const data = await res.json();
+            
+            document.getElementById('resultado-rateio-box').style.display = 'block';
+            document.getElementById('txt-rombo-total').innerText = "Rombo Total de Oferta a Absorver: R$ " + data.romboOfertaTotal.toFixed(2);
+
+            const tbody = document.getElementById('table-rateio-simulacao-body');
+            tbody.innerHTML = '';
+            data.cortesReajustados.forEach(c => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight: 700; color: var(--primary);">${c.produtoNome}</td>
+                        <td style="font-weight: 700;">R$ ${c.precoBase.toFixed(2)}</td>
+                        <td style="color: var(--accent-amber); font-weight: 700;">+ R$ ${c.acrescimoPorKg.toFixed(2)}</td>
+                        <td style="font-weight: 800; color: var(--accent-green);">R$ ${c.precoReajustado.toFixed(2)}</td>
+                        <td style="color: var(--accent-cyan); font-weight: 700;">+ ${c.percentualAumento.toFixed(2)}%</td>
+                    </tr>`;
+            });
+        }
+
+        async function dispararCargaBalanca() {
+            const res = await fetch('http://localhost:5205/api/ModulosSaaS/gerar-carga-balanca', { method: 'POST' });
+            const data = await res.json();
+            document.getElementById('status-balanca-msg').innerText = "✅ " + data.mensagem;
+        }
+
+        function renderizarGraficos(resumo) {
+            const ctx1 = document.getElementById('chartPagamentos').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Débito', 'Crédito', 'Dinheiro', 'PIX', 'Voucher VR'],
+                    datasets: [{
+                        label: 'Faturamento (R$)',
+                        data: [resumo.debito, resumo.credito, resumo.dinheiro, resumo.pix, resumo.voucherAlimentacao],
+                        backgroundColor: ['#6366f1', '#f59e0b', '#10b981', '#06b6d4', '#f43f5e'],
+                        borderRadius: 8
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            const ctx2 = document.getElementById('chartTaxas').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Débito (1.29%)', 'Crédito (2.49%)', 'Voucher (4.50%)', 'Pix (0%)'],
+                    datasets: [{
+                        data: [resumo.debito * 0.0129, resumo.credito * 0.0249, resumo.voucherAlimentacao * 0.045, 0],
+                        backgroundColor: ['#6366f1', '#f59e0b', '#f43f5e', '#06b6d4']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
+            });
+        }
+
+        // Trava de Autenticação Inicial
+        if (!localStorage.getItem('saas_usuario_logado')) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('user-display').innerText = localStorage.getItem('saas_usuario_logado');
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('saas_usuario_logado');
+            window.location.href = 'login.html';
+        }
+
+        function abrirModalCupom(idx) {
+            const cupom = window.cuponsCache ? window.cuponsCache[idx] : null;
+            if (!cupom) return;
+
+            document.getElementById('modal-cupom-titulo').innerText = `Detalhes do Cupom #${cupom.id}`;
+            const pgto = cupom.pagamentos[0] || {};
+            const formaLimpa = (pgto.formaPagamento || 'DINHEIRO').toUpperCase().replace('CONVNIO', 'CONVENIO').replace('CARTO', 'CARTAO').replace('CRDITO', 'CREDITO').replace('DBITO', 'DEBITO');
+            document.getElementById('modal-cupom-forma').innerText = formaLimpa;
+            document.getElementById('modal-cupom-total').innerText = 'R$ ' + cupom.totalVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            const tbody = document.getElementById('modal-cupom-itens-body');
+            tbody.innerHTML = '';
+            cupom.itens.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight: 700; color: var(--accent-cyan);">${item.produtoDescricao}</td>
+                        <td>${item.unidade}</td>
+                        <td>${item.quantidade}</td>
+                        <td>R$ ${item.precoUnitario.toFixed(2)}</td>
+                        <td style="font-weight: 800; color: var(--accent-green);">R$ ${item.valorTotal.toFixed(2)}</td>
+                    </tr>`;
+            });
+
+            document.getElementById('modal-detalhes-cupom').style.display = 'flex';
+        }
+
+        function fecharModalCupom() {
+            document.getElementById('modal-detalhes-cupom').style.display = 'none';
+        }
+
+        async function executarSimulacaoDesossa() {
+            const req = {
+                lojaId: 1,
+                tipoCarcaca: document.getElementById('des-tipo').value,
+                precoPorKg: parseFloat(document.getElementById('des-preco-kg').value),
+                stKg: parseFloat(document.getElementById('des-st-kg').value),
+                pesoReferenciaKg: parseFloat(document.getElementById('des-peso-ref').value)
+            };
+
+            const res = await fetch('http://localhost:5205/api/ModulosSaaS/simular-desossa-carcaca', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(req)
+            });
+            const data = await res.json();
+
+            document.getElementById('des-val-pago').innerText = 'R$ ' + data.valorPagoTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('des-custo-kg-txt').innerText = `Custo Kg: R$ ${data.custoKgTotal.toFixed(2)} (Com ST R$ ${data.stKg.toFixed(2)})`;
+
+            document.getElementById('des-venda-tab').innerText = 'R$ ' + data.vendaBrutaTabela.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('des-lucro-tab-txt').innerText = `Lucro Líquido: R$ ${data.lucroLiquidoTabela.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${data.rentabilidadeFaturamentoTabelaPct.toFixed(2)}%)`;
+
+            document.getElementById('des-venda-of').innerText = 'R$ ' + data.vendaBrutaOferta.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('des-lucro-of-txt').innerText = `Lucro Líquido: R$ ${data.lucroLiquidoOferta.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${data.rentabilidadeFaturamentoOfertaPct.toFixed(2)}%)`;
+
+            document.getElementById('des-custo-final').innerText = 'R$ ' + data.custoFinalKg.toFixed(2);
+            document.getElementById('des-peso-liq-txt').innerText = `Peso Líquido Limpo: ${data.pesoLiquidoKg.toFixed(2)} KG`;
+
+            const tbody = document.getElementById('table-desossa-body');
+            tbody.innerHTML = '';
+            data.itensDesossados.forEach(it => {
+                const ehPerda = it.precoTabela === 0;
+                const diffCor = it.totalDesconto > 0 ? 'var(--accent-cyan)' : (it.totalDesconto < 0 ? 'var(--accent-rose)' : 'var(--text-muted)');
+                const trClass = ehPerda ? 'style="background: rgba(244, 63, 94, 0.08);"' : '';
+
+                tbody.innerHTML += `
+                    <tr ${trClass}>
+                        <td style="font-weight: 700; color: ${ehPerda ? 'var(--accent-rose)' : 'var(--accent-cyan)'};">${it.nomeCorte}</td>
+                        <td>${it.percentualPeso.toFixed(3)}%</td>
+                        <td style="font-weight: 700;">${it.pesoKg.toFixed(3)} KG</td>
+                        <td style="font-weight: 700;">R$ ${it.precoTabela.toFixed(2)}</td>
+                        <td style="color: var(--accent-amber);">R$ ${it.desconto.toFixed(2)}</td>
+                        <td style="color: var(--accent-cyan);">R$ ${it.sugestaoOferta.toFixed(2)}</td>
+                        <td style="font-weight: 800; color: var(--accent-green);">R$ ${it.precoOferta.toFixed(2)}</td>
+                        <td style="font-weight: 700;">R$ ${it.totalVendidoTabela.toFixed(2)}</td>
+                        <td style="font-weight: 800; color: var(--accent-green);">R$ ${it.totalVendidoOferta.toFixed(2)}</td>
+                        <td style="font-weight: 700; color: ${diffCor};">R$ ${it.totalDesconto.toFixed(2)}</td>
+                    </tr>`;
+            });
+        }
+
+        // Preenche automaticamente os inputs de data com o dia de amanhã por padrão
+        const hoje = new Date();
+        const amanha = new Date(hoje);
+        amanha.setDate(hoje.getDate() + 1);
+        const dataAmanhaStr = amanha.toISOString().split('T')[0];
+
+        if (document.getElementById('of-data-ini')) document.getElementById('of-data-ini').value = dataAmanhaStr;
+        if (document.getElementById('of-data-fim')) document.getElementById('of-data-fim').value = dataAmanhaStr;
+
+        carregarDashboardSaaS();
+        carregarModulosSaaS();
+        executarSimulacaoDesossa();
+    </script>
+</body>
+</html>
