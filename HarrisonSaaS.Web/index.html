@@ -319,6 +319,9 @@
             <li class="nav-item" onclick="trocarAba('sec-tickets-firebird', this)">
                 <a><i class="fa-solid fa-bolt"></i> Extração Tickets Firebird</a>
             </li>
+            <li class="nav-item" onclick="trocarAba('sec-ai-purchasing', this)">
+                <a style="color: var(--accent-amber); font-weight: 700;"><i class="fa-solid fa-robot"></i> AI Purchasing (Compras Preditivas)</a>
+            </li>
             <li class="nav-item" onclick="trocarAba('sec-fintech-tef', this)">
                 <a style="color: var(--accent-rose); font-weight: 700;"><i class="fa-solid fa-calculator"></i> Fintech & Auditoria TEF</a>
             </li>
@@ -678,6 +681,62 @@
                             </tr>
                         </thead>
                         <tbody id="table-tef-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        <!-- SEÇÃO: AI PURCHASING - SUGESTÃO PREDITIVA DE COMPRAS DE BOI & CORTE -->
+        <section id="sec-ai-purchasing" class="tab-section">
+            <div class="panel-box" style="margin-bottom: 1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-brain" style="color: var(--accent-amber);"></i> Assistente Preditivo de Reposição de Estoque (AI Purchasing)</div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <select id="ai-loja" class="form-input-saas">
+                            <option value="1">Excelência</option>
+                            <option value="2">Pit Stop</option>
+                            <option value="3">Cunha</option>
+                        </select>
+                        <button class="btn-action" style="background: var(--accent-amber); color: var(--bg-body); font-weight: 800;" onclick="gerarOrdemCompraAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Ordem de Compra IA</button>
+                    </div>
+                </div>
+
+                <div class="kpi-grid" style="margin-top: 1rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>SUGESTÃO BOI CASADO</span></div>
+                        <div class="kpi-value" id="ai-qtd-carcacas" style="color: var(--accent-amber);">2 CARCAÇAS</div>
+                        <div class="kpi-subtext" id="ai-peso-boi">~373,92 KG Líquidos</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>ESTIMATIVA CUSTO DE COMPRA</span></div>
+                        <div class="kpi-value" id="ai-custo-total" style="color: var(--accent-green);">R$ 8.420,00</div>
+                        <div class="kpi-subtext">Custo Ponderado Previsto</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header"><span>PREVISÃO VENDAS FIM DE SEMANA</span></div>
+                        <div class="kpi-value" id="ai-prev-vendas" style="color: var(--accent-cyan);">450,00 KG</div>
+                        <div class="kpi-subtext">Sexta, Sábado & Domingo</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-truck-ramp-box"></i> Ordem de Compra Sugerida por Corte para Frigoríficos</div>
+                </div>
+                <div class="table-responsive">
+                    <table id="table-ai-purchasing">
+                        <thead>
+                            <tr>
+                                <th>PRODUTO / CORTE</th>
+                                <th>MÉDIA DIÁRIA (14 DIAS)</th>
+                                <th>PREVISÃO FIM DE SEMANA</th>
+                                <th>ESTOQUE ATUAL ESTIMADO</th>
+                                <th>SUGESTÃO DE COMPRA (KG)</th>
+                                <th>CUSTO ESTIMADO/KG</th>
+                                <th>VALOR TOTAL ESTIMADO</th>
+                                <th>NÍVEL DE URGÊNCIA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-ai-body"></tbody>
                     </table>
                 </div>
             </div>
@@ -1584,6 +1643,44 @@
                 });
             } catch (err) {
                 console.error("Erro ao auditar taxas TEF:", err);
+            }
+        }
+
+        async function gerarOrdemCompraAI() {
+            const lojaId = document.getElementById('ai-loja').value;
+            try {
+                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/ai-purchasing?lojaId=${lojaId}`);
+                const data = await res.json();
+
+                document.getElementById('ai-qtd-carcacas').innerText = `${data.qtdCarcacasBoiSugestao} CARCAÇAS BOI`;
+                document.getElementById('ai-peso-boi').innerText = `~${data.pesoTotalBoiSugestaoKg.toLocaleString('pt-BR')} KG Carnes Líquidas`;
+                document.getElementById('ai-custo-total').innerText = 'R$ ' + data.custoTotalEstimadoPedidos.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('ai-prev-vendas').innerText = `${data.pesoTotalBoiSugestaoKg.toLocaleString('pt-BR')} KG`;
+
+                const tbody = document.getElementById('table-ai-body');
+                tbody.innerHTML = '';
+
+                data.itensRecomendados.forEach(item => {
+                    const badgeUrg = item.nivelUrgencia === 'CRITICO'
+                        ? `<span class="badge-payment badge-voucher" style="background: rgba(244, 63, 94, 0.2); color: var(--accent-rose);">🔴 REPOSIÇÃO CRÍTICA</span>`
+                        : item.nivelUrgencia === 'MODERADO'
+                        ? `<span class="badge-payment badge-debito">🟡 ATENÇÃO</span>`
+                        : `<span class="badge-payment badge-dinheiro">🟢 ESTÁVEL</span>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-cyan);">${item.produtoNome}</td>
+                            <td>${item.mediaVendaDiariaKg.toFixed(2)} KG/dia</td>
+                            <td style="font-weight: 700;">${item.previsaoVendaFimDeSemanaKg.toFixed(2)} KG</td>
+                            <td>${item.estoqueAtualEstimadoKg.toFixed(2)} KG</td>
+                            <td style="font-weight: 800; color: var(--accent-amber); font-size: 1.05rem;">${item.sugestaoCompraKg.toFixed(2)} KG</td>
+                            <td>R$ ${item.precoCustoEstimadoKg.toFixed(2)}</td>
+                            <td style="font-weight: 800; color: var(--accent-green);">R$ ${item.valorTotalEstimadoCompra.toFixed(2)}</td>
+                            <td>${badgeUrg}</td>
+                        </tr>`;
+                });
+            } catch (err) {
+                console.error("Erro ao gerar sugestão AI Purchasing:", err);
             }
         }
 
