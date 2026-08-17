@@ -145,7 +145,7 @@ namespace HarrisonSaaS.Data.Services
                                 string unidPadr = (unidRaw == "KILO" || unidRaw == "KG.") ? "KG" : (unidRaw == "UNIDA" || unidRaw == "UNIDADE") ? "UN" : unidRaw;
 
                                 string codProd = reader["ProdutoCodigo"]?.ToString()?.Trim() ?? "0";
-                                string descRaw = reader["ProdutoDescricao"]?.ToString();
+                                string descRaw = reader["ProdutoDescricao"]?.ToString() ?? string.Empty;
                                 string descProcessada = SanitizarTextoCompleto(descRaw);
 
                                 // Mapeamento Inteligente de Códigos Órfãos do ERP Firebird sem cadastro
