@@ -3,9 +3,104 @@ using System.Collections.Generic;
 
 namespace HarrisonSaaS.Core.Entities
 {
+    public class Tenant
+    {
+        public int Id { get; set; }
+        public string NomeFantasia { get; set; } = string.Empty;
+        public string RazaoSocial { get; set; } = string.Empty;
+        public string Cnpj { get; set; } = string.Empty;
+        public string EmailContato { get; set; } = string.Empty;
+        public string TelefoneWhatsApp { get; set; } = string.Empty;
+        public DateTime DataCadastro { get; set; } = DateTime.Now;
+        public bool Ativo { get; set; } = true;
+        public string SchemaName { get; set; } = "public";
+    }
+
+    public class UsuarioSaaS
+    {
+        public int Id { get; set; }
+        public int TenantId { get; set; }
+        public string TenantNome { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string SenhaHash { get; set; } = string.Empty;
+        public string Role { get; set; } = "DONO_TENANT"; // ADMIN_MASTER, DONO_TENANT, OPERADOR_LOJA
+        public bool Ativo { get; set; } = true;
+        public DateTime DataUltimoAcesso { get; set; } = DateTime.Now;
+    }
+
+    public class PlanoAssinaturaSaaS
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; } = "PRO"; // STARTER, PRO, ENTERPRISE
+        public decimal ValorMensal { get; set; } = 599.00m;
+        public int LimiteLojas { get; set; } = 3;
+        public bool ModuloDesossaLiberado { get; set; } = true;
+        public bool AuditoriaTEFLiberada { get; set; } = true;
+        public bool DRELiberado { get; set; } = true;
+    }
+
+    public class AssinaturaTenantSaaS
+    {
+        public int Id { get; set; }
+        public int TenantId { get; set; }
+        public string TenantNome { get; set; } = string.Empty;
+        public int PlanoId { get; set; }
+        public string PlanoNome { get; set; } = "PRO";
+        public decimal ValorMensalidad { get; set; } = 599.00m;
+        public DateTime DataInicio { get; set; } = DateTime.Today;
+        public DateTime DataVencimento { get; set; } = DateTime.Today.AddDays(30);
+        public string StatusAssinatura { get; set; } = "ATIVA"; // ATIVA, PENDENTE, SUSPENSA_ATRASO, CANCELADA
+        public string ChavePixAsaas { get; set; } = string.Empty;
+        public string GatewayId { get; set; } = string.Empty;
+    }
+
+    public class TaxaContratadaAdquirenteSaaS
+    {
+        public int Id { get; set; }
+        public string AdquirenteNome { get; set; } = "STONE"; // STONE, PAGBANK, CIELO, REDE, TICKET, SODEXO
+        public string Modalidade { get; set; } = "DEBITO"; // DEBITO, CREDITO_AVISTA, CREDITO_PARCELADO, VOUCHER_VR
+        public decimal TaxaContratadaPct { get; set; } = 1.29m;
+        public int DiasRecebimento { get; set; } = 1;
+    }
+
+    public class TransacaoTEFAuditadaSaaS
+    {
+        public int Id { get; set; }
+        public int LojaId { get; set; }
+        public string LojaNome { get; set; } = string.Empty;
+        public long CupomId { get; set; }
+        public DateTime DataHora { get; set; }
+        public string Adquirente { get; set; } = "STONE";
+        public string Bandeira { get; set; } = "MASTERCARD";
+        public string Modalidade { get; set; } = "DEBITO";
+        public decimal ValorVendaBruto { get; set; }
+        public decimal TaxaContratadaPct { get; set; }
+        public decimal TaxaEfetivaCobradaPct { get; set; }
+        public decimal ValorTaxaContratada { get; set; }
+        public decimal ValorTaxaCobrada { get; set; }
+        public decimal ValorLiquidoEsperado { get; set; }
+        public decimal ValorLiquidoRecebido { get; set; }
+        public decimal PrejuizoTaxaIncorreta { get; set; }
+        public bool DivergenciaDetectada { get; set; }
+        public string StatusAuditoria { get; set; } = "AUDITADO_OK"; // AUDITADO_OK, TAXA_ABUSIVA_DETECTADA, NAO_CONCILIADO
+    }
+
+    public class ResumoAuditoriaTEFSaaS
+    {
+        public decimal TotalVendasProcessadas { get; set; }
+        public decimal TotalTaxasContratadas { get; set; }
+        public decimal TotalTaxasCobradasEfetivas { get; set; }
+        public decimal PrejuizoTotalDetectado { get; set; }
+        public int TransacoesAuditadasCount { get; set; }
+        public int TransacoesComDivergenciaCount { get; set; }
+        public List<TransacaoTEFAuditadaSaaS> DivergenciasCriticas { get; set; } = new();
+    }
+
     public class Loja
     {
         public int Id { get; set; }
+        public int TenantId { get; set; } = 1;
         public string Nome { get; set; } = string.Empty;
         public string Endereco { get; set; } = string.Empty;
         public string Telefone { get; set; } = string.Empty;

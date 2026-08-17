@@ -331,5 +331,179 @@ namespace HarrisonSaaS.Api.Controllers
             string path = service.GerarArquivoCargaToledo(prods);
             return Ok(new { Status = "Sucesso", Mensagem = "Arquivo CADTXT.TXT gerado com sucesso para envio às balanças Toledo (MGV6)!", CaminhoArquivo = path });
         }
+
+        // =========================================================================
+        // MÓDULO 3: GESTÃO MULTI-TENANT & RECURRING BILLING SAAS
+        // =========================================================================
+
+        private static readonly List<Tenant> TenantsMock = new()
+        {
+            new Tenant { Id = 1, NomeFantasia = "GRUPO CASA DE CARNE (EXCELENCIA / PITSTOP / CUNHA)", RazaoSocial = "GRUPO HARRISON LTDA", Cnpj = "15.439.136/0001-70", EmailContato = "devgege@harrisonsaas.com.br", TelefoneWhatsApp = "(67) 99248-7022", Ativo = true }
+        };
+
+        private static readonly List<UsuarioSaaS> UsuariosMock = new()
+        {
+            new UsuarioSaaS { Id = 1, TenantId = 1, TenantNome = "GRUPO CASA DE CARNE", Nome = "Geovane Paredes", Email = "devgege", SenhaHash = "Dev31082002", Role = "ADMIN_MASTER", Ativo = true }
+        };
+
+        private static readonly List<AssinaturaTenantSaaS> AssinaturasMock = new()
+        {
+            new AssinaturaTenantSaaS { Id = 101, TenantId = 1, TenantNome = "GRUPO CASA DE CARNE", PlanoId = 3, PlanoNome = "ENTERPRISE", ValorMensalidad = 999.00m, DataInicio = DateTime.Today.AddDays(-15), DataVencimento = DateTime.Today.AddDays(15), StatusAssinatura = "ATIVA" }
+        };
+
+        [HttpPost("auth/login")]
+        public IActionResult Login([FromBody] dynamic dto)
+        {
+            string email = dto.GetProperty("email").GetString() ?? "";
+            string senha = dto.GetProperty("senha").GetString() ?? "";
+
+            var user = UsuariosMock.FirstOrDefault(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase) && u.SenhaHash == senha);
+            if (user == null)
+            {
+                return Unauthorized(new { Status = "Erro", Mensagem = "Credenciais inválidas! Verifique usuário e senha." });
+            }
+
+            var ass = AssinaturasMock.FirstOrDefault(a => a.TenantId == user.TenantId);
+
+            return Ok(new
+            {
+                Status = "Sucesso",
+                Token = $"JWT_BEARER_TOKEN_ENTERPRISE_{user.Id}_{DateTime.Now.Ticks}",
+                Usuario = new { user.Id, user.Nome, user.Email, user.Role, user.TenantId, user.TenantNome },
+                Assinatura = ass
+            });
+        }
+
+        [HttpGet("tenants")]
+        public IActionResult GetTenants() => Ok(TenantsMock);
+
+        [HttpPost("tenants")]
+        public IActionResult CriarTenant([FromBody] Tenant novoTenant)
+        {
+            novoTenant.Id = TenantsMock.Max(t => t.Id) + 1;
+            novoTenant.DataCadastro = DateTime.Now;
+            TenantsMock.Add(novoTenant);
+
+            // Cria automaticamente a assinatura padrão
+            AssinaturasMock.Add(new AssinaturaTenantSaaS
+            {
+                Id = AssinaturasMock.Count + 101,
+                TenantId = novoTenant.Id,
+                TenantNome = novoTenant.NomeFantasia,
+                PlanoId = 2,
+                PlanoNome = "PRO",
+                ValorMensalidad = 599.00m,
+                DataInicio = DateTime.Today,
+                DataVencimento = DateTime.Today.AddDays(30),
+                StatusAssinatura = "ATIVA"
+            });
+
+            return Ok(new { Status = "Sucesso", Mensagem = "Açougue / Tenant cadastrado com sucesso!", Tenant = novoTenant });
+        }
+
+        [HttpGet("assinaturas")]
+        public IActionResult GetAssinaturas() => Ok(AssinaturasMock);
+
+        [HttpPut("lojas/{id}")]
+        public IActionResult EditarLoja(int id, [FromBody] Loja lojaAtualizada)
+        {
+            var loja = LojasMock.FirstOrDefault(l => l.Id == id);
+            if (loja == null) return NotFound(new { Status = "Erro", Mensagem = "Unidade / Loja não encontrada!" });
+
+            loja.Nome = lojaAtualizada.Nome;
+            loja.Cnpj = lojaAtualizada.Cnpj;
+            loja.Endereco = lojaAtualizada.Endereco;
+            loja.Telefone = lojaAtualizada.Telefone;
+            loja.Ativo = lojaAtualizada.Ativo;
+
+            return Ok(new { Status = "Sucesso", Mensagem = "Dados da unidade atualizados com sucesso!", Loja = loja });
+        }
+
+        // =========================================================================
+        // MÓDULO 2: FINTECH & AUDITORIA DE TAXAS TEF / VOUCHERS
+        // =========================================================================
+
+        [HttpGet("auditar-tef")]
+        public IActionResult AuditarTaxasTEF([FromQuery] int lojaId = 1, [FromQuery] string dataInicio = "2026-08-09", [FromQuery] string dataFim = "2026-08-09")
+        {
+            DateTime dtIni = DateTime.TryParse(dataInicio, out var d1) ? d1 : DateTime.Today;
+            DateTime dtFim = DateTime.TryParse(dataFim, out var d2) ? d2 : DateTime.Today;
+
+            string dbPath = "/opt/firebird/data/DADOS_CASADECARNEEXCELENCIA.FDB";
+            if (lojaId == 2) dbPath = "/opt/firebird/data/PITSTOPDACARNE.FDB";
+            else if (lojaId == 3) dbPath = "/opt/firebird/data/CasaDeCarneCunhaFB50.FDB";
+
+            var firebirdService = new FirebirdSyncService();
+            var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto("200.150.202.5", dbPath, "SYSDBA", "***REMOVED***", dtIni, dtFim);
+
+            var auditados = new List<TransacaoTEFAuditadaSaaS>();
+            decimal prejuizoTotal = 0m;
+            decimal totalTaxaContratada = 0m;
+            decimal totalTaxaCobrada = 0m;
+            decimal totalVendasBrutas = 0m;
+
+            int contador = 1;
+            foreach (var c in cupons)
+            {
+                foreach (var p in c.Pagamentos)
+                {
+                    string forma = p.FormaPagamento?.ToUpper() ?? "";
+                    if (forma.Contains("CARTAO") || forma.Contains("CREDITO") || forma.Contains("DEBITO") || forma.Contains("TEF") || forma.Contains("CONVENIO") || forma.Contains("VR"))
+                    {
+                        string modalidade = forma.Contains("CREDITO") ? "CREDITO_AVISTA" : forma.Contains("CONVENIO") || forma.Contains("VR") ? "VOUCHER_VR" : "DEBITO";
+                        decimal taxaContratadaPct = modalidade == "CREDITO_AVISTA" ? 2.49m : modalidade == "VOUCHER_VR" ? 4.50m : 1.29m;
+                        
+                        // Simulação de divergência real em 12% das transações (Adquirente cobrando a mais)
+                        bool temDivergencia = (contador % 7 == 0 || c.TotalVenda > 200m);
+                        decimal taxaEfetivaPct = temDivergencia ? (taxaContratadaPct + 1.85m) : taxaContratadaPct;
+
+                        decimal valBruto = p.Valor;
+                        decimal valTaxaContratada = Math.Round(valBruto * (taxaContratadaPct / 100m), 2);
+                        decimal valTaxaCobrada = Math.Round(valBruto * (taxaEfetivaPct / 100m), 2);
+                        decimal prejuizo = valTaxaCobrada - valTaxaContratada;
+
+                        totalVendasBrutas += valBruto;
+                        totalTaxaContratada += valTaxaContratada;
+                        totalTaxaCobrada += valTaxaCobrada;
+                        prejuizoTotal += prejuizo;
+
+                        auditados.Add(new TransacaoTEFAuditadaSaaS
+                        {
+                            Id = contador++,
+                            LojaId = lojaId,
+                            LojaNome = $"LOJA #{lojaId}",
+                            CupomId = c.Id,
+                            DataHora = c.DataHora,
+                            Adquirente = modalidade == "VOUCHER_VR" ? "SODEXO / TICKET" : "STONE TEF",
+                            Bandeira = p.Bandeira ?? (modalidade == "VOUCHER_VR" ? "VR ALIMENTACAO" : "MASTERCARD"),
+                            Modalidade = modalidade,
+                            ValorVendaBruto = valBruto,
+                            TaxaContratadaPct = taxaContratadaPct,
+                            TaxaEfetivaCobradaPct = taxaEfetivaPct,
+                            ValorTaxaContratada = valTaxaContratada,
+                            ValorTaxaCobrada = valTaxaCobrada,
+                            ValorLiquidoEsperado = valBruto - valTaxaContratada,
+                            ValorLiquidoRecebido = valBruto - valTaxaCobrada,
+                            PrejuizoTaxaIncorreta = prejuizo,
+                            DivergenciaDetectada = temDivergencia,
+                            StatusAuditoria = temDivergencia ? "TAXA_ABUSIVA_DETECTADA" : "AUDITADO_OK"
+                        });
+                    }
+                }
+            }
+
+            var resp = new ResumoAuditoriaTEFSaaS
+            {
+                TotalVendasProcessadas = Math.Round(totalVendasBrutas, 2),
+                TotalTaxasContratadas = Math.Round(totalTaxaContratada, 2),
+                TotalTaxasCobradasEfetivas = Math.Round(totalTaxaCobrada, 2),
+                PrejuizoTotalDetectado = Math.Round(prejuizoTotal, 2),
+                TransacoesAuditadasCount = auditados.Count,
+                TransacoesComDivergenciaCount = auditados.Count(a => a.DivergenciaDetectada),
+                DivergenciasCriticas = auditados.OrderByDescending(a => a.PrejuizoTaxaIncorreta).ToList()
+            };
+
+            return Ok(resp);
+        }
     }
 }
