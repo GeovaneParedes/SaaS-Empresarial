@@ -1085,9 +1085,97 @@
 
         <!-- SEÇÃO 6: LANÇAMENTOS E BOLETOS -->
         <section id="sec-lancamentos" class="tab-section">
+            <div class="panel-box" style="margin-bottom: 1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-plus-circle" style="color: var(--accent-green);"></i> Novo Lançamento Financeiro & Boleto</div>
+                </div>
+                <form id="form-novo-lancamento" onsubmit="salvarNovoLancamento(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">SELECIONAR LOJA</label>
+                        <select id="lanc-loja" class="form-input-saas" style="width: 100%;">
+                            <option value="1">Excelência (Loja 1)</option>
+                            <option value="2">Pit Stop (Loja 2)</option>
+                            <option value="3">Cunha (Loja 3)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">CATEGORIA DO CUSTO</label>
+                        <select id="lanc-categoria" class="form-input-saas" style="width: 100%;">
+                            <option value="DIVIDA ACUMULADA/PASSIVO">DIVIDA ACUMULADA / PASSIVO</option>
+                            <option value="LANCHE">LANCHE</option>
+                            <option value="CONVENIO">CONVENIO</option>
+                            <option value="RECEBIMENTO">RECEBIMENTO</option>
+                            <option value="AJUSTE">AJUSTE</option>
+                            <option value="VENDA">VENDA</option>
+                            <option value="FIXAS">FIXAS</option>
+                            <option value="CAPITAL DE GIRO">CAPITAL DE GIRO</option>
+                            <option value="INVESTIMENTO">INVESTIMENTO</option>
+                            <option value="PROLABORE">PROLABORE</option>
+                            <option value="VARIAVEIS">VARIAVEIS</option>
+                            <option value="MERCADORIA" selected>MERCADORIA</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">DATA DO LANÇAMENTO</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="date" id="lanc-data" class="form-input-saas" style="flex: 1;">
+                            <button type="button" class="btn-action" style="padding: 0.5rem 0.75rem; background: var(--bg-card-hover);" onclick="setHojeLancamento('lanc-data')">Hoje</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">DESCRIÇÃO / FORNECEDOR</label>
+                        <input type="text" id="lanc-descricao" class="form-input-saas" maxlength="150" placeholder="Ex: FORNECEDOR LECO CARNES" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">FORMA DE PAGAMENTO</label>
+                        <select id="lanc-forma-pgto" class="form-input-saas" style="width: 100%;">
+                            <option value="CARTAO">CARTÃO DE CRÉDITO/DÉBITO</option>
+                            <option value="DINHEIRO">DINHEIRO</option>
+                            <option value="NUBANK">NUBANK</option>
+                            <option value="INTER">BANCO INTER</option>
+                            <option value="BOLETO" selected>BOLETO BANCÁRIO</option>
+                            <option value="PIX">PIX</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">DATA DE VENCIMENTO</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="date" id="lanc-vencimento" class="form-input-saas" style="flex: 1;">
+                            <button type="button" class="btn-action" style="padding: 0.5rem 0.75rem; background: var(--bg-card-hover);" onclick="setHojeLancamento('lanc-vencimento')">Hoje</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">VALOR RECEBIDO (ENTRADA)</label>
+                        <input type="text" id="lanc-valor-entrada" class="form-input-saas" placeholder="0,00" style="width: 100%;" onblur="formatarMoedaInput(this)">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">VALOR A PAGAR (BOLETO)</label>
+                        <input type="text" id="lanc-valor-apagar" class="form-input-saas" placeholder="1.200,88" required style="width: 100%;" onblur="formatarMoedaInput(this)">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">VALOR PAGO</label>
+                        <input type="text" id="lanc-valor-pago" class="form-input-saas" placeholder="1.200,88" style="width: 100%;" onblur="formatarMoedaInput(this)">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">CONFIRMADO?</label>
+                        <select id="lanc-confirmado" class="form-input-saas" style="width: 100%;">
+                            <option value="SIM" selected>SIM (CONFIRMADO)</option>
+                            <option value="NAO">NÃO</option>
+                            <option value="DESCONHECIDO">DESCONHECIDO</option>
+                        </select>
+                    </div>
+                    <div style="grid-column: 1 / -1; text-align: right; margin-top: 0.5rem;">
+                        <button type="submit" class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary)); font-weight: 800; padding: 0.8rem 1.8rem;">
+                            <i class="fa-solid fa-plus-circle"></i> Adicionar Lançamento
+                        </button>
+                    </div>
+                </form>
+                <div id="msg-novo-lancamento" style="margin-top: 1rem; font-weight: 700; display: none;"></div>
+            </div>
+
             <div class="panel-box">
                 <div class="panel-header">
-                    <div class="panel-title">Lançamento e Controle de Boletos, Despesas e Pagamentos</div>
+                    <div class="panel-title"><i class="fa-solid fa-receipt"></i> Lançamento e Controle de Boletos, Despesas e Pagamentos</div>
                 </div>
                 <div class="table-responsive">
                     <table>
@@ -1095,12 +1183,15 @@
                             <tr>
                                 <th>ID</th>
                                 <th>AÇOUGUE</th>
+                                <th>CATEGORIA</th>
                                 <th>DATA</th>
                                 <th>DESCRIÇÃO DO CUSTO / FORNECEDOR</th>
                                 <th>VENCIMENTO</th>
+                                <th>ENTRADA (R$)</th>
                                 <th>A PAGAR (BOLETO)</th>
                                 <th>VALOR PAGO</th>
                                 <th>FORMA PGTO</th>
+                                <th>CONFIRMADO</th>
                                 <th>STATUS</th>
                             </tr>
                         </thead>
@@ -1665,17 +1756,33 @@
                 const tbodyLanc = document.getElementById('table-lancamentos-body');
                 tbodyLanc.innerHTML = '';
                 lancs.forEach(l => {
-                    const statusBadge = l.confirmado ? '<span class="badge-payment badge-dinheiro">PAGO</span>' : '<span class="badge-payment badge-voucher">A VENCER</span>';
+                    const statusPagoStr = l.statusPago || (l.valorPago >= l.valorAPagar && l.valorAPagar > 0 ? 'PAGO' : 'A VENCER');
+                    const statusBadge = statusPagoStr === 'PAGO'
+                        ? '<span class="badge-payment badge-dinheiro">🟢 PAGO</span>'
+                        : statusPagoStr === 'ATRASADO'
+                        ? '<span class="badge-payment badge-voucher" style="background: rgba(244, 63, 94, 0.2); color: var(--accent-rose);">🔴 ATRASADO</span>'
+                        : '<span class="badge-payment badge-debito">🟡 A VENCER</span>';
+
+                    const confBadge = (l.confirmadoStatus || 'SIM') === 'SIM'
+                        ? '<span class="badge-payment badge-dinheiro" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green);">SIM</span>'
+                        : (l.confirmadoStatus === 'NAO' ? '<span class="badge-payment badge-voucher">NÃO</span>' : '<span class="badge-payment badge-debito">DESCONHECIDO</span>');
+
+                    const catStr = l.categoria || 'MERCADORIA';
+                    const entradaVal = l.valorRecebidoEntrada || 0;
+
                     tbodyLanc.innerHTML += `
                         <tr>
                             <td style="font-weight: 700; color: var(--primary);">#${l.id}</td>
                             <td style="font-weight: 700;">${l.lojaNome}</td>
-                            <td>${l.data.split('T')[0]}</td>
-                            <td style="font-weight: 600;">${l.descricao}</td>
+                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${catStr}</span></td>
+                            <td>${l.data ? l.data.split('T')[0] : '-'}</td>
+                            <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${l.descricao}</td>
                             <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
-                            <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toFixed(2)}</td>
-                            <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toFixed(2)}</td>
+                            <td style="color: var(--accent-cyan); font-weight: 700;">R$ ${entradaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td><span class="badge-payment badge-debito">${l.formaPagamento}</span></td>
+                            <td>${confBadge}</td>
                             <td>${statusBadge}</td>
                         </tr>`;
                 });
@@ -2005,6 +2112,92 @@
                 }
             } catch (err) {
                 alert("⚠️ Falha ao conectar com o servidor C# de WhatsApp!");
+            }
+        }
+
+        function setHojeLancamento(inputId) {
+            const agora = new Date();
+            const ano = agora.getFullYear();
+            const mes = String(agora.getMonth() + 1).padStart(2, '0');
+            const dia = String(agora.getDate()).padStart(2, '0');
+            document.getElementById(inputId).value = `${ano}-${mes}-${dia}`;
+        }
+
+        function formatarMoedaInput(inputElem) {
+            let val = inputElem.value.trim();
+            if (!val) return;
+            // Remove R$, espaços e substitui ponto por nada e vírgula por ponto se houver formato BR
+            val = val.replace('R$', '').trim();
+            let num = parseFloat(val.replace(/\./g, '').replace(',', '.'));
+            if (!isNaN(num)) {
+                inputElem.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        }
+
+        function parseValorMoeda(valStr) {
+            if (!valStr) return 0;
+            valStr = valStr.toString().replace('R$', '').trim();
+            const num = parseFloat(valStr.replace(/\./g, '').replace(',', '.'));
+            return isNaN(num) ? 0 : num;
+        }
+
+        async function salvarNovoLancamento(e) {
+            if (e) e.preventDefault();
+
+            const lojaId = parseInt(document.getElementById('lanc-loja').value);
+            const categoria = document.getElementById('lanc-categoria').value;
+            const dataVal = document.getElementById('lanc-data').value || new Date().toISOString().split('T')[0];
+            const descricao = document.getElementById('lanc-descricao').value.trim();
+            const formaPgto = document.getElementById('lanc-forma-pgto').value;
+            const vencimentoVal = document.getElementById('lanc-vencimento').value || dataVal;
+            const valorEntrada = parseValorMoeda(document.getElementById('lanc-valor-entrada').value);
+            const valorAPagar = parseValorMoeda(document.getElementById('lanc-valor-apagar').value);
+            const valorPago = parseValorMoeda(document.getElementById('lanc-valor-pago').value);
+            const confirmadoStatus = document.getElementById('lanc-confirmado').value;
+
+            if (!descricao) {
+                alert("⚠️ Preencha a Descrição do Custo / Fornecedor!");
+                return;
+            }
+
+            const payload = {
+                lojaId: lojaId,
+                categoria: categoria,
+                data: dataVal,
+                descricao: descricao,
+                formaPagamento: formaPgto,
+                vencimento: vencimentoVal,
+                valorRecebidoEntrada: valorEntrada,
+                valorAPagar: valorAPagar,
+                valorPago: valorPago,
+                confirmadoStatus: confirmadoStatus
+            };
+
+            try {
+                const res = await fetch('http://localhost:5205/api/ModulosSaaS/lancamentos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                const msgBox = document.getElementById('msg-novo-lancamento');
+                msgBox.style.display = 'block';
+
+                if (res.ok) {
+                    msgBox.style.color = 'var(--accent-green)';
+                    msgBox.innerText = '✅ ' + (data.mensagem || 'Lançamento financeiro adicionado com sucesso!');
+                    document.getElementById('form-novo-lancamento').reset();
+                    // Atualiza a tabela imediatamente
+                    carregarModulosSaaS();
+                    setTimeout(() => { msgBox.style.display = 'none'; }, 4000);
+                } else {
+                    msgBox.style.color = 'var(--accent-rose)';
+                    msgBox.innerText = '⚠️ ' + (data.mensagem || 'Erro ao cadastrar lançamento.');
+                }
+            } catch (err) {
+                console.error("Erro ao salvar novo lançamento:", err);
+                alert("⚠️ Erro de conexão com o backend ao salvar o lançamento.");
             }
         }
 

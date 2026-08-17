@@ -45,9 +45,9 @@ namespace HarrisonSaaS.Api.Controllers
 
         private static readonly List<LancamentoFinanceiroSaaS> LancamentosMock = new()
         {
-            new LancamentoFinanceiroSaaS { Id = 3889, LojaId = 1, LojaNome = "EXCELENCIA", Data = new DateTime(2026, 6, 1), Descricao = "FORNECEDOR LECO CARNES", Vencimento = new DateTime(2026, 6, 15), ValorAPagar = 51645.05m, ValorPago = 0.0m, FormaPagamento = "BOLETO" },
-            new LancamentoFinanceiroSaaS { Id = 3891, LojaId = 1, LojaNome = "EXCELENCIA", Data = new DateTime(2026, 6, 1), Descricao = "SERVIÇO DE PINTURA E REFORMA", Vencimento = new DateTime(2026, 6, 1), ValorAPagar = 1200.00m, ValorPago = 1200.00m, FormaPagamento = "PIX", Confirmado = true },
-            new LancamentoFinanceiroSaaS { Id = 3894, LojaId = 1, LojaNome = "EXCELENCIA", Data = new DateTime(2026, 6, 1), Descricao = "COMPRA DE EMBAAGENS E INSUMOS ATACADAO", Vencimento = new DateTime(2026, 6, 1), ValorAPagar = 2648.45m, ValorPago = 2648.45m, FormaPagamento = "CARTAO DE DEBITO", Confirmado = true }
+            new LancamentoFinanceiroSaaS { Id = 3889, LojaId = 1, LojaNome = "EXCELENCIA", Categoria = "MERCADORIA", Data = new DateTime(2026, 6, 1), Descricao = "FORNECEDOR LECO CARNES", Vencimento = new DateTime(2026, 6, 15), ValorRecebidoEntrada = 0m, ValorAPagar = 51645.05m, ValorPago = 0.0m, FormaPagamento = "BOLETO", ConfirmadoStatus = "SIM", StatusPago = "A VENCER" },
+            new LancamentoFinanceiroSaaS { Id = 3891, LojaId = 1, LojaNome = "EXCELENCIA", Categoria = "FIXAS", Data = new DateTime(2026, 6, 1), Descricao = "SERVIÇO DE PINTURA E REFORMA", Vencimento = new DateTime(2026, 6, 1), ValorRecebidoEntrada = 0m, ValorAPagar = 1200.00m, ValorPago = 1200.00m, FormaPagamento = "PIX", ConfirmadoStatus = "SIM", StatusPago = "PAGO" },
+            new LancamentoFinanceiroSaaS { Id = 3894, LojaId = 1, LojaNome = "EXCELENCIA", Categoria = "MERCADORIA", Data = new DateTime(2026, 6, 1), Descricao = "COMPRA DE EMBALAGENS E INSUMOS ATACADAO", Vencimento = new DateTime(2026, 6, 1), ValorRecebidoEntrada = 0m, ValorAPagar = 2648.45m, ValorPago = 2648.45m, FormaPagamento = "CARTAO DE DEBITO", ConfirmadoStatus = "SIM", StatusPago = "PAGO" }
         };
 
         private static readonly string PgConnStr = "Host=localhost;Database=acougue;Username=harrison;Password=felipemiguel";
@@ -90,9 +90,17 @@ namespace HarrisonSaaS.Api.Controllers
         [HttpPost("lancamentos")]
         public IActionResult CriarLancamento([FromBody] LancamentoFinanceiroSaaS dto)
         {
-            dto.Id = LancamentosMock.Max(l => l.Id) + 1;
+            dto.Id = LancamentosMock.Count > 0 ? LancamentosMock.Max(l => l.Id) + 1 : 1001;
+            var loja = LojasMock.FirstOrDefault(l => l.Id == dto.LojaId);
+            if (loja != null) dto.LojaNome = loja.Nome;
+
+            // Define status pago
+            if (dto.ValorPago >= dto.ValorAPagar && dto.ValorAPagar > 0) dto.StatusPago = "PAGO";
+            else if (dto.Vencimento < DateTime.Today) dto.StatusPago = "ATRASADO";
+            else dto.StatusPago = "A VENCER";
+
             LancamentosMock.Insert(0, dto);
-            return Ok(dto);
+            return Ok(new { Status = "Sucesso", Mensagem = "Lançamento financeiro cadastrado com sucesso!", Lancamento = dto });
         }
 
         [HttpPost("simular-rateio")]
