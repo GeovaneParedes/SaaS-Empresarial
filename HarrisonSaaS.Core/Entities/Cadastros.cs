@@ -97,6 +97,32 @@ namespace HarrisonSaaS.Core.Entities
         public List<TransacaoTEFAuditadaSaaS> DivergenciasCriticas { get; set; } = new();
     }
 
+    public class ItemSugestaoCompraSaaS
+    {
+        public string ProdutoNome { get; set; } = string.Empty;
+        public string Unidade { get; set; } = "KG";
+        public decimal MediaVendaDiariaKg { get; set; }
+        public decimal PrevisaoVendaFimDeSemanaKg { get; set; } // Sexta, Sábado e Domingo
+        public decimal EstoqueAtualEstimadoKg { get; set; }
+        public decimal SugestaoCompraKg { get; set; }
+        public decimal PrecoCustoEstimadoKg { get; set; }
+        public decimal ValorTotalEstimadoCompra { get; set; }
+        public string NivelUrgencia { get; set; } = "CRITICO"; // CRITICO, MODERADO, ESTAVEL
+    }
+
+    public class SugestaoCompraPreditivaSaaS
+    {
+        public int LojaId { get; set; }
+        public string LojaNome { get; set; } = string.Empty;
+        public DateTime DataGeracao { get; set; } = DateTime.Now;
+        public DateTime PeriodoPrevisaoInicio { get; set; }
+        public DateTime PeriodoPrevisaoFim { get; set; }
+        public decimal CustoTotalEstimadoPedidos { get; set; }
+        public int QtdCarcacasBoiSugestao { get; set; }
+        public decimal PesoTotalBoiSugestaoKg { get; set; }
+        public List<ItemSugestaoCompraSaaS> ItensRecomendados { get; set; } = new();
+    }
+
     public class Loja
     {
         public int Id { get; set; }
