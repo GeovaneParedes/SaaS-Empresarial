@@ -9,8 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js para gráficos dinâmicos de alta performance -->
+    <!-- Chart.js & html2pdf.js para Relatórios PDF de Alta Performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="js/config.js"></script>
     <script>
         // Trava de Autenticação Segura JWT
@@ -584,14 +585,15 @@
             <div class="panel-box" style="margin-bottom: 1.5rem;">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-filter"></i> Filtro de Vendas por Loja e Período</div>
-                    <div style="display: flex; gap: 0.75rem;">
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         <select id="dash-loja" class="form-input-saas">
                             <option value="1">Excelência (Loja 1)</option>
                             <option value="2">Pit Stop (Loja 2)</option>
                             <option value="3">Cunha (Loja 3)</option>
                         </select>
                         <input type="date" id="dash-data" class="form-input-saas" value="2026-08-16">
-                        <button class="btn-action" onclick="carregarDashboardSaaS()"><i class="fa-solid fa-sync"></i> Filtrar Dashboard</button>
+                        <button class="btn-action" onclick="carregarDashboardSaaS()"><i class="fa-solid fa-sync"></i> Filtrar</button>
+                        <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-dashboard', 'Dashboard Geral de Vendas')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
                 </div>
             </div>
@@ -687,14 +689,15 @@
             <div class="panel-box">
                 <div class="panel-header">
                     <div class="panel-title">Resumo do Fechamento do Caixa Diário</div>
-                    <div style="display: flex; gap: 0.75rem;">
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         <select id="vd-loja" class="form-input-saas">
                             <option value="1">Excelência</option>
                             <option value="2">Pit Stop</option>
                             <option value="3">Cunha</option>
                         </select>
                         <input type="date" id="vd-data" class="form-input-saas" value="2026-08-16">
-                        <button class="btn-action" onclick="carregarResumoVendasDiarias()"><i class="fa-solid fa-search"></i> Carregar Caixa</button>
+                        <button class="btn-action" onclick="carregarResumoVendasDiarias()"><i class="fa-solid fa-search"></i> Carregar</button>
+                        <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-vendas-diarias', 'Resumo de Vendas Diarias e Fechamento de Caixa')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
                 </div>
 
@@ -761,7 +764,7 @@
             <div class="panel-box">
                 <div class="panel-header">
                     <div class="panel-title">Consulta de Itens Vendidos por Período e Unidade</div>
-                    <div style="display: flex; gap: 0.75rem;">
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         <select id="iv-loja" class="form-input-saas">
                             <option value="1">Excelência</option>
                             <option value="2">Pit Stop</option>
@@ -769,6 +772,7 @@
                         </select>
                         <input type="date" id="iv-data" class="form-input-saas" value="2026-08-16">
                         <button class="btn-action" onclick="puxarVendasDoDia()"><i class="fa-solid fa-download"></i> Puxar Vendas do Dia</button>
+                        <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-itens-vendidos', 'Relatorio de Itens Vendidos e Curva de Saida')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
                 </div>
 
@@ -838,7 +842,8 @@
                             <option value="3">Cunha</option>
                         </select>
                         <input type="date" id="tef-data" class="form-input-saas" value="2026-08-09">
-                        <button class="btn-action" style="background: var(--accent-rose);" onclick="executarAuditoriaTEF()"><i class="fa-solid fa-magnifying-glass-dollar"></i> Auditar Taxas do Dia</button>
+                        <button class="btn-action" style="background: var(--accent-rose);" onclick="executarAuditoriaTEF()"><i class="fa-solid fa-magnifying-glass-dollar"></i> Auditar</button>
+                        <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-fintech-tef', 'Auditoria Fintech de Taxas de Cartao e TEF')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
                 </div>
 
@@ -920,13 +925,13 @@
             <div class="panel-box" style="margin-bottom: 1.5rem;">
                 <div class="panel-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
                     <div class="panel-title" style="font-size: 1.15rem; font-weight: 800;"><i class="fa-solid fa-brain" style="color: var(--accent-amber);"></i> Assistente Preditivo de Reposição de Estoque (AI Purchasing)</div>
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
                         <select id="ai-loja" class="form-input-saas" style="padding: 0.6rem 1rem; font-weight: 700;">
                             <option value="1">Loja Excelência</option>
                             <option value="2">Loja Pit Stop</option>
                             <option value="3">Loja Cunha</option>
                         </select>
-                        <button class="btn-action" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; font-size: 0.95rem; padding: 0.7rem 1.4rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); border: none;" onclick="gerarOrdemCompraAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> GERAR ORDEM DE COMPRA IA</button>
+                        <button class="btn-action" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; font-size: 0.95rem; padding: 0.7rem 1.4rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); border: none;" onclick="gerarOrdemCompraAI()"><i class="fa-solid fa-wand-magic-sparkles"></i> IA COMPRAS</button>
+                        <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-ai-purchasing', 'Sugestao Preditiva de Compras AI Purchasing')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
                 </div>
 
@@ -1032,13 +1037,14 @@
             <div class="panel-box" style="margin-bottom: 1.5rem;">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-chart-line" style="color: var(--accent-green);"></i> DRE Gerencial & Demonstração do Lucro Líquido Real</div>
-                    <div style="display: flex; gap: 0.75rem;">
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         <select id="dre-loja" class="form-input-saas">
                             <option value="1">Loja Excelência</option>
                             <option value="2">Loja Pit Stop</option>
                             <option value="3">Loja Cunha</option>
                         </select>
-                        <button class="btn-action" style="background: var(--accent-green); font-weight: 800;" onclick="carregarDREGerencial()"><i class="fa-solid fa-calculator"></i> Processar DRE Gerencial</button>
+                        <button class="btn-action" style="background: var(--accent-green); font-weight: 800;" onclick="carregarDREGerencial()"><i class="fa-solid fa-calculator"></i> Processar DRE</button>
+                        <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-dre-curva-abc', 'DRE Gerencial e Curva ABC 80-20')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
                 </div>
 
@@ -1581,7 +1587,10 @@
             <div class="panel-box">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-cow"></i> Módulo de Desossa & Análise de Rendimento da Carcaça (Res-Casada & Cortes)</div>
-                    <button class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary));" onclick="executarSimulacaoDesossa()"><i class="fa-solid fa-calculator"></i> Processar Desossa & Margens</button>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary));" onclick="executarSimulacaoDesossa()"><i class="fa-solid fa-calculator"></i> Processar Desossa</button>
+                        <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-desossa', 'Relatorio Tecnico de Desossa e Rendimento de Carcaca')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
+                    </div>
                 </div>
                 
                 <form id="form-desossa" onsubmit="event.preventDefault(); executarSimulacaoDesossa();" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; margin-bottom: 1.5rem;">
@@ -2774,6 +2783,99 @@
                         <td style="font-weight: 700; color: ${diffCor};">R$ ${it.totalDesconto.toFixed(2)}</td>
                     </tr>`;
             });
+        }
+
+        async function gerarPDFRelatorioAba(secId, tituloRelatorio) {
+            const marcasLojas = {
+                "1": { nome: "CASA DE CARNES EXCELÊNCIA", cnpj: "15.439.136/0001-70", logo: "excelencia_logo_edited_edited.png" },
+                "2": { nome: "PIT STOP DA CARNE", cnpj: "20.123.456/0001-88", logo: "pitstoplogo_logo.png" },
+                "3": { nome: "CASA DE CARNES CUNHA", cnpj: "33.987.654/0001-12", logo: "logo-cunha-casa-de-carne_jpg.png" }
+            };
+
+            // Detecta qual loja está selecionada no seletor da aba ou usa a Loja 1 como padrão
+            let lojaId = "1";
+            const selectElem = document.querySelector(`#${secId} select`);
+            if (selectElem && selectElem.value && marcasLojas[selectElem.value]) {
+                lojaId = selectElem.value;
+            }
+
+            const lojaInfo = marcasLojas[lojaId];
+            const dataEmissao = new Date().toLocaleString('pt-BR');
+
+            // Clona o conteúdo da aba para não afetar a tela visual do usuário
+            const elementoOrig = document.getElementById(secId);
+            if (!elementoOrig) return;
+
+            const clone = elementoOrig.cloneNode(true);
+            
+            // Remove botões de exportação do relatório PDF clonado
+            clone.querySelectorAll('button').forEach(b => b.remove());
+            clone.querySelectorAll('.form-input-saas').forEach(i => i.remove());
+
+            // Cria o Container estilizado do Documento PDF Oficial
+            const containerPDF = document.createElement('div');
+            containerPDF.style.padding = '25px';
+            containerPDF.style.background = '#ffffff';
+            containerPDF.style.color = '#0f172a';
+            containerPDF.style.fontFamily = "'Plus Jakarta Sans', Arial, sans-serif";
+
+            containerPDF.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #6366f1; padding-bottom: 15px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <img src="${lojaInfo.logo}" style="height: 65px; object-fit: contain;" alt="Logo ${lojaInfo.nome}">
+                        <div>
+                            <h2 style="margin: 0; color: #1e293b; font-size: 18px; font-weight: 800;">${lojaInfo.nome}</h2>
+                            <p style="margin: 3px 0 0 0; color: #64748b; font-size: 11px; font-weight: 600;">CNPJ: ${lojaInfo.cnpj} • Emissão: ${dataEmissao}</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="background: #e0e7ff; color: #3730a3; padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 11px; display: inline-block;">RELATÓRIO OFICIAL</span>
+                        <h3 style="margin: 8px 0 0 0; color: #4338ca; font-size: 15px; font-weight: 800;">${tituloRelatorio}</h3>
+                    </div>
+                </div>
+
+                <div id="pdf-conteudo-body" style="color: #1e293b;"></div>
+
+                <div style="margin-top: 30px; border-top: 2px dashed #cbd5e1; padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 10px; color: #64748b;">
+                        <strong>SaaS Empresarial Enterprise .NET 8</strong> — Plataforma Multi-Tenant de Alta Performance
+                    </div>
+                    <div style="text-align: right; font-size: 11px; font-weight: 800; color: #10b981;">
+                        <i class="fa-solid fa-code"></i> Desenvolvido por SoftwareParedes
+                    </div>
+                </div>
+            `;
+
+            containerPDF.querySelector('#pdf-conteudo-body').appendChild(clone);
+
+            // Ajusta tabelas e textos do clone para ficarem perfeitos em fundo branco no PDF
+            clone.querySelectorAll('*').forEach(el => {
+                el.style.color = '#0f172a';
+                if (el.tagName === 'TABLE' || el.classList.contains('panel-box') || el.classList.contains('kpi-card')) {
+                    el.style.background = '#f8fafc';
+                    el.style.border = '1px solid #e2e8f0';
+                    el.style.boxShadow = 'none';
+                }
+                if (el.tagName === 'TH') {
+                    el.style.background = '#e2e8f0';
+                    el.style.color = '#1e293b';
+                }
+            });
+
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     `Relatorio_${tituloRelatorio.replace(/\s+/g, '_')}_${lojaInfo.nome.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            try {
+                await html2pdf().set(opt).from(containerPDF).save();
+            } catch (err) {
+                console.error("Erro ao gerar PDF:", err);
+                alert("⚠️ Erro ao gerar o arquivo PDF. Tente novamente.");
+            }
         }
 
         // Preenche automaticamente os inputs de data com o dia de amanhã por padrão
