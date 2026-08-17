@@ -1182,14 +1182,37 @@
                     </div>
                     <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">FORMA DE PAGAMENTO</label>
-                        <select id="lanc-forma-pgto" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
-                            <option value="CARTAO">CARTÃO CRÉDITO/DÉBITO</option>
+                        <select id="lanc-forma-pgto" class="form-input-saas" style="width: 100%; box-sizing: border-box;" onchange="tratarOutraFormaPgto(this)">
+                            <option value="BOLETO" selected>BOLETO</option>
+                            <option value="CARNE">CARNE</option>
+                            <option value="CARVAO">CARVAO</option>
+                            <option value="CIELO">CIELO</option>
+                            <option value="CONVENIO">CONVENIO</option>
+                            <option value="CREDITO">CREDITO</option>
+                            <option value="CVC">CVC</option>
+                            <option value="DEPOSITO">DEPOSITO</option>
+                            <option value="DESCONTO">DESCONTO</option>
                             <option value="DINHEIRO">DINHEIRO</option>
+                            <option value="HFCM">HFCM</option>
+                            <option value="INTER">INTER</option>
+                            <option value="MAGALU">MAGALU</option>
                             <option value="NUBANK">NUBANK</option>
-                            <option value="INTER">BANCO INTER</option>
-                            <option value="BOLETO" selected>BOLETO BANCÁRIO</option>
-                            <option value="PIX">PIX</option>
+                            <option value="PRAZO">PRAZO</option>
+                            <option value="SAFRA">SAFRA</option>
+                            <option value="SANTANDER">SANTANDER</option>
+                            <option value="S/D">S/D</option>
+                            <option value="SICRED">SICRED</option>
+                            <option value="SICRED F">SICRED F</option>
+                            <option value="SICREDI">SICREDI</option>
+                            <option value="SICREDI / CREDITO">SICREDI / CREDITO</option>
+                            <option value="SICREDI/CREDITO">SICREDI/CREDITO</option>
+                            <option value="SICRED-NUBANCK">SICRED-NUBANCK</option>
+                            <option value="S/N">S/N</option>
+                            <option value="TODAS">TODAS</option>
+                            <option value="ZIP">ZIP</option>
+                            <option value="OUTRA">+ Nova Forma de Pagamento...</option>
                         </select>
+                        <input type="text" id="lanc-forma-pgto-custom" class="form-input-saas" placeholder="Digite a Forma de Pagamento" style="display: none; margin-top: 0.35rem; width: 100%; box-sizing: border-box;">
                     </div>
                     <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">DATA DE VENCIMENTO</label>
@@ -2206,6 +2229,16 @@
             return isNaN(num) ? 0 : num;
         }
 
+        function tratarOutraFormaPgto(selectElem) {
+            const customInput = document.getElementById('lanc-forma-pgto-custom');
+            if (selectElem.value === 'OUTRA') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+
         async function salvarNovoLancamento(e) {
             if (e) e.preventDefault();
 
@@ -2213,7 +2246,13 @@
             const categoria = document.getElementById('lanc-categoria').value;
             const dataVal = document.getElementById('lanc-data').value || new Date().toISOString().split('T')[0];
             const descricao = document.getElementById('lanc-descricao').value.trim();
-            const formaPgto = document.getElementById('lanc-forma-pgto').value;
+            
+            let formaPgto = document.getElementById('lanc-forma-pgto').value;
+            if (formaPgto === 'OUTRA') {
+                const customVal = document.getElementById('lanc-forma-pgto-custom').value.trim();
+                formaPgto = customVal ? customVal.toUpperCase() : 'OUTRA';
+            }
+
             const vencimentoVal = document.getElementById('lanc-vencimento').value || dataVal;
             const valorEntrada = parseValorMoeda(document.getElementById('lanc-valor-entrada').value);
             const valorAPagar = parseValorMoeda(document.getElementById('lanc-valor-apagar').value);

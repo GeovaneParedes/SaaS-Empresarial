@@ -264,5 +264,130 @@ namespace HarrisonSaaS.Data.Services
             }
             return ofertas;
         }
+
+        public List<LancamentoFinanceiroSaaS> ObterLancamentosPostgres(string pgConnStr)
+        {
+            var lancamentos = new List<LancamentoFinanceiroSaaS>();
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
+                {
+                    conn.Open();
+                    string sql = @"
+                        SELECT 
+                            l.id,
+                            l.loja_id,
+                            COALESCE(lj.nome, 'LOJA ' || l.loja_id) AS loja_nome,
+                            COALESCE(cat.nome, 'MERCADORIA') AS categoria_nome,
+                            l.data,
+                            COALESCE(l.descricao, 'SEM DESCRICAO') AS descricao,
+                            COALESCE(l.forma_pgto, 'BOLETO') AS forma_pgto,
+                            l.vencimento,
+                            COALESCE(l.valor_recebido, 0) AS valor_recebido,
+                            COALESCE(l.valor_a_pagar, 0) AS valor_a_pagar,
+                            COALESCE(l.valor_pago, 0) AS valor_pago,
+                            COALESCE(l.confirmado, false) AS confirmado
+                        FROM lancamentos l
+                        LEFT JOIN lojas lj ON lj.id = l.loja_id
+                        LEFT JOIN categorias_financeiras cat ON cat.id = l.categoria_id
+                        ORDER BY l.id DESC LIMIT 500;";
+
+                    using (var cmd = new Npgsql.NpgsqlCommand(sql, conn))
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var dObj = reader["data"];
+                                var vObj = reader["vencimento"];
+                                DateTime dt = dObj is DateOnly d1 ? d1.ToDateTime(TimeOnly.MinValue) : (dObj == DBNull.Value || dObj == null ? DateTime.Today : Convert.ToDateTime(dObj));
+                                DateTime? vnc = vObj is DateOnly d2 ? d2.ToDateTime(TimeOnly.MinValue) : (vObj == DBNull.Value || vObj == null ? null : Convert.ToDateTime(vObj));
+
+                                decimal vPag = Convert.ToDecimal(reader["valor_a_pagar"]);
+                                decimal vRec = Convert.ToDecimal(reader["valor_recebido"]);
+                                decimal vPago = Convert.ToDecimal(reader["valor_pago"]);
+                                bool conf = Convert.ToBoolean(reader["confirmado"]);
+
+                                string stPago = "A VENCER";
+                                if (vPago >= vPag && vPag > 0) stPago = "PAGO";
+                                else if (vnc.HasValue && vnc.Value < DateTime.Today && vPago < vPag) stPago = "ATRASADO";
+
+                                lancamentos.Add(new LancamentoFinanceiroSaaS
+                                {
+                                    Id = Convert.ToInt32(reader["id"]),
+                                    LojaId = reader["loja_id"] == DBNull.Value ? 1 : Convert.ToInt32(reader["loja_id"]),
+                                    LojaNome = SanitizarTextoCompleto(reader["loja_nome"].ToString()),
+                                    Categoria = SanitizarTextoCompleto(reader["categoria_nome"].ToString()),
+                                    Data = dt,
+                                    Descricao = SanitizarTextoCompleto(reader["descricao"].ToString()),
+                                    FormaPagamento = SanitizarTextoCompleto(reader["forma_pgto"].ToString()),
+                                    Vencimento = vnc ?? dt,
+                                    ValorRecebidoEntrada = vRec,
+                                    ValorAPagar = vPag,
+                                    ValorPago = vPago,
+                                    ConfirmadoStatus = conf ? "SIM" : "NAO",
+                                    StatusPago = stPago
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AVISO POSTGRES] Falha ao consultar tabela lancamentos: {ex.Message}");
+            }
+            return lancamentos;
+        }
+
+        public bool SalvarLancamentoPostgres(string pgConnStr, LancamentoFinanceiroSaaS dto)
+        {
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
+                {
+                    conn.Open();
+                    // Garante/busca a categoria_id
+                    int catId = 1;
+                    using (var cmdCat = new Npgsql.NpgsqlCommand("SELECT id FROM categorias_financeiras WHERE UPPER(nome) = @Cat LIMIT 1;", conn))
+                    {
+                        cmdCat.Parameters.AddWithValue("@Cat", dto.Categoria.ToUpper());
+                        var objCat = cmdCat.ExecuteScalar();
+                        if (objCat != null) catId = Convert.ToInt32(objCat);
+                    }
+
+                    string sqlInsert = @"
+                        INSERT INTO lancamentos (loja_id, categoria_id, data, descricao, forma_pgto, vencimento, valor_recebido, valor_a_pagar, valor_pago, confirmado)
+                        VALUES (@LojaId, @CatId, @Data, @Desc, @Forma, @Venc, @ValRec, @ValPag, @ValPago, @Conf)
+                        RETURNING id;";
+
+                    using (var cmd = new Npgsql.NpgsqlCommand(sqlInsert, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@LojaId", dto.LojaId);
+                        cmd.Parameters.AddWithValue("@CatId", catId);
+                        cmd.Parameters.AddWithValue("@Data", dto.Data.Date);
+                        cmd.Parameters.AddWithValue("@Desc", dto.Descricao);
+                        cmd.Parameters.AddWithValue("@Forma", dto.FormaPagamento);
+                        cmd.Parameters.AddWithValue("@Venc", dto.Vencimento.Date);
+                        cmd.Parameters.AddWithValue("@ValRec", dto.ValorRecebidoEntrada);
+                        cmd.Parameters.AddWithValue("@ValPag", dto.ValorAPagar);
+                        cmd.Parameters.AddWithValue("@ValPago", dto.ValorPago);
+                        cmd.Parameters.AddWithValue("@Conf", dto.ConfirmadoStatus == "SIM");
+
+                        var newId = cmd.ExecuteScalar();
+                        if (newId != null)
+                        {
+                            dto.Id = Convert.ToInt32(newId);
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERRO POSTGRES] Falha ao inserir lançamento na tabela lancamentos: {ex.Message}");
+            }
+            return false;
+        }
     }
 }
