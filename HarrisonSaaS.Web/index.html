@@ -297,6 +297,57 @@
         .badge-voucher { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
         .badge-dinheiro { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
 
+        /* Botão de Toggle Menu para Tablets/Pequenas Telas */
+        .mobile-menu-btn {
+            display: none;
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        /* Responsividade para Tablets e iPads (820px, 834px, 1180px, 1210px) */
+        @media (max-width: 1250px) {
+            :root {
+                --sidebar-width: 220px;
+            }
+            main.content {
+                padding: 1.25rem 1.5rem;
+                width: calc(100% - var(--sidebar-width));
+            }
+            .kpi-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 980px) {
+            .mobile-menu-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            aside.sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                width: 260px;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+            }
+            aside.sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            main.content {
+                margin-left: 0;
+                width: 100%;
+                padding: 1rem;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .form-input-saas {
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-color);
@@ -384,9 +435,12 @@
     <!-- Conteúdo Principal -->
     <main class="content">
         <header class="topbar">
-            <div class="page-title">
-                <h1 id="header-titulo">Painel de Controle Empresarial</h1>
-                <p id="header-subtitulo">Plataforma SaaS de Gestão de Açougues e Conciliação de Caixa em Tempo Real</p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()"><i class="fa-solid fa-bars"></i> Menu</button>
+                <div class="page-title">
+                    <h1 id="header-titulo">Painel de Controle Empresarial</h1>
+                    <p id="header-subtitulo">Plataforma SaaS de Gestão de Açougues e Conciliação de Caixa em Tempo Real</p>
+                </div>
             </div>
             <div class="user-status">
                 <div class="status-badge"></div>
@@ -1089,8 +1143,8 @@
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-plus-circle" style="color: var(--accent-green);"></i> Novo Lançamento Financeiro & Boleto</div>
                 </div>
-                <form id="form-novo-lancamento" onsubmit="salvarNovoLancamento(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.85rem; align-items: end; width: 100%; max-width: 100%; box-sizing: border-box;">
-                    <div style="min-width: 0;">
+                <form id="form-novo-lancamento" onsubmit="salvarNovoLancamento(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end; width: 100%; max-width: 100%; box-sizing: border-box;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">SELECIONAR LOJA</label>
                         <select id="lanc-loja" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
                             <option value="1">Excelência (Loja 1)</option>
@@ -1098,7 +1152,7 @@
                             <option value="3">Cunha (Loja 3)</option>
                         </select>
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">CATEGORIA DO CUSTO</label>
                         <select id="lanc-categoria" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
                             <option value="DIVIDA ACUMULADA/PASSIVO">DIVIDA ACUMULADA / PASSIVO</option>
@@ -1115,18 +1169,18 @@
                             <option value="MERCADORIA" selected>MERCADORIA</option>
                         </select>
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">DATA DO LANÇAMENTO</label>
-                        <div style="display: flex; gap: 0.35rem; align-items: center;">
+                        <div style="display: flex; gap: 0.35rem; align-items: center; width: 100%;">
                             <input type="date" id="lanc-data" class="form-input-saas" style="flex: 1; min-width: 0; box-sizing: border-box;">
-                            <button type="button" class="btn-action" style="padding: 0.45rem 0.6rem; font-size: 0.75rem; background: var(--bg-card-hover);" onclick="setHojeLancamento('lanc-data')">Hoje</button>
+                            <button type="button" class="btn-action" style="padding: 0.45rem 0.6rem; font-size: 0.75rem; background: var(--bg-card-hover); flex-shrink: 0;" onclick="setHojeLancamento('lanc-data')">Hoje</button>
                         </div>
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">DESCRIÇÃO / FORNECEDOR</label>
                         <input type="text" id="lanc-descricao" class="form-input-saas" maxlength="150" placeholder="Ex: FORNECEDOR LECO CARNES" required style="width: 100%; box-sizing: border-box;">
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">FORMA DE PAGAMENTO</label>
                         <select id="lanc-forma-pgto" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
                             <option value="CARTAO">CARTÃO CRÉDITO/DÉBITO</option>
@@ -1137,26 +1191,26 @@
                             <option value="PIX">PIX</option>
                         </select>
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">DATA DE VENCIMENTO</label>
-                        <div style="display: flex; gap: 0.35rem; align-items: center;">
+                        <div style="display: flex; gap: 0.35rem; align-items: center; width: 100%;">
                             <input type="date" id="lanc-vencimento" class="form-input-saas" style="flex: 1; min-width: 0; box-sizing: border-box;">
-                            <button type="button" class="btn-action" style="padding: 0.45rem 0.6rem; font-size: 0.75rem; background: var(--bg-card-hover);" onclick="setHojeLancamento('lanc-vencimento')">Hoje</button>
+                            <button type="button" class="btn-action" style="padding: 0.45rem 0.6rem; font-size: 0.75rem; background: var(--bg-card-hover); flex-shrink: 0;" onclick="setHojeLancamento('lanc-vencimento')">Hoje</button>
                         </div>
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">VALOR RECEBIDO (ENTRADA)</label>
                         <input type="text" id="lanc-valor-entrada" class="form-input-saas" placeholder="0,00" style="width: 100%; box-sizing: border-box;" onblur="formatarMoedaInput(this)">
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">VALOR A PAGAR (BOLETO)</label>
                         <input type="text" id="lanc-valor-apagar" class="form-input-saas" placeholder="1.200,88" required style="width: 100%; box-sizing: border-box;" onblur="formatarMoedaInput(this)">
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">VALOR PAGO</label>
                         <input type="text" id="lanc-valor-pago" class="form-input-saas" placeholder="1.200,88" style="width: 100%; box-sizing: border-box;" onblur="formatarMoedaInput(this)">
                     </div>
-                    <div style="min-width: 0;">
+                    <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">CONFIRMADO?</label>
                         <select id="lanc-confirmado" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
                             <option value="SIM" selected>SIM (CONFIRMADO)</option>
@@ -1454,12 +1508,23 @@
 
     <!-- Script JavaScript Completo de Roteamento e Comunicação C# -->
     <script>
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('aside.sidebar');
+            if (sidebar) sidebar.classList.toggle('mobile-open');
+        }
+
         function trocarAba(secId, elem) {
             document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.nav-menu .nav-item').forEach(item => item.classList.remove('active'));
             
             document.getElementById(secId).classList.add('active');
             if (elem) elem.classList.add('active');
+
+            // Em telas de tablet/mobile, fecha a sidebar ao selecionar uma aba
+            const sidebar = document.querySelector('aside.sidebar');
+            if (sidebar && sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.remove('mobile-open');
+            }
 
             if (secId === 'sec-dre-curva-abc') {
                 carregarDREGerencial();
