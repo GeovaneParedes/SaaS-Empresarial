@@ -1089,18 +1089,18 @@
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-plus-circle" style="color: var(--accent-green);"></i> Novo Lançamento Financeiro & Boleto</div>
                 </div>
-                <form id="form-novo-lancamento" onsubmit="salvarNovoLancamento(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">SELECIONAR LOJA</label>
-                        <select id="lanc-loja" class="form-input-saas" style="width: 100%;">
+                <form id="form-novo-lancamento" onsubmit="salvarNovoLancamento(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.85rem; align-items: end; width: 100%; max-width: 100%; box-sizing: border-box;">
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">SELECIONAR LOJA</label>
+                        <select id="lanc-loja" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
                             <option value="1">Excelência (Loja 1)</option>
                             <option value="2">Pit Stop (Loja 2)</option>
                             <option value="3">Cunha (Loja 3)</option>
                         </select>
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">CATEGORIA DO CUSTO</label>
-                        <select id="lanc-categoria" class="form-input-saas" style="width: 100%;">
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">CATEGORIA DO CUSTO</label>
+                        <select id="lanc-categoria" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
                             <option value="DIVIDA ACUMULADA/PASSIVO">DIVIDA ACUMULADA / PASSIVO</option>
                             <option value="LANCHE">LANCHE</option>
                             <option value="CONVENIO">CONVENIO</option>
@@ -1115,21 +1115,21 @@
                             <option value="MERCADORIA" selected>MERCADORIA</option>
                         </select>
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">DATA DO LANÇAMENTO</label>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <input type="date" id="lanc-data" class="form-input-saas" style="flex: 1;">
-                            <button type="button" class="btn-action" style="padding: 0.5rem 0.75rem; background: var(--bg-card-hover);" onclick="setHojeLancamento('lanc-data')">Hoje</button>
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">DATA DO LANÇAMENTO</label>
+                        <div style="display: flex; gap: 0.35rem; align-items: center;">
+                            <input type="date" id="lanc-data" class="form-input-saas" style="flex: 1; min-width: 0; box-sizing: border-box;">
+                            <button type="button" class="btn-action" style="padding: 0.45rem 0.6rem; font-size: 0.75rem; background: var(--bg-card-hover);" onclick="setHojeLancamento('lanc-data')">Hoje</button>
                         </div>
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">DESCRIÇÃO / FORNECEDOR</label>
-                        <input type="text" id="lanc-descricao" class="form-input-saas" maxlength="150" placeholder="Ex: FORNECEDOR LECO CARNES" required style="width: 100%;">
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">DESCRIÇÃO / FORNECEDOR</label>
+                        <input type="text" id="lanc-descricao" class="form-input-saas" maxlength="150" placeholder="Ex: FORNECEDOR LECO CARNES" required style="width: 100%; box-sizing: border-box;">
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">FORMA DE PAGAMENTO</label>
-                        <select id="lanc-forma-pgto" class="form-input-saas" style="width: 100%;">
-                            <option value="CARTAO">CARTÃO DE CRÉDITO/DÉBITO</option>
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">FORMA DE PAGAMENTO</label>
+                        <select id="lanc-forma-pgto" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
+                            <option value="CARTAO">CARTÃO CRÉDITO/DÉBITO</option>
                             <option value="DINHEIRO">DINHEIRO</option>
                             <option value="NUBANK">NUBANK</option>
                             <option value="INTER">BANCO INTER</option>
@@ -1137,35 +1137,35 @@
                             <option value="PIX">PIX</option>
                         </select>
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">DATA DE VENCIMENTO</label>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <input type="date" id="lanc-vencimento" class="form-input-saas" style="flex: 1;">
-                            <button type="button" class="btn-action" style="padding: 0.5rem 0.75rem; background: var(--bg-card-hover);" onclick="setHojeLancamento('lanc-vencimento')">Hoje</button>
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">DATA DE VENCIMENTO</label>
+                        <div style="display: flex; gap: 0.35rem; align-items: center;">
+                            <input type="date" id="lanc-vencimento" class="form-input-saas" style="flex: 1; min-width: 0; box-sizing: border-box;">
+                            <button type="button" class="btn-action" style="padding: 0.45rem 0.6rem; font-size: 0.75rem; background: var(--bg-card-hover);" onclick="setHojeLancamento('lanc-vencimento')">Hoje</button>
                         </div>
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">VALOR RECEBIDO (ENTRADA)</label>
-                        <input type="text" id="lanc-valor-entrada" class="form-input-saas" placeholder="0,00" style="width: 100%;" onblur="formatarMoedaInput(this)">
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">VALOR RECEBIDO (ENTRADA)</label>
+                        <input type="text" id="lanc-valor-entrada" class="form-input-saas" placeholder="0,00" style="width: 100%; box-sizing: border-box;" onblur="formatarMoedaInput(this)">
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">VALOR A PAGAR (BOLETO)</label>
-                        <input type="text" id="lanc-valor-apagar" class="form-input-saas" placeholder="1.200,88" required style="width: 100%;" onblur="formatarMoedaInput(this)">
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">VALOR A PAGAR (BOLETO)</label>
+                        <input type="text" id="lanc-valor-apagar" class="form-input-saas" placeholder="1.200,88" required style="width: 100%; box-sizing: border-box;" onblur="formatarMoedaInput(this)">
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">VALOR PAGO</label>
-                        <input type="text" id="lanc-valor-pago" class="form-input-saas" placeholder="1.200,88" style="width: 100%;" onblur="formatarMoedaInput(this)">
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">VALOR PAGO</label>
+                        <input type="text" id="lanc-valor-pago" class="form-input-saas" placeholder="1.200,88" style="width: 100%; box-sizing: border-box;" onblur="formatarMoedaInput(this)">
                     </div>
-                    <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">CONFIRMADO?</label>
-                        <select id="lanc-confirmado" class="form-input-saas" style="width: 100%;">
+                    <div style="min-width: 0;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">CONFIRMADO?</label>
+                        <select id="lanc-confirmado" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
                             <option value="SIM" selected>SIM (CONFIRMADO)</option>
                             <option value="NAO">NÃO</option>
                             <option value="DESCONHECIDO">DESCONHECIDO</option>
                         </select>
                     </div>
                     <div style="grid-column: 1 / -1; text-align: right; margin-top: 0.5rem;">
-                        <button type="submit" class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary)); font-weight: 800; padding: 0.8rem 1.8rem;">
+                        <button type="submit" class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary)); font-weight: 800; padding: 0.75rem 1.6rem;">
                             <i class="fa-solid fa-plus-circle"></i> Adicionar Lançamento
                         </button>
                     </div>
