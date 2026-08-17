@@ -1,0 +1,30 @@
+name: HarrisonSaaS CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, 'feature/*' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    name: Compilação & Suíte de Testes Unitários
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do Repositório
+      uses: actions/checkout@v4
+
+    - name: Configurar SDK .NET 8.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restaurar Pacotes NuGet
+      run: dotnet restore HarrisonSaaS.sln
+
+    - name: Compilar Solução (.NET 8 Clean Build)
+      run: dotnet build HarrisonSaaS.sln --no-restore --configuration Release
+
+    - name: Executar Testes Unitários Automatizados (xUnit)
+      run: dotnet test HarrisonSaaS.sln --no-build --configuration Release --verbosity normal
