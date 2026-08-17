@@ -235,7 +235,13 @@
         </form>
     </div>
 
+    <script src="js/config.js"></script>
     <script>
+        // Redireciona caso já esteja autenticado
+        if (AuthService.isAuthenticated()) {
+            window.location.href = 'index.html';
+        }
+
         async function validarLogin(e) {
             if (e) e.preventDefault();
             const usr = document.getElementById('usuario').value.trim();
@@ -243,8 +249,10 @@
             const erroDiv = document.getElementById('alert-erro');
             const txtErro = document.getElementById('txt-erro');
 
+            erroDiv.style.display = 'none';
+
             try {
-                const res = await fetch('http://localhost:5205/api/ModulosSaaS/auth/login', {
+                const res = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: usr, senha: pass })
@@ -253,23 +261,15 @@
                 const data = await res.json();
 
                 if (res.ok && data.status === 'Sucesso') {
-                    localStorage.setItem('saas_usuario_logado', data.usuario.nome);
-                    localStorage.setItem('saas_jwt_token', data.token);
-                    localStorage.setItem('saas_tenant_id', data.usuario.tenantId);
+                    AuthService.setSession(data.token, data.usuario.nome, data.usuario.tenantId);
                     window.location.href = 'index.html';
                 } else {
                     erroDiv.style.display = 'flex';
                     txtErro.innerText = data.mensagem || 'Usuário ou senha incorretos!';
                 }
             } catch (err) {
-                // Fallback para devgege offline
-                if (usr === 'devgege' && pass === 'Dev31082002') {
-                    localStorage.setItem('saas_usuario_logado', 'Geovane Paredes');
-                    window.location.href = 'index.html';
-                } else {
-                    erroDiv.style.display = 'flex';
-                    txtErro.innerText = 'Falha ao conectar com o servidor de autenticação!';
-                }
+                erroDiv.style.display = 'flex';
+                txtErro.innerText = 'Falha ao conectar com o servidor de autenticação central!';
             }
         }
     </script>
