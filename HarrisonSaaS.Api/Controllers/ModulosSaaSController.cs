@@ -85,22 +85,37 @@ namespace HarrisonSaaS.Api.Controllers
         public IActionResult GetPrecificacao() => Ok(PrecificacaoMock);
 
         [HttpGet("lancamentos")]
-        public IActionResult GetLancamentos() => Ok(LancamentosMock);
+        public IActionResult GetLancamentos()
+        {
+            var syncService = new FirebirdSyncService();
+            var lancamentosPostgres = syncService.ObterLancamentosPostgres(PgConnStr);
+            if (lancamentosPostgres.Count > 0)
+            {
+                return Ok(lancamentosPostgres);
+            }
+            return Ok(LancamentosMock);
+        }
 
         [HttpPost("lancamentos")]
         public IActionResult CriarLancamento([FromBody] LancamentoFinanceiroSaaS dto)
         {
-            dto.Id = LancamentosMock.Count > 0 ? LancamentosMock.Max(l => l.Id) + 1 : 1001;
-            var loja = LojasMock.FirstOrDefault(l => l.Id == dto.LojaId);
-            if (loja != null) dto.LojaNome = loja.Nome;
+            var syncService = new FirebirdSyncService();
+            bool salvoPostgres = syncService.SalvarLancamentoPostgres(PgConnStr, dto);
 
-            // Define status pago
-            if (dto.ValorPago >= dto.ValorAPagar && dto.ValorAPagar > 0) dto.StatusPago = "PAGO";
-            else if (dto.Vencimento < DateTime.Today) dto.StatusPago = "ATRASADO";
-            else dto.StatusPago = "A VENCER";
+            if (!salvoPostgres)
+            {
+                dto.Id = LancamentosMock.Count > 0 ? LancamentosMock.Max(l => l.Id) + 1 : 1001;
+                var loja = LojasMock.FirstOrDefault(l => l.Id == dto.LojaId);
+                if (loja != null) dto.LojaNome = loja.Nome;
 
-            LancamentosMock.Insert(0, dto);
-            return Ok(new { Status = "Sucesso", Mensagem = "Lançamento financeiro cadastrado com sucesso!", Lancamento = dto });
+                if (dto.ValorPago >= dto.ValorAPagar && dto.ValorAPagar > 0) dto.StatusPago = "PAGO";
+                else if (dto.Vencimento < DateTime.Today) dto.StatusPago = "ATRASADO";
+                else dto.StatusPago = "A VENCER";
+
+                LancamentosMock.Insert(0, dto);
+            }
+
+            return Ok(new { Status = "Sucesso", Mensagem = "Lançamento financeiro cadastrado com sucesso no banco de dados!", Lancamento = dto });
         }
 
         [HttpPost("simular-rateio")]
@@ -346,7 +361,7 @@ namespace HarrisonSaaS.Api.Controllers
 
         private static readonly List<Tenant> TenantsMock = new()
         {
-            new Tenant { Id = 1, NomeFantasia = "GRUPO CASA DE CARNE (EXCELENCIA / PITSTOP / CUNHA)", RazaoSocial = "GRUPO HARRISON LTDA", Cnpj = "15.439.136/0001-70", EmailContato = "devgege@harrisonsaas.com.br", TelefoneWhatsApp = "(67) 99248-7022", Ativo = true }
+            new Tenant { Id = 1, NomeFantasia = "GRUPO CASA DE CARNE (EXCELENCIA / PITSTOP / CUNHA)", RazaoSocial = "SOFTWAREPAREDES ENTERPRISE LTDA", Cnpj = "15.439.136/0001-70", EmailContato = "devgege@softwareparedes.com.br", TelefoneWhatsApp = "(67) 99248-7022", Ativo = true }
         };
 
         private static readonly List<UsuarioSaaS> UsuariosMock = new()
