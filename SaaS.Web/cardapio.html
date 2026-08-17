@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio Digital & Guia de Gastronomia de Carnes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+        }
+        .glow-effect {
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.25);
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card:hover {
+            border-color: rgba(239, 68, 68, 0.4);
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-12">
+
+    <!-- CABEÇALHO EXECUTIVO DO CLIENTE -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <img id="loja-logo-img" src="excelencia_logo_edited_edited.png" alt="Logo Açougue" class="h-12 object-contain">
+                <div>
+                    <h1 id="loja-nome-header" class="text-lg sm:text-xl font-black text-white uppercase tracking-tight">CASA DE CARNES EXCELÊNCIA</h1>
+                    <p id="loja-subtitulo" class="text-xs text-amber-400 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-fire"></i> Cardápio Digital & Sugestões de Consumo Oficial
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a id="btn-pedir-whatsapp" href="https://wa.me/5567992988507" target="_blank" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-2 text-sm transition-all">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Fazer Pedido no WhatsApp
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNER DE BOAS-VINDAS -->
+    <section class="max-w-6xl mx-auto px-4 pt-6">
+        <div class="bg-gradient-to-r from-red-950 via-slate-900 to-amber-950/40 border border-red-500/30 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+            <div class="relative z-10 max-w-2xl">
+                <span class="bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                    🥩 Experiência Gastronômica Completa
+                </span>
+                <h2 class="text-2xl sm:text-4xl font-black text-white mt-3 mb-2 tracking-tight">
+                    Qual o churrasco ou prato de hoje?
+                </h2>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    Confira nossa seleção especial de cortes nobres, práticos para o dia a dia e sugestões completas do chefe de cozinha para acertar no preparo!
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MENU DE NAVEGAÇÃO DE RÓTULOS DE CARNE -->
+    <main class="max-w-6xl mx-auto px-4 mt-8 flex-1">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+            <h3 class="text-lg font-black text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-utensils text-red-500"></i> Sugestões de Consumo & Cortes em Destaque
+            </h3>
+            <span class="text-xs text-slate-400 font-semibold hidden sm:block">Preços e imagens em tempo real</span>
+        </div>
+
+        <!-- GRID DE CORTES E RECEITAS RECOMENDADAS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- CARD 1: PICANHA -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_picanha.jpg" alt="Picanha Grill" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">CHURRASCO NOBRE</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Picanha Bovina Grill</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 69,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Corte com capa de gordura uniforme, maciez extrema e sabor inconfundível. Perfeito para a grelha e espeto.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Picanha na Brasa com Sal Grosso:</strong> Sele os bifes de 2 a 3 dedos em fogo forte por 3 min de cada lado e finalize na parte superior da churrasqueira.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Picanha%20Bovina%20Grill" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Picanha no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 2: ALCATRA C/ MAMINHA -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_alcatra.jpg" alt="Alcatra Bovina" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">VERSÁTIL & MACIA</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Alcatra Completa c/ Maminha</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 39,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Carne magra, extremamente suculenta e sem nervos. Excelente para bifes rápidos na frigideira, strogonoff ou churrasco.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Bife Acebolado com Alho na Manteiga:</strong> Dobre o sabor dourando dentes de alho na manteiga de garrafa e finalize com bastante cebola fatiada.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Alcatra%20Completa" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Alcatra no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 3: CONTRA FILÉ -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_contrafile.jpg" alt="Contra Filé Grill" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">CHURRASCO & BIFE</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Contra Filé Grill Premium</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 42,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Corte tradicional do churrasco brasileiro com sabor acentuado e textura macia com leve marbling.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Bife Ancho à Chorizo:</strong> Corte em bifes grossos (3cm), tempere apenas com flor de sal e pimenta do reino moída na hora e sirva ao ponto para malpassado.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Contra%20Filé" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Contra Filé no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 4: COSTELA RIPA -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_costela.jpg" alt="Costela Ripa" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">ASSADO LENTO</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Costela Ripa de Boi</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 20,99<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Rica em marmoreio e osso saboroso. O assado que desmancha na boca com aroma inesquecível.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Costela no Bafo c/ Papel Alumínio:</strong> Embrulhe em 5 voltas de papel celofane/alumínio e asse por 3 a 4 horas em brasa branda até soltar do osso.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Costela%20Ripa" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Costela no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 5: LINGUIÇA ARTESANAL -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_linguica.jpg" alt="Linguiça de Costela" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">ESPECIALIDADE</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Linguiça Artesanal de Costela</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 24,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Produzida diariamente no açougue com carne de costela bovina temperada no ponto certo.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Petisco na Grelha c/ Limão e Cheiro Verde:</strong> Asse inteira sem furar a tripa para manter a suculência e sirva fatiada com pão de alho crocante.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Linguiça%20Artesanal" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Linguiça no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 6: CUPIM -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_cupim.jpg" alt="Cupim Bovino" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">PREMIUM SUCCULENT</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Cupim Bovino Selecionado</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 38,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Gordura entrelaçada que confere aroma e sabor únicos. O queridinho das churrascarias sul-mato-grossenses.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Cupim Recheado c/ Queijo Manteiga:</strong> Faça fendas no cupim assado no papel alumínio e coloque bastões de queijo derretendo antes de fatiar.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Cupim%20Bovino" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Cupim no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- RODAPÉ DE ENDEREÇO & CONTATO DA LOJA SELECIONADA -->
+    <footer class="mt-12 border-t border-slate-800 bg-slate-950 py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h4 id="footer-loja-nome" class="text-base font-black text-white uppercase mb-1">CASA DE CARNES EXCELÊNCIA</h4>
+            <p id="footer-loja-endereco" class="text-xs text-slate-400 mb-4">Rua Guaimbé, 622 - Vila Moreninha II - Campo Grande/MS</p>
+            <div class="flex justify-center items-center gap-4 text-xs text-slate-500">
+                <span><i class="fa-solid fa-shield-halved text-emerald-500"></i> Qualidade Garantida</span>
+                <span>•</span>
+                <span><i class="fa-solid fa-truck-ramp-box text-amber-500"></i> Entrega Rápida</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT DE ADAPTAÇÃO DINÂMICA DA LOJA VIA QUERY PARAM ?loja=1|2|3 -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const lojaId = urlParams.get('loja') || "1";
+
+        const DADOS_LOJAS = {
+            "1": {
+                nome: "CASA DE CARNES EXCELÊNCIA",
+                subtitulo: "Unidade Moreninhas • Carnes Frescas & Cortes Especiais",
+                logo: "excelencia_logo_edited_edited.png",
+                whatsapp: "5567992988507",
+                endereco: "Rua Guaimbé, 622 - Vila Moreninha II - Campo Grande/MS"
+            },
+            "2": {
+                nome: "PIT STOP DA CARNE",
+                subtitulo: "Unidade Jardim Anache • Especialista em Churrasco",
+                logo: "pitstoplogo_logo.png",
+                whatsapp: "5567992988507",
+                endereco: "Rua Abraão Anache, 8 - Jardim Anache - Campo Grande/MS"
+            },
+            "3": {
+                nome: "CASA DE CARNES CUNHA",
+                subtitulo: "Unidade Campo Belo • Tradição & Qualidade",
+                logo: "logo-cunha-casa-de-carne_jpg.png",
+                whatsapp: "5567991719841",
+                endereco: "Av. Gualter Barbosa, 297 - Jardim Campo Belo - Campo Grande/MS"
+            }
+        };
+
+        const configLoja = DADOS_LOJAS[lojaId] || DADOS_LOJAS["1"];
+
+        document.getElementById('loja-logo-img').src = configLoja.logo;
+        document.getElementById('loja-nome-header').innerText = configLoja.nome;
+        document.getElementById('loja-subtitulo').innerHTML = `<i class="fa-solid fa-fire"></i> ${configLoja.subtitulo}`;
+        document.getElementById('btn-pedir-whatsapp').href = `https://wa.me/${configLoja.whatsapp}`;
+        document.getElementById('footer-loja-nome').innerText = configLoja.nome;
+        document.getElementById('footer-loja-endereco').innerText = configLoja.endereco;
+    </script>
+</body>
+</html>
