@@ -523,9 +523,19 @@ namespace HarrisonSaaS.Api.Controllers
 
             var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto("200.150.202.5", dbPath, "SYSDBA", "***REMOVED***", dataIni, dataFim);
 
-            // Agrupa vendas por produto
+            // Palavras ignoradas que NÃO são cortes de carnes para frigorífico
+            var palavrasIgnoradas = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "BALA", "CHICLETE", "MANDIOCA", "CARVAO", "CARVÃO", "CERVEJA", "REFRIGERANTE", 
+                "SACOLA", "GELO", "SAL", "TEMPERO", "MAIONESE", "CARVAO 2.5KG", "DIVERSO"
+            };
+
+            // Agrupa vendas EXCLUSIVAMENTE de cortes de carnes de açougue (Unidade KG ou descrição de carnes)
             var grupoProds = cupons
                 .SelectMany(c => c.Itens)
+                .Where(i => !string.IsNullOrWhiteSpace(i.ProdutoDescricao) &&
+                            !palavrasIgnoradas.Any(p => i.ProdutoDescricao.Contains(p, StringComparison.OrdinalIgnoreCase)) &&
+                            i.PrecoUnitario >= 5.00m) // Elimina itens irrelevantes de centavos como balas e chicletes
                 .GroupBy(i => i.ProdutoDescricao)
                 .Select(g => new
                 {
