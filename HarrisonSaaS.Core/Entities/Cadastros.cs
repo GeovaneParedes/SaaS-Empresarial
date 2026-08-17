@@ -145,6 +145,36 @@ namespace HarrisonSaaS.Core.Entities
         public string LinkCardapioDigital { get; set; } = string.Empty;
     }
 
+    public class ItemCurvaABCSaaS
+    {
+        public string ProdutoNome { get; set; } = string.Empty;
+        public decimal QuantidadeKgVendida { get; set; }
+        public decimal FaturamentoTotal { get; set; }
+        public decimal PercentualDoFaturamento { get; set; }
+        public decimal PercentualAcumulado { get; set; }
+        public string Classe { get; set; } = "A"; // CLASSE A (80% Faturamento), CLASSE B (15%), CLASSE C (5%)
+    }
+
+    public class DREGerencialSaaS
+    {
+        public int LojaId { get; set; }
+        public string LojaNome { get; set; } = string.Empty;
+        public DateTime DataInicio { get; set; }
+        public DateTime DataFim { get; set; }
+        public decimal ReceitaBrutaVendas { get; set; }
+        public decimal ImpostosETaxasAdquirentes { get; set; }
+        public decimal ReceitaLiquidaVendas { get; set; }
+        public decimal CMV_CustoMercadoriaVendida { get; set; }
+        public decimal LucroBruto { get; set; }
+        public decimal MargemBrutaPct { get; set; }
+        public decimal DespesasOperacionaisOpEx { get; set; }
+        public decimal EBITDA { get; set; }
+        public decimal MargemEBITDAPct { get; set; }
+        public decimal LucroLiquido { get; set; }
+        public decimal MargemLiquidaPct { get; set; }
+        public List<ItemCurvaABCSaaS> CurvaABC { get; set; } = new();
+    }
+
     public class Loja
     {
         public int Id { get; set; }
