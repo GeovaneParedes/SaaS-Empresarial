@@ -275,7 +275,7 @@ namespace SaaS.Data.Services
             public int LojaId { get; set; }
         }
 
-        public List<ProdutoTabelaTvDto> ObterProdutosPostgresDjango(string pgConnStr, int lojaId)
+        public List<ProdutoTabelaTvDto> ObterProdutosPostgresDjango(string pgConnStr, int lojaId, List<int>? ofertasIdsExcluir = null)
         {
             var produtos = new List<ProdutoTabelaTvDto>();
             try
@@ -283,6 +283,8 @@ namespace SaaS.Data.Services
                 using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
                 {
                     conn.Open();
+
+                    // Categorias estritamente de carnes/açougue (excluindo mercearia, carvão, bebidas, temperos)
                     string sql = @"
                         SELECT 
                             id,
@@ -292,7 +294,9 @@ namespace SaaS.Data.Services
                             COALESCE(oferta_praticada, 0) AS oferta_praticada,
                             COALESCE(loja_id, 1) AS loja_id
                         FROM produtos
-                        WHERE loja_id = @LojaId OR @LojaId = 0
+                        WHERE (loja_id = @LojaId OR @LojaId = 0)
+                          AND preco_venda > 0
+                          AND LOWER(categoria) SIMILAR TO '%(bovino|suino|suíno|dianteiro|traseiro|miudo|miudos|embutidos|aves|peixe|peixaria)%'
                         ORDER BY nome ASC;";
 
                     using (var cmd = new Npgsql.NpgsqlCommand(sql, conn))
@@ -302,6 +306,12 @@ namespace SaaS.Data.Services
                         {
                             while (reader.Read())
                             {
+                                int id = Convert.ToInt32(reader["id"]);
+                                if (ofertasIdsExcluir != null && ofertasIdsExcluir.Contains(id))
+                                {
+                                    continue; // Evita duplicar no painel produtos que já estão na faixa de oferta de destaque
+                                }
+
                                 string catRaw = reader["categoria"]?.ToString()?.ToLower() ?? "bovino";
                                 string catLimpa = catRaw.Contains("suin") || catRaw.Contains("suíno") ? "suino" :
                                                   catRaw.Contains("diant") ? "dianteiro" :
@@ -309,7 +319,7 @@ namespace SaaS.Data.Services
 
                                 produtos.Add(new ProdutoTabelaTvDto
                                 {
-                                    Id = Convert.ToInt32(reader["id"]),
+                                    Id = id,
                                     Nome = SanitizarTextoCompleto(reader["nome"]?.ToString()),
                                     Categoria = catLimpa,
                                     PrecoVenda = Convert.ToDecimal(reader["preco_venda"]),

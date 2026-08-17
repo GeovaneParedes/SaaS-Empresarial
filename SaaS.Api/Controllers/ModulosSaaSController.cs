@@ -222,7 +222,8 @@ namespace SaaS.Api.Controllers
                 .Select(o => new { id = o.Id, nome = o.ProdutoNome, preco_oferta = o.PrecoOferta.ToString("F2") })
                 .ToList();
 
-            var produtosPostgres = syncService.ObterProdutosPostgresDjango(PgConnStr, lojaId);
+            var ofertasIds = ofertasLoja.Select(o => o.ProdutoId).ToList();
+            var produtosPostgres = syncService.ObterProdutosPostgresDjango(PgConnStr, lojaId, ofertasIds);
 
             var tabela = produtosPostgres.Select(p => new
             {
