@@ -196,10 +196,21 @@ namespace SaaS.Api.Controllers
         [HttpGet("tv-ofertas/{lojaId:int}")]
         public IActionResult GetTvOfertasDinamic(int lojaId)
         {
+            var syncService = new FirebirdSyncService();
+            var ofertasPostgres = syncService.ObterOfertasPostgresDjango(PgConnStr, DateTime.Today);
+
             var loja = LojasMock.FirstOrDefault(l => l.Id == lojaId);
             string lojaNome = loja?.Nome ?? $"AÇOUGUE (LOJA {lojaId})";
 
-            var ofertas = OfertasMock.Where(o => o.LojaId == lojaId && o.Ativo)
+            var ofertasLoja = ofertasPostgres.Where(o => o.LojaId == lojaId && o.Ativo).ToList();
+
+            // Se não houver no banco Postgres, consulta no OfertasMock para redundância local
+            if (ofertasLoja.Count == 0)
+            {
+                ofertasLoja = OfertasMock.Where(o => o.LojaId == lojaId && o.Ativo && o.DataInicio <= DateTime.Today && o.DataFim >= DateTime.Today).ToList();
+            }
+
+            var ofertas = ofertasLoja
                 .Select(o => new { id = o.Id, nome = o.ProdutoNome, preco_oferta = o.PrecoOferta.ToString("F2") })
                 .ToList();
 
@@ -407,8 +418,7 @@ namespace SaaS.Api.Controllers
             novoTenant.DataCadastro = DateTime.Now;
             TenantsMock.Add(novoTenant);
 
-            // Cria automaticamente a assinatura padrão
-            AssinaturasMock.Add(new AssinaturaTenantSaaS
+            var novaAssinatura = new AssinaturaTenantSaaS
             {
                 Id = AssinaturasMock.Count + 101,
                 TenantId = novoTenant.Id,
@@ -419,9 +429,55 @@ namespace SaaS.Api.Controllers
                 DataInicio = DateTime.Today,
                 DataVencimento = DateTime.Today.AddDays(30),
                 StatusAssinatura = "ATIVA"
+            };
+
+            AssinaturasMock.Add(novaAssinatura);
+
+            // Cria usuário padrão do cliente para acesso
+            UsuariosMock.Add(new UsuarioSaaS
+            {
+                Id = UsuariosMock.Max(u => u.Id) + 1,
+                TenantId = novoTenant.Id,
+                TenantNome = novoTenant.NomeFantasia,
+                Nome = novoTenant.NomeFantasia,
+                Email = novoTenant.EmailContato,
+                SenhaHash = "Mudar123",
+                Role = "ADMIN_LOJA",
+                Ativo = true
             });
 
-            return Ok(new { Status = "Sucesso", Mensagem = "Açougue / Tenant cadastrado com sucesso!", Tenant = novoTenant });
+            return Ok(new { Status = "Sucesso", Mensagem = "Açougue / Tenant cadastrado com sucesso! Acesso liberado por 30 dias.", Tenant = novoTenant, Assinatura = novaAssinatura });
+        }
+
+        [HttpPatch("tenants/{id}/toggle-status")]
+        public IActionResult AlterarStatusTenant(int id)
+        {
+            var tenant = TenantsMock.FirstOrDefault(t => t.Id == id);
+            if (tenant == null) return NotFound(new { Status = "Erro", Mensagem = "Açougue não encontrado!" });
+
+            tenant.Ativo = !tenant.Ativo;
+            var ass = AssinaturasMock.FirstOrDefault(a => a.TenantId == id);
+            if (ass != null)
+            {
+                ass.StatusAssinatura = tenant.Ativo ? "ATIVA" : "SUSPENSA";
+            }
+
+            return Ok(new { Status = "Sucesso", Mensagem = $"Acesso do cliente {tenant.NomeFantasia} {(tenant.Ativo ? "LIBERADO" : "BLOQUEADO/REVOGADO")} com sucesso!", Ativo = tenant.Ativo });
+        }
+
+        [HttpPost("tenants/{id}/renovar")]
+        public IActionResult RenovarAssinaturaTenant(int id, [FromQuery] int dias = 30)
+        {
+            var ass = AssinaturasMock.FirstOrDefault(a => a.TenantId == id);
+            if (ass == null) return NotFound(new { Status = "Erro", Mensagem = "Assinatura do cliente não encontrada!" });
+
+            ass.DataVencimento = ass.DataVencimento > DateTime.Today ? ass.DataVencimento.AddDays(dias) : DateTime.Today.AddDays(dias);
+            ass.StatusAssinatura = "ATIVA";
+
+            var tenant = TenantsMock.FirstOrDefault(t => t.Id == id);
+            if (tenant != null) tenant.Ativo = true;
+
+            return Ok(new { Status = "Sucesso", Mensagem = $"Assinatura renovada por +{dias} dias! Novo vencimento: {ass.DataVencimento:dd/MM/yyyy}", Assinatura = ass });
         }
 
         [HttpGet("assinaturas")]
