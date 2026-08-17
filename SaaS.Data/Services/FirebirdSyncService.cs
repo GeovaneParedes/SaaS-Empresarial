@@ -265,6 +265,69 @@ namespace SaaS.Data.Services
             return ofertas;
         }
 
+        public class ProdutoTabelaTvDto
+        {
+            public int Id { get; set; }
+            public string Nome { get; set; } = string.Empty;
+            public string Categoria { get; set; } = "bovino";
+            public decimal PrecoVenda { get; set; }
+            public decimal OfertaPraticada { get; set; }
+            public int LojaId { get; set; }
+        }
+
+        public List<ProdutoTabelaTvDto> ObterProdutosPostgresDjango(string pgConnStr, int lojaId)
+        {
+            var produtos = new List<ProdutoTabelaTvDto>();
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
+                {
+                    conn.Open();
+                    string sql = @"
+                        SELECT 
+                            id,
+                            nome,
+                            COALESCE(categoria, 'bovino') AS categoria,
+                            COALESCE(preco_venda, 0) AS preco_venda,
+                            COALESCE(oferta_praticada, 0) AS oferta_praticada,
+                            COALESCE(loja_id, 1) AS loja_id
+                        FROM produtos
+                        WHERE loja_id = @LojaId OR @LojaId = 0
+                        ORDER BY nome ASC;";
+
+                    using (var cmd = new Npgsql.NpgsqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@LojaId", lojaId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string catRaw = reader["categoria"]?.ToString()?.ToLower() ?? "bovino";
+                                string catLimpa = catRaw.Contains("suin") || catRaw.Contains("suíno") ? "suino" :
+                                                  catRaw.Contains("diant") ? "dianteiro" :
+                                                  catRaw.Contains("embut") || catRaw.Contains("lingui") ? "embutidos" : "bovino";
+
+                                produtos.Add(new ProdutoTabelaTvDto
+                                {
+                                    Id = Convert.ToInt32(reader["id"]),
+                                    Nome = SanitizarTextoCompleto(reader["nome"]?.ToString()),
+                                    Categoria = catLimpa,
+                                    PrecoVenda = Convert.ToDecimal(reader["preco_venda"]),
+                                    OfertaPraticada = Convert.ToDecimal(reader["oferta_praticada"]),
+                                    LojaId = Convert.ToInt32(reader["loja_id"])
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AVISO POSTGRES] Falha ao consultar tabela produtos: {ex.Message}");
+            }
+            return produtos;
+        }
+
         public List<LancamentoFinanceiroSaaS> ObterLancamentosPostgres(string pgConnStr)
         {
             var lancamentos = new List<LancamentoFinanceiroSaaS>();

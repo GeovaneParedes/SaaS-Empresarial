@@ -222,21 +222,34 @@ namespace SaaS.Api.Controllers
                 .Select(o => new { id = o.Id, nome = o.ProdutoNome, preco_oferta = o.PrecoOferta.ToString("F2") })
                 .ToList();
 
-            var tabela = new List<object>
+            var produtosPostgres = syncService.ObterProdutosPostgresDjango(PgConnStr, lojaId);
+
+            var tabela = produtosPostgres.Select(p => new
             {
-                new { produto = "ALCATRA MATURADA", preco = "54,99", categoria = "bovino" },
-                new { produto = "CONTRA FILÉ", preco = "58,99", categoria = "bovino" },
-                new { produto = "COXÃO MOLE S/CAPA", preco = "57,99", categoria = "bovino" },
-                new { produto = "PICANHA PREMIUM", preco = "79,99", categoria = "bovino" },
-                new { produto = "MÚSCULO BOVINO", preco = "39,99", categoria = "dianteiro" },
-                new { produto = "AGULHA C/ OSSO", preco = "16,99", categoria = "dianteiro" },
-                new { produto = "PONTA DE PEITO", preco = "49,99", categoria = "dianteiro" },
-                new { produto = "COSTELA RIPA", preco = "29,99", categoria = "dianteiro" },
-                new { produto = "PERNIL SUÍNO", preco = "13,99", categoria = "suino" },
-                new { produto = "PALETA SUÍNA", preco = "13,99", categoria = "suino" },
-                new { produto = "KIT FEIJOADA", preco = "11,99", categoria = "suino" },
-                new { produto = "LINGUIÇA SUÍNA MATEL", preco = "29,50", categoria = "embutidos" }
-            };
+                produto = p.Nome,
+                preco = p.PrecoVenda.ToString("N2"),
+                categoria = p.Categoria
+            }).ToList<object>();
+
+            // Se a tabela do PostgreSQL estiver vazia para a loja, usa o fallback local
+            if (tabela.Count == 0)
+            {
+                tabela = new List<object>
+                {
+                    new { produto = "ALCATRA MATURADA", preco = "54,99", categoria = "bovino" },
+                    new { produto = "CONTRA FILÉ", preco = "58,99", categoria = "bovino" },
+                    new { produto = "COXÃO MOLE S/CAPA", preco = "57,99", categoria = "bovino" },
+                    new { produto = "PICANHA PREMIUM", preco = "79,99", categoria = "bovino" },
+                    new { produto = "MÚSCULO BOVINO", preco = "39,99", categoria = "dianteiro" },
+                    new { produto = "AGULHA C/ OSSO", preco = "16,99", categoria = "dianteiro" },
+                    new { produto = "PONTA DE PEITO", preco = "49,99", categoria = "dianteiro" },
+                    new { produto = "COSTELA RIPA", preco = "29,99", categoria = "dianteiro" },
+                    new { produto = "PERNIL SUÍNO", preco = "13,99", categoria = "suino" },
+                    new { produto = "PALETA SUÍNA", preco = "13,99", categoria = "suino" },
+                    new { produto = "KIT FEIJOADA", preco = "11,99", categoria = "suino" },
+                    new { produto = "LINGUIÇA SUÍNA MATEL", preco = "29,50", categoria = "embutidos" }
+                };
+            }
 
             return Ok(new
             {
