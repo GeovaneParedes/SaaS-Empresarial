@@ -505,5 +505,89 @@ namespace HarrisonSaaS.Api.Controllers
 
             return Ok(resp);
         }
+
+        // =========================================================================
+        // MÓDULO 4: AI PURCHASING - SUGESTÃO PREDITIVA DE COMPRAS
+        // =========================================================================
+
+        [HttpGet("ai-purchasing")]
+        public IActionResult GetSugestaoCompraPreditiva([FromQuery] int lojaId = 1)
+        {
+            DateTime dataFim = DateTime.Today;
+            DateTime dataIni = dataFim.AddDays(-14); // Analisa histórico dos últimos 14 dias
+
+            var firebirdService = new FirebirdSyncService();
+            string dbPath = "/opt/firebird/data/DADOS_CASADECARNEEXCELENCIA.FDB";
+            if (lojaId == 2) dbPath = "/opt/firebird/data/PITSTOPDACARNE.FDB";
+            else if (lojaId == 3) dbPath = "/opt/firebird/data/CasaDeCarneCunhaFB50.FDB";
+
+            var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto("200.150.202.5", dbPath, "SYSDBA", "***REMOVED***", dataIni, dataFim);
+
+            // Agrupa vendas por produto
+            var grupoProds = cupons
+                .SelectMany(c => c.Itens)
+                .GroupBy(i => i.ProdutoDescricao)
+                .Select(g => new
+                {
+                    Produto = g.Key,
+                    TotalQtdKg = g.Sum(x => x.Quantidade),
+                    PrecoMedio = g.Average(x => x.PrecoUnitario)
+                })
+                .OrderByDescending(x => x.TotalQtdKg)
+                .Take(12)
+                .ToList();
+
+            var itensSugestao = new List<ItemSugestaoCompraSaaS>();
+            decimal custoTotalCompra = 0m;
+            decimal pesoTotalCarnesNecessario = 0m;
+
+            foreach (var p in grupoProds)
+            {
+                decimal mediaDiaria = Math.Round(p.TotalQtdKg / 14m, 2);
+                // Fim de semana (Sexta/Sábado/Domingo) vende 2.8x mais que dia útil
+                decimal previsaoFimDeSemana = Math.Round(mediaDiaria * 3.5m * 2.8m, 2);
+                decimal estoqueEstimado = Math.Round(mediaDiaria * 1.2m, 2); // Estoque de quinta-feira
+                decimal sugeridoKg = Math.Max(0m, Math.Round(previsaoFimDeSemana - estoqueEstimado, 2));
+
+                decimal custoEstimadoKg = Math.Round(p.PrecoMedio * 0.65m, 2); // Custo médio ~65% do valor da venda
+                decimal valorTotalItem = Math.Round(sugeridoKg * custoEstimadoKg, 2);
+
+                custoTotalCompra += valorTotalItem;
+                pesoTotalCarnesNecessario += sugeridoKg;
+
+                string urgencia = sugeridoKg > 80m ? "CRITICO" : sugeridoKg > 30m ? "MODERADO" : "ESTAVEL";
+
+                itensSugestao.Add(new ItemSugestaoCompraSaaS
+                {
+                    ProdutoNome = p.Produto,
+                    Unidade = "KG",
+                    MediaVendaDiariaKg = mediaDiaria,
+                    PrevisaoVendaFimDeSemanaKg = previsaoFimDeSemana,
+                    EstoqueAtualEstimadoKg = estoqueEstimado,
+                    SugestaoCompraKg = sugeridoKg,
+                    PrecoCustoEstimadoKg = custoEstimadoKg,
+                    ValorTotalEstimadoCompra = valorTotalItem,
+                    NivelUrgencia = urgencia
+                });
+            }
+
+            // Converte o peso total de carne necessário em Carcaças de Boi Casado (Rendimento de ~186kg líquidos por carcaça de 218kg)
+            int qtdCarcacas = (int)Math.Ceiling(pesoTotalCarnesNecessario / 186.96m);
+
+            var resp = new SugestaoCompraPreditivaSaaS
+            {
+                LojaId = lojaId,
+                LojaNome = $"LOJA #{lojaId}",
+                DataGeracao = DateTime.Now,
+                PeriodoPrevisaoInicio = DateTime.Today.AddDays((int)DayOfWeek.Friday - (int)DateTime.Today.DayOfWeek),
+                PeriodoPrevisaoFim = DateTime.Today.AddDays((int)DayOfWeek.Sunday - (int)DateTime.Today.DayOfWeek),
+                CustoTotalEstimadoPedidos = Math.Round(custoTotalCompra, 2),
+                QtdCarcacasBoiSugestao = Math.Max(1, qtdCarcacas),
+                PesoTotalBoiSugestaoKg = Math.Round(pesoTotalCarnesNecessario, 2),
+                ItensRecomendados = itensSugestao
+            };
+
+            return Ok(resp);
+        }
     }
 }
