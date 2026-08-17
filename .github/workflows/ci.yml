@@ -15,12 +15,6 @@ jobs:
     - name: Checkout do Repositório
       uses: actions/checkout@v4
 
-    - name: Configurar SDK .NET 8.0
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
-      continue-on-error: true
-
     - name: Restaurar Pacotes NuGet
       run: dotnet restore
 
