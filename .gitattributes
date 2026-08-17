@@ -1,8 +1,8 @@
 # Configuração de Linguagens do GitHub (GitHub Linguist)
 # Força o GitHub a classificar o projeto prioritariamente como C# e ignora arquivos HTML de visualização
 
-HarrisonSaaS.Web/*.html linguist-vendored
-HarrisonSaaS.Web/**/*.html linguist-vendored
+SaaS.Web/*.html linguist-vendored
+SaaS.Web/**/*.html linguist-vendored
 
 *.cs linguist-detectable=true
 *.csproj linguist-detectable=true

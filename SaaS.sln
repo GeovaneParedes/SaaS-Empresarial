@@ -1,15 +1,15 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HarrisonSaaS.Core", "HarrisonSaaS.Core\HarrisonSaaS.Core.csproj", "{CAD0A2E2-3861-4630-A939-D473B8283949}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaaS.Core", "SaaS.Core\SaaS.Core.csproj", "{CAD0A2E2-3861-4630-A939-D473B8283949}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HarrisonSaaS.Data", "HarrisonSaaS.Data\HarrisonSaaS.Data.csproj", "{D07BAAE8-D9FD-43FE-9CBD-6240E1FFCA23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaaS.Data", "SaaS.Data\SaaS.Data.csproj", "{D07BAAE8-D9FD-43FE-9CBD-6240E1FFCA23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HarrisonSaaS.Api", "HarrisonSaaS.Api\HarrisonSaaS.Api.csproj", "{447CE687-65A7-45FF-A814-F106B16283BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaaS.Api", "SaaS.Api\SaaS.Api.csproj", "{447CE687-65A7-45FF-A814-F106B16283BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HarrisonSaaS.Tests", "HarrisonSaaS.Tests\HarrisonSaaS.Tests.csproj", "{1B223F59-900B-404D-945D-F1629BD56EBB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaaS.Tests", "SaaS.Tests\SaaS.Tests.csproj", "{1B223F59-900B-404D-945D-F1629BD56EBB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

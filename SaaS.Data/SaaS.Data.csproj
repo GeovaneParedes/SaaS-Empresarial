@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\HarrisonSaaS.Core\HarrisonSaaS.Core.csproj" />
+    <ProjectReference Include="..\SaaS.Core\SaaS.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

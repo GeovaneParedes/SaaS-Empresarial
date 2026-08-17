@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using HarrisonSaaS.Core.Entities;
-using HarrisonSaaS.Data.Services;
+using SaaS.Core.Entities;
+using SaaS.Data.Services;
 
-namespace HarrisonSaaS.Api.Controllers
+namespace SaaS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

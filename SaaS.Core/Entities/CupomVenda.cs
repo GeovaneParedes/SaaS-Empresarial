@@ -1,4 +1,4 @@
-namespace HarrisonSaaS.Core.Entities
+namespace SaaS.Core.Entities
 {
     public class CupomVenda
     {

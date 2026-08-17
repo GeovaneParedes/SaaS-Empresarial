@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using HarrisonSaaS.Core.Entities;
+using SaaS.Core.Entities;
 
-namespace HarrisonSaaS.Data.Services
+namespace SaaS.Data.Services
 {
     public class CargaBalancaToledoService
     {
