@@ -441,6 +441,52 @@
                 width: 100%;
             }
         }
+
+        /* Responsividade para Formulários e Cards da Aba Lançamentos & Boletos */
+        .form-grid-lancamentos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1rem;
+            align-items: end;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .lancamento-card-grid {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .lancamento-card {
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 900px) {
+            .table-lancamentos-desktop {
+                display: none;
+            }
+            .lancamento-card-grid {
+                display: grid;
+            }
+            .form-grid-lancamentos {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-grid-lancamentos {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1268,7 +1314,7 @@
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-plus-circle" style="color: var(--accent-green);"></i> Novo Lançamento Financeiro & Boleto</div>
                 </div>
-                <form id="form-novo-lancamento" onsubmit="salvarNovoLancamento(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end; width: 100%; max-width: 100%; box-sizing: border-box;">
+                <form id="form-novo-lancamento" onsubmit="salvarNovoLancamento(event)" class="form-grid-lancamentos">
                     <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">SELECIONAR LOJA</label>
                         <select id="lanc-loja" class="form-input-saas" style="width: 100%; box-sizing: border-box;">
@@ -1367,7 +1413,7 @@
                         </select>
                     </div>
                     <div style="grid-column: 1 / -1; text-align: right; margin-top: 0.5rem;">
-                        <button type="submit" class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary)); font-weight: 800; padding: 0.75rem 1.6rem;">
+                        <button type="submit" class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary)); font-weight: 800; padding: 0.75rem 1.6rem; width: 100%; justify-content: center;">
                             <i class="fa-solid fa-plus-circle"></i> Adicionar Lançamento
                         </button>
                     </div>
@@ -1379,7 +1425,8 @@
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-receipt"></i> Lançamento e Controle de Boletos, Despesas e Pagamentos</div>
                 </div>
-                <div class="table-responsive">
+                <!-- Visão Tabela Desktop -->
+                <div class="table-responsive table-lancamentos-desktop">
                     <table>
                         <thead>
                             <tr>
@@ -1400,6 +1447,9 @@
                         <tbody id="table-lancamentos-body"></tbody>
                     </table>
                 </div>
+
+                <!-- Visão Cards Responsivos para Mobile e Tablets -->
+                <div id="lancamentos-cards-container" class="lancamento-card-grid"></div>
             </div>
         </section>
 
@@ -1955,7 +2005,11 @@
                 const resLanc = await fetchWithAuth('/ModulosSaaS/lancamentos');
                 const lancs = await resLanc.json();
                 const tbodyLanc = document.getElementById('table-lancamentos-body');
-                tbodyLanc.innerHTML = '';
+                const cardsContainerLanc = document.getElementById('lancamentos-cards-container');
+                
+                if (tbodyLanc) tbodyLanc.innerHTML = '';
+                if (cardsContainerLanc) cardsContainerLanc.innerHTML = '';
+
                 lancs.forEach(l => {
                     const statusPagoStr = l.statusPago || (l.valorPago >= l.valorAPagar && l.valorAPagar > 0 ? 'PAGO' : 'A VENCER');
                     const statusBadge = statusPagoStr === 'PAGO'
@@ -1971,21 +2025,52 @@
                     const catStr = l.categoria || 'MERCADORIA';
                     const entradaVal = l.valorRecebidoEntrada || 0;
 
-                    tbodyLanc.innerHTML += `
-                        <tr>
-                            <td style="font-weight: 700; color: var(--primary);">#${l.id}</td>
-                            <td style="font-weight: 700;">${sanitizeHTML(l.lojaNome)}</td>
-                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${sanitizeHTML(catStr)}</span></td>
-                            <td>${l.data ? l.data.split('T')[0] : '-'}</td>
-                            <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sanitizeHTML(l.descricao)}</td>
-                            <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
-                            <td style="color: var(--accent-cyan); font-weight: 700;">R$ ${entradaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                            <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                            <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                            <td><span class="badge-payment badge-debito">${sanitizeHTML(l.formaPagamento)}</span></td>
-                            <td>${confBadge}</td>
-                            <td>${statusBadge}</td>
-                        </tr>`;
+                    // Renderização Tabela Desktop
+                    if (tbodyLanc) {
+                        tbodyLanc.innerHTML += `
+                            <tr>
+                                <td style="font-weight: 700; color: var(--primary);">#${l.id}</td>
+                                <td style="font-weight: 700;">${sanitizeHTML(l.lojaNome)}</td>
+                                <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${sanitizeHTML(catStr)}</span></td>
+                                <td>${l.data ? l.data.split('T')[0] : '-'}</td>
+                                <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sanitizeHTML(l.descricao)}</td>
+                                <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
+                                <td style="color: var(--accent-cyan); font-weight: 700;">R$ ${entradaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                <td><span class="badge-payment badge-debito">${sanitizeHTML(l.formaPagamento)}</span></td>
+                                <td>${confBadge}</td>
+                                <td>${statusBadge}</td>
+                            </tr>`;
+                    }
+
+                    // Renderização Cards Responsivos (Mobile/Tablet)
+                    if (cardsContainerLanc) {
+                        cardsContainerLanc.innerHTML += `
+                            <div class="lancamento-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 800; color: var(--primary);">#${l.id} • ${sanitizeHTML(l.lojaNome)}</span>
+                                    <div>${statusBadge}</div>
+                                </div>
+                                <div style="font-weight: 700; color: #fff; font-size: 0.95rem; margin: 0.25rem 0;">${sanitizeHTML(l.descricao)}</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; color: var(--text-muted);">
+                                    <div><i class="fa-solid fa-tag"></i> <strong>Categoria:</strong> ${sanitizeHTML(catStr)}</div>
+                                    <div><i class="fa-solid fa-credit-card"></i> <strong>PGTO:</strong> ${sanitizeHTML(l.formaPagamento)}</div>
+                                    <div><i class="fa-solid fa-calendar"></i> <strong>Data:</strong> ${l.data ? l.data.split('T')[0] : '-'}</div>
+                                    <div><i class="fa-solid fa-clock"></i> <strong>Vencimento:</strong> ${l.vencimento ? l.vencimento.split('T')[0] : '-'}</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); padding: 0.65rem 0.85rem; border-radius: 8px; margin-top: 0.35rem;">
+                                    <div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">A PAGAR (BOLETO)</div>
+                                        <div style="color: var(--accent-rose); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">VALOR PAGO</div>
+                                        <div style="color: var(--accent-green); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
                 });
 
                 // Carregar Tenants no Painel Master do Administrador
