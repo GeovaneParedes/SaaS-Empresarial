@@ -233,13 +233,16 @@ namespace HarrisonSaaS.Core.Entities
         public int Id { get; set; }
         public int LojaId { get; set; }
         public string LojaNome { get; set; } = string.Empty;
-        public DateTime Data { get; set; }
+        public string Categoria { get; set; } = "MERCADORIA"; // DIVIDA ACUMULADA/PASSIVO, LANCHE, CONVENIO, RECEBIMENTO, AJUSTE, VENDA, FIXAS, CAPITAL DE GIRO, INVESTIMENTO, PROLABORE, VARIAVEIS, MERCADORIA
+        public DateTime Data { get; set; } = DateTime.Today;
         public string Descricao { get; set; } = string.Empty;
-        public DateTime? Vencimento { get; set; }
-        public decimal ValorAPagar { get; set; }
-        public decimal ValorPago { get; set; }
-        public string FormaPagamento { get; set; } = "BOLETO";
-        public bool Confirmado { get; set; }
+        public string FormaPagamento { get; set; } = "BOLETO"; // CARTAO, DINHEIRO, NUBANK, INTER, BOLETO, PIX
+        public DateTime Vencimento { get; set; } = DateTime.Today;
+        public decimal ValorRecebidoEntrada { get; set; } = 0m;
+        public decimal ValorAPagar { get; set; } = 0m;
+        public decimal ValorPago { get; set; } = 0m;
+        public string ConfirmadoStatus { get; set; } = "SIM"; // DESCONHECIDO, SIM, NAO
+        public string StatusPago { get; set; } = "PAGO"; // PAGO, A VENCER, ATRASADO
     }
 
     public class VendasDiariasResumoSaaS
