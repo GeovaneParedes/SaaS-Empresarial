@@ -123,6 +123,28 @@ namespace HarrisonSaaS.Core.Entities
         public List<ItemSugestaoCompraSaaS> ItensRecomendados { get; set; } = new();
     }
 
+    public class ItemCardapioDigitalSaaS
+    {
+        public int Id { get; set; }
+        public string Categoria { get; set; } = "BOVINO NOBRE"; // BOVINO NOBRE, DIA A DIA, SUINO, LINGUICAS, CHURRASCO
+        public string NomeCorte { get; set; } = string.Empty;
+        public decimal PrecoNormalKg { get; set; }
+        public decimal PrecoOfertaKg { get; set; }
+        public bool EmOferta { get; set; }
+        public string FotoUrl { get; set; } = string.Empty;
+        public bool EmEstoque { get; set; } = true;
+    }
+
+    public class MensagemWhatsappCotacaoSaaS
+    {
+        public int LojaId { get; set; }
+        public string LojaNome { get; set; } = string.Empty;
+        public string NumeroClienteWhatsapp { get; set; } = string.Empty;
+        public string TextoFormatadoWhatsapp { get; set; } = string.Empty;
+        public DateTime DataHoraEnvio { get; set; } = DateTime.Now;
+        public string LinkCardapioDigital { get; set; } = string.Empty;
+    }
+
     public class Loja
     {
         public int Id { get; set; }
