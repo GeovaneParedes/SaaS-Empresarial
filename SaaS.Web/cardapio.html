@@ -16,11 +16,8 @@
             background-color: #0b0f19;
             color: #f8fafc;
         }
-        .glow-effect {
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.25);
-        }
         .glass-card {
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
@@ -32,7 +29,7 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between pb-12">
 
-    <!-- CABEÇALHO EXECUTIVO DO CLIENTE -->
+    <!-- CABEÇALHO EXECUTIVO DA UNIDADE -->
     <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -40,126 +37,155 @@
                 <div>
                     <h1 id="loja-nome-header" class="text-lg sm:text-xl font-black text-white uppercase tracking-tight">CASA DE CARNES EXCELÊNCIA</h1>
                     <p id="loja-subtitulo" class="text-xs text-amber-400 font-bold flex items-center gap-1">
-                        <i class="fa-solid fa-fire"></i> Cardápio Digital & Sugestões de Consumo Oficial
+                        <i class="fa-solid fa-fire"></i> Guia Gastronômico de Carnes & Sugestões de Consumo
                     </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
                 <a id="btn-pedir-whatsapp" href="https://wa.me/5567992988507" target="_blank" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-2 text-sm transition-all">
-                    <i class="fa-brands fa-whatsapp text-lg"></i> Fazer Pedido no WhatsApp
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Pedido no WhatsApp
                 </a>
             </div>
         </div>
     </header>
 
-    <!-- BANNER DE BOAS-VINDAS -->
+    <!-- BANNER DE APRESENTAÇÃO -->
     <section class="max-w-6xl mx-auto px-4 pt-6">
         <div class="bg-gradient-to-r from-red-950 via-slate-900 to-amber-950/40 border border-red-500/30 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
             <div class="relative z-10 max-w-2xl">
                 <span class="bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                    🥩 Experiência Gastronômica Completa
+                    🥩 GUIA DE CORTES & SUGGESTÕES DO CHEFE
                 </span>
                 <h2 class="text-2xl sm:text-4xl font-black text-white mt-3 mb-2 tracking-tight">
-                    Qual o churrasco ou prato de hoje?
+                    Qual o prato ideal para a sua receita hoje?
                 </h2>
                 <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-                    Confira nossa seleção especial de cortes nobres, práticos para o dia a dia e sugestões completas do chefe de cozinha para acertar no preparo!
+                    Confira os cortes de carnes bovinas selecionadas com dicas exclusivas de preparo para churrasco, panela de pressão, bifes suculentos e assados em geral!
                 </p>
             </div>
         </div>
     </section>
 
-    <!-- MENU DE NAVEGAÇÃO DE RÓTULOS DE CARNE -->
+    <!-- GUIA COMPLETO DE CORTES E RECEITAS -->
     <main class="max-w-6xl mx-auto px-4 mt-8 flex-1">
         <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
             <h3 class="text-lg font-black text-white uppercase tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-utensils text-red-500"></i> Sugestões de Consumo & Cortes em Destaque
+                <i class="fa-solid fa-drumstick-bite text-red-500"></i> Catálogo Completo de Cortes & Sugestões de Preparo
             </h3>
-            <span class="text-xs text-slate-400 font-semibold hidden sm:block">Preços e imagens em tempo real</span>
+            <span class="text-xs text-slate-400 font-semibold hidden sm:block">Dicas de Chef & Fotos Reais do Açougue</span>
         </div>
 
-        <!-- GRID DE CORTES E RECEITAS RECOMENDADAS -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            <!-- CARD 1: PICANHA -->
+            <!-- CARD 1: ALCATRA BOVINA -->
             <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
                 <div>
                     <div class="h-48 overflow-hidden relative">
-                        <img src="img_picanha.jpg" alt="Picanha Grill" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
-                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">CHURRASCO NOBRE</span>
+                        <img src="img_alcatra_bovina.jpg" alt="Alcatra Bovina" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">NOBRE & VERSÁTIL</span>
                     </div>
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-lg font-black text-white uppercase">Picanha Bovina Grill</h4>
-                            <span class="text-lg font-black text-amber-400 font-mono">R$ 69,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
-                        </div>
-                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
-                            Corte com capa de gordura uniforme, maciez extrema e sabor inconfundível. Perfeito para a grelha e espeto.
-                        </p>
-                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
-                            <p class="text-xs text-slate-300">
-                                <strong>Picanha na Brasa com Sal Grosso:</strong> Sele os bifes de 2 a 3 dedos em fogo forte por 3 min de cada lado e finalize na parte superior da churrasqueira.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 pt-0">
-                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Picanha%20Bovina%20Grill" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
-                        <i class="fa-solid fa-cart-shopping"></i> Pedir Picanha no WhatsApp
-                    </a>
-                </div>
-            </div>
-
-            <!-- CARD 2: ALCATRA C/ MAMINHA -->
-            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
-                <div>
-                    <div class="h-48 overflow-hidden relative">
-                        <img src="img_alcatra.jpg" alt="Alcatra Bovina" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
-                        <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">VERSÁTIL & MACIA</span>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-lg font-black text-white uppercase">Alcatra Completa c/ Maminha</h4>
+                            <h4 class="text-lg font-black text-white uppercase">Alcatra Bovina Selecionada</h4>
                             <span class="text-lg font-black text-amber-400 font-mono">R$ 39,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
                         </div>
                         <p class="text-xs text-slate-400 mb-4 line-clamp-2">
-                            Carne magra, extremamente suculenta e sem nervos. Excelente para bifes rápidos na frigideira, strogonoff ou churrasco.
+                            Corte nobre com baixíssimo teor de gordura e fibras macias. Excelente para bifes altos e churrasco de grelha.
                         </p>
                         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
                             <p class="text-xs text-slate-300">
-                                <strong>Bife Acebolado com Alho na Manteiga:</strong> Dobre o sabor dourando dentes de alho na manteiga de garrafa e finalize com bastante cebola fatiada.
+                                <strong>Bifes Grelhados na Manteiga de Alho:</strong> Frite em frigideira bem quente por 2 minutos de cada lado para manter a suculência interna.
                             </p>
                         </div>
                     </div>
                 </div>
                 <div class="p-5 pt-0">
-                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Alcatra%20Completa" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Alcatra%20Bovina" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
                         <i class="fa-solid fa-cart-shopping"></i> Pedir Alcatra no WhatsApp
                     </a>
                 </div>
             </div>
 
-            <!-- CARD 3: CONTRA FILÉ -->
+            <!-- CARD 2: BIFE AMERICANO -->
             <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
                 <div>
                     <div class="h-48 overflow-hidden relative">
-                        <img src="img_contrafile.jpg" alt="Contra Filé Grill" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
-                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">CHURRASCO & BIFE</span>
+                        <img src="img_bife_americano.jpg" alt="Bife Americano" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">CORTE T-BONE / TIRA</span>
                     </div>
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-lg font-black text-white uppercase">Contra Filé Grill Premium</h4>
+                            <h4 class="text-lg font-black text-white uppercase">Bife Americano Premium</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 44,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Corte alto estilo Steakhouse Americano, com marmoreio ideal e textura incomparável.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Steak na Parrilla c/ Sal Grosso e Pimenta:</strong> Grelhe em brasa alta bem perto do fogo para selar uma crosta crocante e servir ao ponto rosa.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Bife%20Americano" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Bife Americano no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 3: FILÉ MIGNON -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_file_mignon.jpg" alt="Filé Mignon" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">SUPREMA MACIEZ</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Filé Mignon Bocado Grelhado</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 64,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            A carne mais macia do boi, sem nenhuma gordura. Ideal para medalhões, strogonoff ou grelhados finos.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Medalhão ao Molho de Vinho / Madeira:</strong> Enrole com uma fatia de bacon, sele na frigideira e cubra com molho gorgonzola ou molho madeira.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Filé%20Mignon" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Filé Mignon no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 4: CORTE CONTRA FILÉ -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_contra_file.jpg" alt="Contra Filé" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">CLÁSSICO DO CHURRASCO</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Contra Filé Selecionado</h4>
                             <span class="text-lg font-black text-amber-400 font-mono">R$ 42,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
                         </div>
                         <p class="text-xs text-slate-400 mb-4 line-clamp-2">
-                            Corte tradicional do churrasco brasileiro com sabor acentuado e textura macia com leve marbling.
+                            Corte longo e saboroso com uma capa de gordura lateral macia que derrete durante o cozimento.
                         </p>
                         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
                             <p class="text-xs text-slate-300">
-                                <strong>Bife Ancho à Chorizo:</strong> Corte em bifes grossos (3cm), tempere apenas com flor de sal e pimenta do reino moída na hora e sirva ao ponto para malpassado.
+                                <strong>Bife à Bife ou Churrasco de Grelha:</strong> Asse os bifes de 2cm em grelha bem quente, salpicando sal de parrilla logo após virar a carne.
                             </p>
                         </div>
                     </div>
@@ -171,25 +197,55 @@
                 </div>
             </div>
 
-            <!-- CARD 4: COSTELA RIPA -->
+            <!-- CARD 5: MAMINHA BOVINA -->
             <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
                 <div>
                     <div class="h-48 overflow-hidden relative">
-                        <img src="img_costela.jpg" alt="Costela Ripa" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <img src="img_maminha_bovina.jpg" alt="Maminha Bovina" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">ASSADOS & GRELHA</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Maminha Bovina de Primeira</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 39,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Parte mais macia da alcatra, formato triangular e suculência fantástica para assar inteira no forno ou espeto.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Maminha Assada na Cerveja Preta:</strong> Asse no forno coberta com papel alumínio por 1h30 com molho de cerveja preta e cebolas fatiadas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Maminha%20Bovina" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Maminha no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 6: COSTELA RIPA -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_costela_ripa.jpg" alt="Costela Ripa" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
                         <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">ASSADO LENTO</span>
                     </div>
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-lg font-black text-white uppercase">Costela Ripa de Boi</h4>
+                            <h4 class="text-lg font-black text-white uppercase">Costela Ripa Bovina Especial</h4>
                             <span class="text-lg font-black text-amber-400 font-mono">R$ 20,99<span class="text-xs text-slate-400 font-normal">/kg</span></span>
                         </div>
                         <p class="text-xs text-slate-400 mb-4 line-clamp-2">
-                            Rica em marmoreio e osso saboroso. O assado que desmancha na boca com aroma inesquecível.
+                            Corte tradicional gaúcho com sabor inconfundível do osso e gordura entrelaçada.
                         </p>
                         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
                             <p class="text-xs text-slate-300">
-                                <strong>Costela no Bafo c/ Papel Alumínio:</strong> Embrulhe em 5 voltas de papel celofane/alumínio e asse por 3 a 4 horas em brasa branda até soltar do osso.
+                                <strong>Costela no Bafo com Mandioca:</strong> Asse lentamente envolvida em papel celofane até que a carne solte facilmente do osso, acompanhada de mandioca cozida na manteiga.
                             </p>
                         </div>
                     </div>
@@ -201,62 +257,152 @@
                 </div>
             </div>
 
-            <!-- CARD 5: LINGUIÇA ARTESANAL -->
+            <!-- CARD 7: PALETA BOVINA DE PANELA -->
             <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
                 <div>
                     <div class="h-48 overflow-hidden relative">
-                        <img src="img_linguica.jpg" alt="Linguiça de Costela" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
-                        <span class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">ESPECIALIDADE</span>
+                        <img src="img_paleta_panela.jpg" alt="Paleta Bovina de Panela" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-emerald-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">PANELA & COZIDOS</span>
                     </div>
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-lg font-black text-white uppercase">Linguiça Artesanal de Costela</h4>
-                            <span class="text-lg font-black text-amber-400 font-mono">R$ 24,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                            <h4 class="text-lg font-black text-white uppercase">Paleta Bovina p/ Panela</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 29,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
                         </div>
                         <p class="text-xs text-slate-400 mb-4 line-clamp-2">
-                            Produzida diariamente no açougue com carne de costela bovina temperada no ponto certo.
+                            Corte saboroso do dianteiro, rico em colágeno, ficando extremamente suculento e macio na panela de pressão.
                         </p>
                         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
                             <p class="text-xs text-slate-300">
-                                <strong>Petisco na Grelha c/ Limão e Cheiro Verde:</strong> Asse inteira sem furar a tripa para manter a suculência e sirva fatiada com pão de alho crocante.
+                                <strong>Carne de Panela c/ Batatas e Cenoura:</strong> Refogue com alho, cebola, extrato de tomate e deixe cozinhar na pressão por 35 minutos até desmanchar.
                             </p>
                         </div>
                     </div>
                 </div>
                 <div class="p-5 pt-0">
-                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Linguiça%20Artesanal" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
-                        <i class="fa-solid fa-cart-shopping"></i> Pedir Linguiça no WhatsApp
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Paleta%20Bovina" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Paleta no WhatsApp
                     </a>
                 </div>
             </div>
 
-            <!-- CARD 6: CUPIM -->
+            <!-- CARD 8: PATINHO BOVINO -->
             <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
                 <div>
                     <div class="h-48 overflow-hidden relative">
-                        <img src="img_cupim.jpg" alt="Cupim Bovino" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
-                        <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">PREMIUM SUCCULENT</span>
+                        <img src="img_patinho.jpg" alt="Patinho Bovino" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-emerald-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">MAGRO & MOÍDO</span>
                     </div>
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-lg font-black text-white uppercase">Cupim Bovino Selecionado</h4>
-                            <span class="text-lg font-black text-amber-400 font-mono">R$ 38,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                            <h4 class="text-lg font-black text-white uppercase">Patinho Bovino Limpo</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 36,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
                         </div>
                         <p class="text-xs text-slate-400 mb-4 line-clamp-2">
-                            Gordura entrelaçada que confere aroma e sabor únicos. O queridinho das churrascarias sul-mato-grossenses.
+                            Carne 100% magra do traseiro, sem gordura. A escolha perfeita para carne moída de primeira, bifes à milanesa e hambúrgueres fit.
                         </p>
                         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão do Chefe:</span>
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
                             <p class="text-xs text-slate-300">
-                                <strong>Cupim Recheado c/ Queijo Manteiga:</strong> Faça fendas no cupim assado no papel alumínio e coloque bastões de queijo derretendo antes de fatiar.
+                                <strong>Bife à Milanesa Crocante / Escondidinho:</strong> Passe os bifes na farinha de rosca temperada ou use moído para um recheio suculento de escondidinho.
                             </p>
                         </div>
                     </div>
                 </div>
                 <div class="p-5 pt-0">
-                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Cupim%20Bovino" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
-                        <i class="fa-solid fa-cart-shopping"></i> Pedir Cupim no WhatsApp
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Patinho%20Bovino" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Patinho no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 9: ISCAS / PICADINHO -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_iscas_picadinho.jpg" alt="Picadinho Iscas de Carne" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-emerald-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">PRÁTICO & RÁPIDO</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Picadinho / Iscas de Carne</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 34,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Corte picado em tiras ou cubos prontos para acelerar o preparo das refeições da semana no dia a dia.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Strogonoff Cremoso de Carne:</strong> Salteie as iscas em fogo alto, adicione cogumelos, mostarda, ketchup e finalize com creme de leite fresco.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Picadinho%20Iscas%20de%20Carne" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Iscas no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 10: CARNE ENSOPADA -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_ensopado.jpg" alt="Carne em Pedaço Ensopado" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-emerald-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">REFEIÇÃO EM FAMÍLIA</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Carne p/ Ensopado & Cozido</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 28,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Pedaços macios com umidade ideal para caldos encorpados, ensopados caipiras e cozidos com legumes.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Ensopado Caipira c/ Mandioca e Cheiro Verde:</strong> Cozinhe lentamente no molho com bacon frito e salpique bastante cheiro verde fresco ao servir.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Carne%20para%20Ensopado" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir p/ Ensopado no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD 11: COXÃO DURO BOVINO -->
+            <div class="glass-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="img_coxao_duro.jpg" alt="Bife Coxão Duro" class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span class="absolute top-3 right-3 bg-amber-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow">BIFES & ASSADOS</span>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-lg font-black text-white uppercase">Coxão Duro Bovino</h4>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 35,90<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 line-clamp-2">
+                            Corte com fibras firmes e sabor marcante. Ótimo para bifes enrolados (braciole), assados recheados ou grelhados bem finos.
+                        </p>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+                            <span class="text-[11px] font-bold text-amber-400 uppercase block mb-1">💡 Sugestão de Consumo:</span>
+                            <p class="text-xs text-slate-300">
+                                <strong>Bife Enrolado (Bifinho a Rolo):</strong> Recheie os bifes com cenoura, bacon e pimentão, prenda com palito e cozinhe no molho de tomate.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <a href="https://wa.me/5567992988507?text=Olá!%20Gostaria%20de%20pedir%20Coxão%20Duro%20Bovino" target="_blank" class="w-full bg-slate-800 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i> Pedir Coxão Duro no WhatsApp
                     </a>
                 </div>
             </div>
