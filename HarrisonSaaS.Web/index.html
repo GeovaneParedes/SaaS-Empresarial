@@ -319,6 +319,9 @@
             <li class="nav-item" onclick="trocarAba('sec-tickets-firebird', this)">
                 <a><i class="fa-solid fa-bolt"></i> Extração Tickets Firebird</a>
             </li>
+            <li class="nav-item" onclick="trocarAba('sec-whatsapp-cardapio', this)">
+                <a style="color: #25D366; font-weight: 700;"><i class="fa-brands fa-whatsapp"></i> Hub WhatsApp & Cardápio</a>
+            </li>
             <li class="nav-item" onclick="trocarAba('sec-ai-purchasing', this)">
                 <a style="color: var(--accent-amber); font-weight: 700;"><i class="fa-solid fa-robot"></i> AI Purchasing (Compras Preditivas)</a>
             </li>
@@ -739,6 +742,60 @@
                             </tr>
                         </thead>
                         <tbody id="table-ai-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: HUB WHATSAPP BOT & CARDÁPIO DIGITAL REAL-TIME -->
+        <section id="sec-whatsapp-cardapio" class="tab-section">
+            <div class="panel-box" style="margin-bottom: 1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-title" style="color: #25D366;"><i class="fa-brands fa-whatsapp" style="font-size: 1.3rem;"></i> Hub de Disparo de Cotação de Carnes via WhatsApp</div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Selecione a Loja Açougue *</label>
+                        <select id="wa-loja" class="form-input-saas" style="width: 100%;">
+                            <option value="1">Loja Excelência</option>
+                            <option value="2">Loja Pit Stop</option>
+                            <option value="3">Loja Cunha</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">WhatsApp do Cliente (Com DDD) *</label>
+                        <input type="text" id="wa-numero" class="form-input-saas" placeholder="(67) 99999-9999" required style="width: 100%;">
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button class="btn-action" style="background: #25D366; color: #000; font-weight: 800; width: 100%; padding: 0.75rem;" onclick="gerarECopiarCotacaoWhatsapp()"><i class="fa-brands fa-whatsapp"></i> Gerar Link Cotação WhatsApp</button>
+                    </div>
+                </div>
+
+                <div id="wa-resultado-box" style="display: none; margin-top: 1.5rem; background: rgba(37, 211, 102, 0.1); border: 1px solid rgba(37, 211, 102, 0.3); border-radius: 12px; padding: 1.25rem;">
+                    <div style="font-size: 0.95rem; font-weight: 800; color: #25D366; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-check"></i> Cotação Formatada Pronta para Envio!</div>
+                    <pre id="wa-texto-preview" style="background: rgba(0,0,0,0.5); padding: 1rem; border-radius: 8px; font-family: monospace; color: #f8fafc; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 1rem;"></pre>
+                    <a id="wa-link-btn" target="_blank" class="btn-action" style="background: #25D366; color: #000; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;"><i class="fa-brands fa-whatsapp"></i> Abrir Conversa no WhatsApp Web / App</a>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-utensils"></i> Cardápio Digital em Tempo Real (Visão do Cliente)</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CATEGORIA</th>
+                                <th>CORTE / PRODUTO</th>
+                                <th>PREÇO NORMAL (KG)</th>
+                                <th>PREÇO OFERTA (KG)</th>
+                                <th>DESCONTO (%)</th>
+                                <th>STATUS ESTOQUE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-cardapio-body"></tbody>
                     </table>
                 </div>
             </div>
@@ -1179,7 +1236,9 @@
             document.getElementById(secId).classList.add('active');
             if (elem) elem.classList.add('active');
 
-            if (secId === 'sec-ai-purchasing') {
+            if (secId === 'sec-whatsapp-cardapio') {
+                carregarCardapioDigital();
+            } else if (secId === 'sec-ai-purchasing') {
                 gerarOrdemCompraAI();
             } else if (secId === 'sec-fintech-tef') {
                 executarAuditoriaTEF();
@@ -1691,6 +1750,61 @@
                 });
             } catch (err) {
                 console.error("Erro ao gerar sugestão AI Purchasing:", err);
+            }
+        }
+
+        async function carregarCardapioDigital() {
+            const lojaId = document.getElementById('wa-loja') ? document.getElementById('wa-loja').value : 1;
+            try {
+                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/cardapio-digital?lojaId=${lojaId}`);
+                const data = await res.json();
+                const tbody = document.getElementById('table-cardapio-body');
+                tbody.innerHTML = '';
+
+                data.forEach(item => {
+                    const pctDesc = Math.round(((item.precoNormalKg - item.precoOfertaKg) / item.precoNormalKg) * 100);
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">${item.categoria}</span></td>
+                            <td style="font-weight: 800;">${item.nomeCorte}</td>
+                            <td style="text-decoration: line-through; color: var(--text-muted);">R$ ${item.precoNormalKg.toFixed(2)}/kg</td>
+                            <td style="font-weight: 800; color: var(--accent-green); font-size: 1.05rem;">R$ ${item.precoOfertaKg.toFixed(2)}/kg</td>
+                            <td><span class="badge-payment badge-dinheiro" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); font-weight: 800;">-${pctDesc}% OFF</span></td>
+                            <td><span class="badge-payment badge-dinheiro">🟢 DISPONÍVEL</span></td>
+                        </tr>`;
+                });
+            } catch (err) {
+                console.error("Erro ao carregar cardápio digital:", err);
+            }
+        }
+
+        async function gerarECopiarCotacaoWhatsapp() {
+            const lojaId = document.getElementById('wa-loja').value;
+            const numeroVal = document.getElementById('wa-numero').value;
+
+            if (!numeroVal) {
+                alert("⚠️ Digite o número do WhatsApp do cliente!");
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:5205/api/ModulosSaaS/whatsapp/disparar-cotacao', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lojaId: parseInt(lojaId), numeroClienteWhatsapp: numeroVal })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.status === 'Sucesso') {
+                    document.getElementById('wa-texto-preview').innerText = data.texto;
+                    document.getElementById('wa-link-btn').href = data.urlWhatsapp;
+                    document.getElementById('wa-resultado-box').style.display = 'block';
+                    document.getElementById('wa-resultado-box').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert("⚠️ " + (data.mensagem || "Erro ao gerar cotação!"));
+                }
+            } catch (err) {
+                alert("⚠️ Falha ao conectar com o servidor C# de WhatsApp!");
             }
         }
 
