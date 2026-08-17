@@ -49,7 +49,21 @@
             padding: 1.5rem 1.25rem;
             position: fixed;
             height: 100vh;
+            max-height: 100vh;
+            overflow-y: auto;
             z-index: 100;
+        }
+
+        /* Scrollbar elegante e discreta para a Sidebar */
+        aside.sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        aside.sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        aside.sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
         }
 
         .brand {
