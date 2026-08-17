@@ -785,7 +785,7 @@ namespace SaaS.Api.Controllers
                                    $"• *COSTELA RIPA PREMIUM:* ~R$ 28,90~ por *R$ 20,99/kg*\n" +
                                    $"• *LINGUIÇA DE COSTELA:* ~R$ 32,90~ por *R$ 24,90/kg*\n\n" +
                                    $"📱 *Acesse Nosso Cardápio Digital Completo:*\n" +
-                                   $"https://walked-pdt-breaking-consent.trycloudflare.com/index.html\n\n" +
+                                   $"https://characterized-strange-bite-hardware.trycloudflare.com/index.html\n\n" +
                                    $"📍 *Endereço:* {loja.Endereco}\n" +
                                    $"📞 *Faça seu Pedido via WhatsApp:* {loja.Telefone}";
 
