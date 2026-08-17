@@ -2,12 +2,20 @@ using Microsoft.AspNetCore.Mvc;
 using SaaS.Core.Entities;
 using SaaS.Data.Services;
 
+using Microsoft.Extensions.Caching.Memory;
+
 namespace SaaS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class ModulosSaaSController : ControllerBase
     {
+        private readonly IMemoryCache _cache;
+
+        public ModulosSaaSController(IMemoryCache cache)
+        {
+            _cache = cache;
+        }
         private static readonly List<Loja> LojasMock = new()
         {
             new Loja { Id = 1, Nome = "EXCELENCIA", Cnpj = "15.439.136/0001-70", Endereco = "Rua Francisco Pereira Coutinho, 1.279 - Parque Iguatemi - Campo Grande/MS", Telefone = "(67) 99248-7022" },
@@ -538,6 +546,12 @@ namespace SaaS.Api.Controllers
         [HttpGet("auditar-tef")]
         public IActionResult AuditarTaxasTEF([FromQuery] int lojaId = 1, [FromQuery] string dataInicio = "2026-08-09", [FromQuery] string dataFim = "2026-08-09")
         {
+            string cacheKey = $"audit_tef_{lojaId}_{dataInicio}_{dataFim}";
+            if (_cache.TryGetValue(cacheKey, out object? cachedResp) && cachedResp != null)
+            {
+                return Ok(cachedResp);
+            }
+
             DateTime dtIni = DateTime.TryParse(dataInicio, out var d1) ? d1 : DateTime.Today;
             DateTime dtFim = DateTime.TryParse(dataFim, out var d2) ? d2 : DateTime.Today;
 
@@ -617,6 +631,7 @@ namespace SaaS.Api.Controllers
                 DivergenciasCriticas = auditados.OrderByDescending(a => a.PrejuizoTaxaIncorreta).ToList()
             };
 
+            _cache.Set(cacheKey, resp, TimeSpan.FromSeconds(45));
             return Ok(resp);
         }
 

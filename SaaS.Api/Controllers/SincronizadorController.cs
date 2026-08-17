@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using SaaS.Data.Services;
 
 namespace SaaS.Api.Controllers
@@ -8,10 +9,12 @@ namespace SaaS.Api.Controllers
     public class SincronizadorController : ControllerBase
     {
         private readonly FirebirdSyncService _syncService;
+        private readonly IMemoryCache _cache;
 
-        public SincronizadorController()
+        public SincronizadorController(IMemoryCache cache)
         {
             _syncService = new FirebirdSyncService();
+            _cache = cache;
         }
 
         [HttpGet("extrair-pagamentos")]
@@ -19,6 +22,12 @@ namespace SaaS.Api.Controllers
         {
             try
             {
+                string cacheKey = $"ext_pag_{lojaId}_{dataInicio}_{dataFim}";
+                if (_cache.TryGetValue(cacheKey, out object? cachedResult) && cachedResult != null)
+                {
+                    return Ok(cachedResult);
+                }
+
                 var dIni = DateTime.Parse(dataInicio);
                 var dFim = DateTime.Parse(dataFim);
 
@@ -51,7 +60,7 @@ namespace SaaS.Api.Controllers
                 
                 decimal totalTaxasEstimadasMaquininha = cupons.SelectMany(c => c.Pagamentos).Sum(p => p.Valor - p.ValorLiquidoRecebido);
 
-                return Ok(new
+                var responseData = new
                 {
                     Status = "Sucesso",
                     Periodo = $"{dIni:dd/MM/yyyy} ate {dFim:dd/MM/yyyy}",
@@ -71,7 +80,10 @@ namespace SaaS.Api.Controllers
                         ValorLiquidoQueCaiuNaConta = totalVendido - totalTaxasEstimadasMaquininha
                     },
                     AmostraCupons = cupons // Retorna a totalidade dos cupons do dia sem limite artificial
-                });
+                };
+
+                _cache.Set(cacheKey, responseData, TimeSpan.FromSeconds(45));
+                return Ok(responseData);
             }
             catch (Exception ex)
             {

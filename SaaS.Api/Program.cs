@@ -2,8 +2,9 @@ using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Habilita Controllers de API em C#
+// Habilita Controllers de API em C# e Cache em Memória de Altíssima Performance
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
