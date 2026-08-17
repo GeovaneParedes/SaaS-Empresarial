@@ -1,4 +1,4 @@
-name: HarrisonSaaS CI/CD Pipeline
+name: SaaS Empresarial CI/CD Pipeline
 
 on:
   push:

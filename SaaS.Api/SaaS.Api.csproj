@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HarrisonSaaS.Data\HarrisonSaaS.Data.csproj" />
-    <ProjectReference Include="..\HarrisonSaaS.Core\HarrisonSaaS.Core.csproj" />
+    <ProjectReference Include="..\SaaS.Data\SaaS.Data.csproj" />
+    <ProjectReference Include="..\SaaS.Core\SaaS.Core.csproj" />
   </ItemGroup>
 
 </Project>
