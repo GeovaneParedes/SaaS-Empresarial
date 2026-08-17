@@ -483,6 +483,39 @@ namespace SaaS.Api.Controllers
         [HttpGet("assinaturas")]
         public IActionResult GetAssinaturas() => Ok(AssinaturasMock);
 
+        public class TaxasContratadasDto
+        {
+            public int LojaId { get; set; }
+            public decimal TaxaDebito { get; set; } = 1.29m;
+            public decimal TaxaCredito { get; set; } = 2.49m;
+            public decimal TaxaVoucher { get; set; } = 4.50m;
+        }
+
+        private static readonly Dictionary<int, TaxasContratadasDto> TaxasContratadasMock = new()
+        {
+            { 1, new TaxasContratadasDto { LojaId = 1, TaxaDebito = 1.29m, TaxaCredito = 2.49m, TaxaVoucher = 4.50m } },
+            { 2, new TaxasContratadasDto { LojaId = 2, TaxaDebito = 1.29m, TaxaCredito = 2.49m, TaxaVoucher = 4.50m } },
+            { 3, new TaxasContratadasDto { LojaId = 3, TaxaDebito = 1.29m, TaxaCredito = 2.49m, TaxaVoucher = 4.50m } }
+        };
+
+        [HttpGet("taxas-contratadas/{lojaId:int}")]
+        public IActionResult GetTaxasContratadas(int lojaId)
+        {
+            if (!TaxasContratadasMock.ContainsKey(lojaId))
+            {
+                TaxasContratadasMock[lojaId] = new TaxasContratadasDto { LojaId = lojaId };
+            }
+            return Ok(TaxasContratadasMock[lojaId]);
+        }
+
+        [HttpPut("taxas-contratadas/{lojaId:int}")]
+        public IActionResult SalvarTaxasContratadas(int lojaId, [FromBody] TaxasContratadasDto dto)
+        {
+            dto.LojaId = lojaId;
+            TaxasContratadasMock[lojaId] = dto;
+            return Ok(new { Status = "Sucesso", Mensagem = "Taxas contratadas da adquirente salvas com sucesso!", Taxas = dto });
+        }
+
         [HttpPut("lojas/{id}")]
         public IActionResult EditarLoja(int id, [FromBody] Loja lojaAtualizada)
         {
@@ -521,6 +554,8 @@ namespace SaaS.Api.Controllers
             decimal totalTaxaCobrada = 0m;
             decimal totalVendasBrutas = 0m;
 
+            var taxasLoja = TaxasContratadasMock.ContainsKey(lojaId) ? TaxasContratadasMock[lojaId] : new TaxasContratadasDto { LojaId = lojaId };
+
             int contador = 1;
             foreach (var c in cupons)
             {
@@ -530,7 +565,7 @@ namespace SaaS.Api.Controllers
                     if (forma.Contains("CARTAO") || forma.Contains("CREDITO") || forma.Contains("DEBITO") || forma.Contains("TEF") || forma.Contains("CONVENIO") || forma.Contains("VR"))
                     {
                         string modalidade = forma.Contains("CREDITO") ? "CREDITO_AVISTA" : forma.Contains("CONVENIO") || forma.Contains("VR") ? "VOUCHER_VR" : "DEBITO";
-                        decimal taxaContratadaPct = modalidade == "CREDITO_AVISTA" ? 2.49m : modalidade == "VOUCHER_VR" ? 4.50m : 1.29m;
+                        decimal taxaContratadaPct = modalidade == "CREDITO_AVISTA" ? taxasLoja.TaxaCredito : modalidade == "VOUCHER_VR" ? taxasLoja.TaxaVoucher : taxasLoja.TaxaDebito;
                         
                         // Simulação de divergência real em 12% das transações (Adquirente cobrando a mais)
                         bool temDivergencia = (contador % 7 == 0 || c.TotalVenda > 200m);

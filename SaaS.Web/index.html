@@ -828,10 +828,11 @@
         <!-- SEÇÃO: FINTECH & AUDITORIA DE TAXAS TEF E ADQUIRENTES -->
         <section id="sec-fintech-tef" class="tab-section">
             <div class="panel-box" style="margin-bottom: 1.5rem;">
-                <div class="panel-header">
+                <div class="panel-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
                     <div class="panel-title"><i class="fa-solid fa-shield-halved" style="color: var(--accent-rose);"></i> Fintech & Auditoria Automática de Taxas de Cartão/TEF</div>
-                    <div style="display: flex; gap: 0.75rem;">
-                        <select id="tef-loja" class="form-input-saas">
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn-action" style="background: var(--bg-card-hover); border: 1px solid var(--border-color);" onclick="togglePainelTaxasContratadas()"><i class="fa-solid fa-gear"></i> Configurar Taxas Contratadas</button>
+                        <select id="tef-loja" class="form-input-saas" onchange="carregarTaxasContratadasDaLoja()">
                             <option value="1">Excelência</option>
                             <option value="2">Pit Stop</option>
                             <option value="3">Cunha</option>
@@ -839,6 +840,30 @@
                         <input type="date" id="tef-data" class="form-input-saas" value="2026-08-09">
                         <button class="btn-action" style="background: var(--accent-rose);" onclick="executarAuditoriaTEF()"><i class="fa-solid fa-magnifying-glass-dollar"></i> Auditar Taxas do Dia</button>
                     </div>
+                </div>
+
+                <!-- BOX CONFIGURAÇÃO DE TAXAS CONTRATADAS POR LOJA -->
+                <div id="box-taxas-contratadas" style="display: none; margin-top: 1.25rem; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem;">
+                    <div style="font-weight: 800; color: var(--accent-cyan); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-sliders"></i> Ajustar Taxas Contratadas com a Adquirente (Stone / PagSeguro / Cielo / Rede)
+                    </div>
+                    <form id="form-taxas-contratadas" onsubmit="salvarTaxasContratadas(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
+                        <div>
+                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">TAXA DÉBITO (%)</label>
+                            <input type="number" step="0.01" id="cfg-taxa-debito" class="form-input-saas" value="1.29" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">TAXA CRÉDITO À VISTA (%)</label>
+                            <input type="number" step="0.01" id="cfg-taxa-credito" class="form-input-saas" value="2.49" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">TAXA VOUCHER / VR (%)</label>
+                            <input type="number" step="0.01" id="cfg-taxa-voucher" class="form-input-saas" value="4.50" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <button type="submit" class="btn-action" style="background: var(--accent-green); font-weight: 800; width: 100%; justify-content: center;"><i class="fa-solid fa-save"></i> Salvar Taxas</button>
+                        </div>
+                    </form>
                 </div>
 
                 <div class="kpi-grid" style="margin-top: 1rem;">
@@ -2169,6 +2194,53 @@
                 carregarTenantsMaster();
             } catch (err) {
                 alert("❌ Erro ao cadastrar novo cliente. Verifique os dados!");
+            }
+        }
+
+        function togglePainelTaxasContratadas() {
+            const box = document.getElementById('box-taxas-contratadas');
+            if (box) {
+                const visivel = box.style.display !== 'none';
+                box.style.display = visivel ? 'none' : 'block';
+                if (!visivel) carregarTaxasContratadasDaLoja();
+            }
+        }
+
+        async function carregarTaxasContratadasDaLoja() {
+            const lojaId = document.getElementById('tef-loja').value;
+            try {
+                const res = await fetchWithAuth(`/ModulosSaaS/taxas-contratadas/${lojaId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('cfg-taxa-debito').value = data.taxaDebito || 1.29;
+                    document.getElementById('cfg-taxa-credito').value = data.taxaCredito || 2.49;
+                    document.getElementById('cfg-taxa-voucher').value = data.taxaVoucher || 4.50;
+                }
+            } catch (err) {
+                console.error("Erro ao carregar taxas contratadas da loja:", err);
+            }
+        }
+
+        async function salvarTaxasContratadas(e) {
+            if (e) e.preventDefault();
+            const lojaId = parseInt(document.getElementById('tef-loja').value);
+            const dto = {
+                lojaId: lojaId,
+                taxaDebito: parseFloat(document.getElementById('cfg-taxa-debito').value),
+                taxaCredito: parseFloat(document.getElementById('cfg-taxa-credito').value),
+                taxaVoucher: parseFloat(document.getElementById('cfg-taxa-voucher').value)
+            };
+
+            try {
+                const res = await fetchWithAuth(`/ModulosSaaS/taxas-contratadas/${lojaId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(dto)
+                });
+                const data = await res.json();
+                alert(`✅ ${data.mensagem || 'Taxas da loja salvas com sucesso!'}`);
+                executarAuditoriaTEF();
+            } catch (err) {
+                alert("❌ Erro ao salvar taxas contratadas da loja.");
             }
         }
 
