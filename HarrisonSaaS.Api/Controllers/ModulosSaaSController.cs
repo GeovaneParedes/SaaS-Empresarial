@@ -599,5 +599,61 @@ namespace HarrisonSaaS.Api.Controllers
 
             return Ok(resp);
         }
+
+        // =========================================================================
+        // MÓDULO 5: HUB WHATSAPP BOT & CARDÁPIO DIGITAL REAL-TIME
+        // =========================================================================
+
+        [HttpGet("cardapio-digital")]
+        public IActionResult GetCardapioDigital([FromQuery] int lojaId = 1)
+        {
+            var cardapio = new List<ItemCardapioDigitalSaaS>
+            {
+                new ItemCardapioDigitalSaaS { Id = 1, Categoria = "BOVINO NOBRE", NomeCorte = "PICANHA BOVINA GRILL", PrecoNormalKg = 89.90m, PrecoOfertaKg = 69.90m, EmOferta = true, EmEstoque = true },
+                new ItemCardapioDigitalSaaS { Id = 2, Categoria = "BOVINO NOBRE", NomeCorte = "ALCATRA C/ MAMINHA", PrecoNormalKg = 48.90m, PrecoOfertaKg = 39.90m, EmOferta = true, EmEstoque = true },
+                new ItemCardapioDigitalSaaS { Id = 3, Categoria = "CHURRASCO", NomeCorte = "CONTRA FILÉ GRILL", PrecoNormalKg = 54.90m, PrecoOfertaKg = 42.90m, EmOferta = true, EmEstoque = true },
+                new ItemCardapioDigitalSaaS { Id = 4, Categoria = "BOVINO NOBRE", NomeCorte = "COXÃO MOLE EXTRA", PrecoNormalKg = 42.90m, PrecoOfertaKg = 34.90m, EmOferta = true, EmEstoque = true },
+                new ItemCardapioDigitalSaaS { Id = 5, Categoria = "CHURRASCO", NomeCorte = "COSTELA RIPA PREMIUM", PrecoNormalKg = 28.90m, PrecoOfertaKg = 20.99m, EmOferta = true, EmEstoque = true },
+                new ItemCardapioDigitalSaaS { Id = 6, Categoria = "LINGUIÇAS", NomeCorte = "LINGUIÇA ARTESANAL DE COSTELA", PrecoNormalKg = 32.90m, PrecoOfertaKg = 24.90m, EmOferta = true, EmEstoque = true },
+                new ItemCardapioDigitalSaaS { Id = 7, Categoria = "SUÍNO", NomeCorte = "PERNIL SUÍNO C/ OSSO", PrecoNormalKg = 18.90m, PrecoOfertaKg = 14.90m, EmOferta = true, EmEstoque = true },
+                new ItemCardapioDigitalSaaS { Id = 8, Categoria = "DIA A DIA", NomeCorte = "ACÉM BOVINO DE PRIMEIRA", PrecoNormalKg = 34.90m, PrecoOfertaKg = 27.90m, EmOferta = true, EmEstoque = true }
+            };
+
+            return Ok(cardapio);
+        }
+
+        [HttpPost("whatsapp/disparar-cotacao")]
+        public IActionResult DispararCotacaoWhatsapp([FromBody] MensagemWhatsappCotacaoSaaS dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.NumeroClienteWhatsapp))
+            {
+                return BadRequest(new { Status = "Erro", Mensagem = "Informe o número do WhatsApp do cliente!" });
+            }
+
+            var loja = LojasMock.FirstOrDefault(l => l.Id == dto.LojaId) ?? LojasMock.First();
+            string numLimpo = new string(dto.NumeroClienteWhatsapp.Where(char.IsDigit).ToArray());
+
+            string textoFormatado = $"🥩 *OFERTAS DO DIA — {loja.Nome.ToUpper()}* 🥩\n" +
+                                   $"📅 *Válido para Hoje:* {DateTime.Today:dd/MM/yyyy}\n\n" +
+                                   $"🔥 *CONFIRA NOSSOS PRINCIPAIS CORTES EM PROMOÇÃO:*\n" +
+                                   $"• *PICANHA BOVINA GRILL:* ~R$ 89,90~ por *R$ 69,90/kg*\n" +
+                                   $"• *ALCATRA C/ MAMINHA:* ~R$ 48,90~ por *R$ 39,90/kg*\n" +
+                                   $"• *CONTRA FILÉ GRILL:* ~R$ 54,90~ por *R$ 42,90/kg*\n" +
+                                   $"• *COSTELA RIPA PREMIUM:* ~R$ 28,90~ por *R$ 20,99/kg*\n" +
+                                   $"• *LINGUIÇA DE COSTELA:* ~R$ 32,90~ por *R$ 24,90/kg*\n\n" +
+                                   $"📱 *Acesse Nosso Cardápio Digital Completo:*\n" +
+                                   $"https://walked-pdt-breaking-consent.trycloudflare.com/index.html\n\n" +
+                                   $"📍 *Endereço:* {loja.Endereco}\n" +
+                                   $"📞 *Faça seu Pedido via WhatsApp:* {loja.Telefone}";
+
+            string linkApiWhatsapp = $"https://api.whatsapp.com/send?phone=55{numLimpo}&text={Uri.EscapeDataString(textoFormatado)}";
+
+            return Ok(new { 
+                Status = "Sucesso", 
+                Mensagem = "Cotação formatada com sucesso! Clique no link para abrir diretamente no WhatsApp Web/App.",
+                UrlWhatsapp = linkApiWhatsapp,
+                Texto = textoFormatado
+            });
+        }
     }
 }
