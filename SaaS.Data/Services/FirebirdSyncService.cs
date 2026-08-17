@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using FirebirdSql.Data.FirebirdClient;
-using HarrisonSaaS.Core.Entities;
+using SaaS.Core.Entities;
 
-namespace HarrisonSaaS.Data.Services
+namespace SaaS.Data.Services
 {
     public class FirebirdSyncService
     {

@@ -1,4 +1,4 @@
-﻿namespace HarrisonSaaS.Tests;
+namespace SaaS.Tests;
 
 public class UnitTest1
 {
