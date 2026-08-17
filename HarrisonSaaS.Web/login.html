@@ -236,19 +236,40 @@
     </div>
 
     <script>
-        function validarLogin(e) {
-            e.preventDefault();
+        async function validarLogin(e) {
+            if (e) e.preventDefault();
             const usr = document.getElementById('usuario').value.trim();
             const pass = document.getElementById('senha').value.trim();
             const erroDiv = document.getElementById('alert-erro');
+            const txtErro = document.getElementById('txt-erro');
 
-            // Credenciais solicitadas
-            if (usr === 'devgege' && pass === 'Dev31082002') {
-                localStorage.setItem('saas_usuario_logado', usr);
-                window.location.href = 'index.html';
-            } else {
-                erroDiv.style.display = 'flex';
-                document.getElementById('txt-erro').innerText = 'Usuário ou senha incorretos!';
+            try {
+                const res = await fetch('http://localhost:5205/api/ModulosSaaS/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: usr, senha: pass })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.status === 'Sucesso') {
+                    localStorage.setItem('saas_usuario_logado', data.usuario.nome);
+                    localStorage.setItem('saas_jwt_token', data.token);
+                    localStorage.setItem('saas_tenant_id', data.usuario.tenantId);
+                    window.location.href = 'index.html';
+                } else {
+                    erroDiv.style.display = 'flex';
+                    txtErro.innerText = data.mensagem || 'Usuário ou senha incorretos!';
+                }
+            } catch (err) {
+                // Fallback para devgege offline
+                if (usr === 'devgege' && pass === 'Dev31082002') {
+                    localStorage.setItem('saas_usuario_logado', 'Geovane Paredes');
+                    window.location.href = 'index.html';
+                } else {
+                    erroDiv.style.display = 'flex';
+                    txtErro.innerText = 'Falha ao conectar com o servidor de autenticação!';
+                }
             }
         }
     </script>
