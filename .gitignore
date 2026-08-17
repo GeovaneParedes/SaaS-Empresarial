@@ -1,9 +1,12 @@
 # Variáveis de Ambiente & Arquivos de Configuração Sensíveis
 .env
-.env.*
+.env.local
+.env.production
 !.env.example
-appsettings*.json
+appsettings.Production.json
+appsettings.Secrets.json
 !appsettings.json
+!appsettings.Example.json
 !appsettings.Development.json
 
 # Compilação & Build .NET

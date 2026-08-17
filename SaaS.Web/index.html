@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js para gráficos dinâmicos de alta performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/config.js"></script>
+    <script>
+        // Trava de Autenticação Segura JWT
+        AuthService.checkAuthOrRedirect();
+    </script>
     <style>
         :root {
             --bg-body: #090d16;
@@ -1567,7 +1572,7 @@
                 const lojaId = document.getElementById('dash-loja') ? document.getElementById('dash-loja').value : "1";
                 const dataVal = document.getElementById('dash-data') ? document.getElementById('dash-data').value : "2026-08-16";
 
-                const res = await fetch(`http://localhost:5205/api/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
+                const res = await fetchWithAuth(`/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
                 const data = await res.json();
 
                 document.getElementById('kpi-faturamento').innerText = 'R$ ' + data.faturamentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -1615,7 +1620,7 @@
             const lojaId = document.getElementById('vd-loja').value;
             const dataVal = document.getElementById('vd-data').value;
 
-            const res = await fetch(`http://localhost:5205/api/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
+            const res = await fetchWithAuth(`/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
             const data = await res.json();
 
             document.getElementById('vd-dinheiro').innerText = 'R$ ' + data.resumoPorMeioPagamento.dinheiro.toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -1642,7 +1647,6 @@
             if (rows.length === 0) return;
 
             const chave = tableId + '_' + colIndex;
-            // Alterna entre decrescente (Maior > Menor) e crescente
             const ehDecrescente = ordenacaoDirecao[chave] === undefined ? true : !ordenacaoDirecao[chave];
             ordenacaoDirecao[chave] = ehDecrescente;
 
@@ -1651,7 +1655,6 @@
                 let cellB = b.children[colIndex] ? b.children[colIndex].innerText.trim() : '';
 
                 if (tipo === 'currency' || tipo === 'number') {
-                    // Extrai apenas números e vírgulas/pontos decimais para ordenar corretamente valores financeiros e quantidades
                     let valA = parseFloat(cellA.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
                     let valB = parseFloat(cellB.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
                     return ehDecrescente ? (valB - valA) : (valA - valB);
@@ -1667,7 +1670,7 @@
         async function puxarVendasDoDia() {
             const lojaId = document.getElementById('iv-loja').value;
             const dataVal = document.getElementById('iv-data').value;
-            const res = await fetch(`http://localhost:5205/api/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
+            const res = await fetchWithAuth(`/Sincronizador/extrair-pagamentos?dataInicio=${dataVal}&dataFim=${dataVal}&lojaId=${lojaId}`);
             const data = await res.json();
             
             const tbody = document.getElementById('table-itens-vendidos-body');
@@ -1691,7 +1694,6 @@
                 });
             });
 
-            // Atualiza os KPI Cards de Conferência Exata
             document.getElementById('iv-tot-itens-qtd').innerText = `${listaItens.length} ITENS`;
             document.getElementById('iv-tot-itens-val').innerText = 'R$ ' + somaItensReais.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('iv-tot-faturamento-val').innerText = 'R$ ' + data.faturamentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -1705,16 +1707,15 @@
                 document.getElementById('iv-status-conciliacao').style.color = 'var(--accent-amber)';
             }
 
-            // Ordena da MAIOR VENDA PARA A MENOR VENDA (Maior > Menor)
             listaItens.sort((a, b) => b.valorTotal - a.valorTotal);
 
             listaItens.forEach(item => {
                 tbody.innerHTML += `
                     <tr>
-                        <td>${item.data}</td>
-                        <td style="font-weight: 700;">LOJA #${item.lojaId}</td>
-                        <td style="font-weight: 700; color: var(--accent-cyan);">${item.produtoDescricao}</td>
-                        <td>${item.unidade}</td>
+                        <td>${sanitizeHTML(item.data)}</td>
+                        <td style="font-weight: 700;">LOJA #${sanitizeHTML(item.lojaId)}</td>
+                        <td style="font-weight: 700; color: var(--accent-cyan);">${sanitizeHTML(item.produtoDescricao)}</td>
+                        <td>${sanitizeHTML(item.unidade)}</td>
                         <td style="font-weight: 700;">${item.quantidade}</td>
                         <td>R$ ${item.precoUnitario.toFixed(2)}</td>
                         <td style="font-weight: 800; color: var(--accent-green);">R$ ${item.valorTotal.toFixed(2)}</td>
@@ -1746,9 +1747,8 @@
             };
 
             try {
-                const res = await fetch('http://localhost:5205/api/ModulosSaaS/ofertas', {
+                const res = await fetchWithAuth('/ModulosSaaS/ofertas', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dto)
                 });
                 const data = await res.json();
@@ -1762,11 +1762,9 @@
                 
                 alert(`✅ Oferta para ${data.produtoNome} agendada com sucesso para a Loja ${data.lojaNome}!`);
 
-                // Limpa o formulário
                 document.getElementById('of-produto').value = '';
                 document.getElementById('of-preco').value = '';
                 
-                // Recarrega a tabela de ofertas imediatamente
                 carregarModulosSaaS();
             } catch (err) {
                 console.error("Erro ao agendar oferta:", err);
@@ -1776,8 +1774,7 @@
 
         async function carregarModulosSaaS() {
             try {
-                // Carregar Lojas Reais
-                const resLojas = await fetch('http://localhost:5205/api/ModulosSaaS/lojas');
+                const resLojas = await fetchWithAuth('/ModulosSaaS/lojas');
                 const lojas = await resLojas.json();
                 const tbodyLojas = document.getElementById('table-lojas-body');
                 tbodyLojas.innerHTML = '';
@@ -1785,24 +1782,21 @@
                     tbodyLojas.innerHTML += `
                         <tr>
                             <td style="font-weight: 700; color: var(--primary);">#${l.id}</td>
-                            <td style="font-weight: 700;">${l.nome}</td>
-                            <td>${l.cnpj}</td>
-                            <td>${l.endereco}</td>
-                            <td>${l.telefone}</td>
+                            <td style="font-weight: 700;">${sanitizeHTML(l.nome)}</td>
+                            <td>${sanitizeHTML(l.cnpj)}</td>
+                            <td>${sanitizeHTML(l.endereco)}</td>
+                            <td>${sanitizeHTML(l.telefone)}</td>
                             <td><span class="badge-payment badge-dinheiro">ATIVO</span></td>
                         </tr>`;
                 });
 
-                // Carregar Ofertas com Filtro de Loja Seletor
                 const lojaFiltroId = document.getElementById('filtro-oferta-loja') ? document.getElementById('filtro-oferta-loja').value : '0';
-                const urlOfertas = 'http://localhost:5205/api/ModulosSaaS/ofertas?lojaId=' + lojaFiltroId;
                 
-                const resOfertas = await fetch(urlOfertas);
+                const resOfertas = await fetchWithAuth('/ModulosSaaS/ofertas?lojaId=' + lojaFiltroId);
                 const ofertas = await resOfertas.json();
                 const tbodyOfertas = document.getElementById('table-ofertas-body');
                 tbodyOfertas.innerHTML = '';
                 
-                // Data local YYYY-MM-DD precisa respeitar o fuso horário local do navegador
                 const agora = new Date();
                 const anoL = agora.getFullYear();
                 const mesL = String(agora.getMonth() + 1).padStart(2, '0');
@@ -1827,9 +1821,9 @@
 
                     tbodyOfertas.innerHTML += `
                         <tr>
-                            <td style="font-weight: 700;">${o.lojaNome}</td>
-                            <td style="font-weight: 700; color: var(--accent-cyan);">${o.produtoNome}</td>
-                            <td><code>${o.codigoBalanca}</code></td>
+                            <td style="font-weight: 700;">${sanitizeHTML(o.lojaNome)}</td>
+                            <td style="font-weight: 700; color: var(--accent-cyan);">${sanitizeHTML(o.produtoNome)}</td>
+                            <td><code>${sanitizeHTML(o.codigoBalanca)}</code></td>
                             <td style="font-weight: 800; color: var(--accent-green);">R$ ${o.precoOferta.toFixed(2)}</td>
                             <td style="font-weight: 700;">${dtIniStr} (00:00)</td>
                             <td style="font-weight: 700; color: var(--accent-amber);">${dtFimStr} (22:00)</td>
@@ -1838,8 +1832,7 @@
                         </tr>`;
                 });
 
-                // Carregar Lançamentos
-                const resLanc = await fetch('http://localhost:5205/api/ModulosSaaS/lancamentos');
+                const resLanc = await fetchWithAuth('/ModulosSaaS/lancamentos');
                 const lancs = await resLanc.json();
                 const tbodyLanc = document.getElementById('table-lancamentos-body');
                 tbodyLanc.innerHTML = '';
@@ -1861,15 +1854,15 @@
                     tbodyLanc.innerHTML += `
                         <tr>
                             <td style="font-weight: 700; color: var(--primary);">#${l.id}</td>
-                            <td style="font-weight: 700;">${l.lojaNome}</td>
-                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${catStr}</span></td>
+                            <td style="font-weight: 700;">${sanitizeHTML(l.lojaNome)}</td>
+                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${sanitizeHTML(catStr)}</span></td>
                             <td>${l.data ? l.data.split('T')[0] : '-'}</td>
-                            <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${l.descricao}</td>
+                            <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sanitizeHTML(l.descricao)}</td>
                             <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
                             <td style="color: var(--accent-cyan); font-weight: 700;">R$ ${entradaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                            <td><span class="badge-payment badge-debito">${l.formaPagamento}</span></td>
+                            <td><span class="badge-payment badge-debito">${sanitizeHTML(l.formaPagamento)}</span></td>
                             <td>${confBadge}</td>
                             <td>${statusBadge}</td>
                         </tr>`;
@@ -1881,7 +1874,7 @@
         }
 
         async function executarSimulacaoRateioRombo() {
-            const res = await fetch('http://localhost:5205/api/ModulosSaaS/simular-rateio', { method: 'POST' });
+            const res = await fetchWithAuth('/ModulosSaaS/simular-rateio', { method: 'POST' });
             const data = await res.json();
             
             document.getElementById('resultado-rateio-box').style.display = 'block';
@@ -1892,7 +1885,7 @@
             data.cortesReajustados.forEach(c => {
                 tbody.innerHTML += `
                     <tr>
-                        <td style="font-weight: 700; color: var(--primary);">${c.produtoNome}</td>
+                        <td style="font-weight: 700; color: var(--primary);">${sanitizeHTML(c.produtoNome)}</td>
                         <td style="font-weight: 700;">R$ ${c.precoBase.toFixed(2)}</td>
                         <td style="color: var(--accent-amber); font-weight: 700;">+ R$ ${c.acrescimoPorKg.toFixed(2)}</td>
                         <td style="font-weight: 800; color: var(--accent-green);">R$ ${c.precoReajustado.toFixed(2)}</td>
@@ -1902,7 +1895,7 @@
         }
 
         async function dispararCargaBalanca() {
-            const res = await fetch('http://localhost:5205/api/ModulosSaaS/gerar-carga-balanca', { method: 'POST' });
+            const res = await fetchWithAuth('/ModulosSaaS/gerar-carga-balanca', { method: 'POST' });
             const data = await res.json();
             document.getElementById('status-balanca-msg').innerText = "✅ " + data.mensagem;
         }
@@ -1969,9 +1962,8 @@
             };
 
             try {
-                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/lojas/${id}`, {
+                const res = await fetchWithAuth(`/ModulosSaaS/lojas/${id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dto)
                 });
                 const data = await res.json();
@@ -2003,7 +1995,7 @@
             const dataVal = document.getElementById('tef-data').value;
             
             try {
-                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/auditar-tef?lojaId=${lojaId}&dataInicio=${dataVal}&dataFim=${dataVal}`);
+                const res = await fetchWithAuth(`/ModulosSaaS/auditar-tef?lojaId=${lojaId}&dataInicio=${dataVal}&dataFim=${dataVal}`);
                 const data = await res.json();
 
                 document.getElementById('tef-tot-vendas').innerText = 'R$ ' + data.totalVendasProcessadas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -2032,7 +2024,7 @@
                         <tr>
                             <td style="font-weight: 700; color: var(--primary);">#${t.cupomId}</td>
                             <td>${dtStr}</td>
-                            <td style="font-weight: 700;">${t.adquirente} (${t.modalidade})</td>
+                            <td style="font-weight: 700;">${sanitizeHTML(t.adquirente)} (${sanitizeHTML(t.modalidade)})</td>
                             <td style="font-weight: 700;">R$ ${t.valorVendaBruto.toFixed(2)}</td>
                             <td>${t.taxaContratadaPct.toFixed(2)}% (R$ ${t.valorTaxaContratada.toFixed(2)})</td>
                             <td style="font-weight: 700; color: var(--accent-amber);">${t.taxaEfetivaCobradaPct.toFixed(2)}% (R$ ${t.valorTaxaCobrada.toFixed(2)})</td>
@@ -2049,7 +2041,7 @@
         async function gerarOrdemCompraAI() {
             const lojaId = document.getElementById('ai-loja').value;
             try {
-                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/ai-purchasing?lojaId=${lojaId}`);
+                const res = await fetchWithAuth(`/ModulosSaaS/ai-purchasing?lojaId=${lojaId}`);
                 const data = await res.json();
 
                 document.getElementById('ai-qtd-carcacas').innerText = `${data.qtdCarcacasBoiSugestao} CARCAÇAS BOI`;
@@ -2069,7 +2061,7 @@
 
                     tbody.innerHTML += `
                         <tr>
-                            <td style="font-weight: 700; color: var(--accent-cyan);">${item.produtoNome}</td>
+                            <td style="font-weight: 700; color: var(--accent-cyan);">${sanitizeHTML(item.produtoNome)}</td>
                             <td>${item.mediaVendaDiariaKg.toFixed(2)} KG/dia</td>
                             <td style="font-weight: 700;">${item.previsaoVendaFimDeSemanaKg.toFixed(2)} KG</td>
                             <td>${item.estoqueAtualEstimadoKg.toFixed(2)} KG</td>
@@ -2087,7 +2079,7 @@
         async function carregarCardapioDigital() {
             const lojaId = document.getElementById('wa-loja') ? document.getElementById('wa-loja').value : 1;
             try {
-                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/cardapio-digital?lojaId=${lojaId}`);
+                const res = await fetchWithAuth(`/ModulosSaaS/cardapio-digital?lojaId=${lojaId}`);
                 const data = await res.json();
                 const tbody = document.getElementById('table-cardapio-body');
                 tbody.innerHTML = '';
@@ -2096,8 +2088,8 @@
                     const pctDesc = Math.round(((item.precoNormalKg - item.precoOfertaKg) / item.precoNormalKg) * 100);
                     tbody.innerHTML += `
                         <tr>
-                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">${item.categoria}</span></td>
-                            <td style="font-weight: 800;">${item.nomeCorte}</td>
+                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">${sanitizeHTML(item.categoria)}</span></td>
+                            <td style="font-weight: 800;">${sanitizeHTML(item.nomeCorte)}</td>
                             <td style="text-decoration: line-through; color: var(--text-muted);">R$ ${item.precoNormalKg.toFixed(2)}/kg</td>
                             <td style="font-weight: 800; color: var(--accent-green); font-size: 1.05rem;">R$ ${item.precoOfertaKg.toFixed(2)}/kg</td>
                             <td><span class="badge-payment badge-dinheiro" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); font-weight: 800;">-${pctDesc}% OFF</span></td>
@@ -2112,10 +2104,9 @@
         async function carregarDREGerencial() {
             const lojaId = document.getElementById('dre-loja') ? document.getElementById('dre-loja').value : 1;
             try {
-                const res = await fetch(`http://localhost:5205/api/ModulosSaaS/dre-curva-abc?lojaId=${lojaId}`);
+                const res = await fetchWithAuth(`/ModulosSaaS/dre-curva-abc?lojaId=${lojaId}`);
                 const data = await res.json();
 
-                // KPI Cards
                 document.getElementById('dre-receita-bruta').innerText = 'R$ ' + data.receitaBrutaVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
                 document.getElementById('dre-lucro-bruto').innerText = 'R$ ' + data.lucroBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
                 document.getElementById('dre-margem-bruta-pct').innerText = `${data.margemBrutaPct}% Margem Bruta`;
@@ -2126,7 +2117,6 @@
                 document.getElementById('dre-lucro-liquido').innerText = 'R$ ' + data.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
                 document.getElementById('dre-margem-liquida-pct').innerText = `${data.margemLiquidaPct}% Margem Líquida`;
 
-                // Tabela DRE Linhas com suporte a case-insensitive e camelCase/PascalCase
                 const rb = data.receitaBrutaVendas || data.ReceitaBrutaVendas || 0;
                 const imp = data.impostosETaxasAdquirentes || data.ImpostosETaxasAdquirentes || 0;
                 const rl = data.receitaLiquidaVendas || data.ReceitaLiquidaVendas || 0;
@@ -2147,7 +2137,6 @@
                 document.getElementById('dre-row-ll').innerText = 'R$ ' + llVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
                 document.getElementById('dre-row-ll-pct').innerText = `${mlPct}%`;
 
-                // Tabela Curva ABC
                 const tbodyABC = document.getElementById('table-abc-body');
                 tbodyABC.innerHTML = '';
 
@@ -2161,7 +2150,7 @@
                     tbodyABC.innerHTML += `
                         <tr>
                             <td>${badgeClass}</td>
-                            <td style="font-weight: 800; color: var(--accent-cyan);">${item.produtoNome}</td>
+                            <td style="font-weight: 800; color: var(--accent-cyan);">${sanitizeHTML(item.produtoNome)}</td>
                             <td style="font-weight: 700;">${item.quantidadeKgVendida.toFixed(2)} KG</td>
                             <td style="font-weight: 800; color: var(--accent-green);">R$ ${item.faturamentoTotal.toFixed(2)}</td>
                             <td>${item.percentualDoFaturamento.toFixed(2)}%</td>
@@ -2183,9 +2172,8 @@
             }
 
             try {
-                const res = await fetch('http://localhost:5205/api/ModulosSaaS/whatsapp/disparar-cotacao', {
+                const res = await fetchWithAuth('/ModulosSaaS/whatsapp/disparar-cotacao', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ lojaId: parseInt(lojaId), numeroClienteWhatsapp: numeroVal })
                 });
 
@@ -2214,7 +2202,6 @@
         function formatarMoedaInput(inputElem) {
             let val = inputElem.value.trim();
             if (!val) return;
-            // Remove R$, espaços e substitui ponto por nada e vírgula por ponto se houver formato BR
             val = val.replace('R$', '').trim();
             let num = parseFloat(val.replace(/\./g, '').replace(',', '.'));
             if (!isNaN(num)) {
@@ -2278,9 +2265,8 @@
             };
 
             try {
-                const res = await fetch('http://localhost:5205/api/ModulosSaaS/lancamentos', {
+                const res = await fetchWithAuth('/ModulosSaaS/lancamentos', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
@@ -2292,7 +2278,6 @@
                     msgBox.style.color = 'var(--accent-green)';
                     msgBox.innerText = '✅ ' + (data.mensagem || 'Lançamento financeiro adicionado com sucesso!');
                     document.getElementById('form-novo-lancamento').reset();
-                    // Atualiza a tabela imediatamente
                     carregarModulosSaaS();
                     setTimeout(() => { msgBox.style.display = 'none'; }, 4000);
                 } else {
@@ -2305,15 +2290,16 @@
             }
         }
 
-        // Trava de Autenticação Inicial
-        if (!localStorage.getItem('saas_usuario_logado')) {
-            window.location.href = 'login.html';
+        // Trava de Autenticação Inicial com AuthService
+        if (!AuthService.isAuthenticated()) {
+            AuthService.checkAuthOrRedirect();
         } else {
-            document.getElementById('user-display').innerText = localStorage.getItem('saas_usuario_logado');
+            const userElem = document.getElementById('user-display');
+            if (userElem) userElem.innerText = AuthService.getUsuario() || 'Usuário SaaS';
         }
 
         function fazerLogout() {
-            localStorage.removeItem('saas_usuario_logado');
+            AuthService.clearSession();
             window.location.href = 'login.html';
         }
 
@@ -2332,8 +2318,8 @@
             cupom.itens.forEach(item => {
                 tbody.innerHTML += `
                     <tr>
-                        <td style="font-weight: 700; color: var(--accent-cyan);">${item.produtoDescricao}</td>
-                        <td>${item.unidade}</td>
+                        <td style="font-weight: 700; color: var(--accent-cyan);">${sanitizeHTML(item.produtoDescricao)}</td>
+                        <td>${sanitizeHTML(item.unidade)}</td>
                         <td>${item.quantidade}</td>
                         <td>R$ ${item.precoUnitario.toFixed(2)}</td>
                         <td style="font-weight: 800; color: var(--accent-green);">R$ ${item.valorTotal.toFixed(2)}</td>
@@ -2356,9 +2342,8 @@
                 pesoReferenciaKg: parseFloat(document.getElementById('des-peso-ref').value)
             };
 
-            const res = await fetch('http://localhost:5205/api/ModulosSaaS/simular-desossa-carcaca', {
+            const res = await fetchWithAuth('/ModulosSaaS/simular-desossa-carcaca', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(req)
             });
             const data = await res.json();
@@ -2384,7 +2369,7 @@
 
                 tbody.innerHTML += `
                     <tr ${trClass}>
-                        <td style="font-weight: 700; color: ${ehPerda ? 'var(--accent-rose)' : 'var(--accent-cyan)'};">${it.nomeCorte}</td>
+                        <td style="font-weight: 700; color: ${ehPerda ? 'var(--accent-rose)' : 'var(--accent-cyan)'};">${sanitizeHTML(it.nomeCorte)}</td>
                         <td>${it.percentualPeso.toFixed(3)}%</td>
                         <td style="font-weight: 700;">${it.pesoKg.toFixed(3)} KG</td>
                         <td style="font-weight: 700;">R$ ${it.precoTabela.toFixed(2)}</td>
