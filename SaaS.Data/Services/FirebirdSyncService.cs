@@ -309,7 +309,7 @@ namespace SaaS.Data.Services
                                 bool conf = Convert.ToBoolean(reader["confirmado"]);
 
                                 string stPago = "A VENCER";
-                                if (vPago >= vPag && vPag > 0) stPago = "PAGO";
+                                if (vPago > 0 && (vPago >= vPag || vPag == 0)) stPago = "PAGO";
                                 else if (vnc.HasValue && vnc.Value < DateTime.Today && vPago < vPag) stPago = "ATRASADO";
 
                                 lancamentos.Add(new LancamentoFinanceiroSaaS

@@ -108,7 +108,7 @@ namespace SaaS.Api.Controllers
                 var loja = LojasMock.FirstOrDefault(l => l.Id == dto.LojaId);
                 if (loja != null) dto.LojaNome = loja.Nome;
 
-                if (dto.ValorPago >= dto.ValorAPagar && dto.ValorAPagar > 0) dto.StatusPago = "PAGO";
+                if (dto.ValorPago > 0 && (dto.ValorPago >= dto.ValorAPagar || dto.ValorAPagar == 0)) dto.StatusPago = "PAGO";
                 else if (dto.Vencimento < DateTime.Today) dto.StatusPago = "ATRASADO";
                 else dto.StatusPago = "A VENCER";
 

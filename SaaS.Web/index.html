@@ -2011,7 +2011,7 @@
                 if (cardsContainerLanc) cardsContainerLanc.innerHTML = '';
 
                 lancs.forEach(l => {
-                    const statusPagoStr = l.statusPago || (l.valorPago >= l.valorAPagar && l.valorAPagar > 0 ? 'PAGO' : 'A VENCER');
+                    const statusPagoStr = l.statusPago || (l.valorPago > 0 && (l.valorPago >= l.valorAPagar || l.valorAPagar == 0) ? 'PAGO' : 'A VENCER');
                     const statusBadge = statusPagoStr === 'PAGO'
                         ? '<span class="badge-payment badge-dinheiro">🟢 PAGO</span>'
                         : statusPagoStr === 'ATRASADO'
