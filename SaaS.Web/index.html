@@ -2613,12 +2613,16 @@
                 const res = await fetchWithAuth(`/Sincronizador/extrair-pagamentos?lojaId=${lojaId}&dataInicio=${dataVal}&dataFim=${dataVal}`);
                 const data = await res.json();
 
-                if (res.ok && (data.Status === 'Sucesso' || data.TotalCupons !== undefined)) {
+                const totalC = data.totalCupons ?? data.TotalCupons ?? 0;
+                const fatB = data.faturamentoBruto ?? data.FaturamentoBruto ?? 0;
+                const cuponsList = data.amostraCupons ?? data.AmostraCupons ?? [];
+
+                if (res.ok) {
                     msgBox.style.color = 'var(--accent-green)';
-                    msgBox.innerHTML = `✅ Extração concluída com sucesso! <strong>${data.TotalCupons} cupons</strong> processados e higienizados sem acentos (Faturamento Bruto: R$ ${data.FaturamentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}).`;
+                    msgBox.innerHTML = `✅ Extração concluída com sucesso! <strong>${totalC} cupons</strong> processados e higienizados sem acentos (Faturamento Bruto: R$ ${fatB.toLocaleString('pt-BR', {minimumFractionDigits: 2})}).`;
                     
-                    if (data.AmostraCupons) {
-                        window.cuponsCache = data.AmostraCupons;
+                    if (cuponsList.length > 0) {
+                        window.cuponsCache = cuponsList;
                     }
                 } else {
                     msgBox.style.color = 'var(--accent-rose)';
@@ -2627,7 +2631,7 @@
             } catch (err) {
                 console.error("Erro ao executar extração Firebird:", err);
                 msgBox.style.color = 'var(--accent-rose)';
-                msgBox.innerHTML = '⚠️ Erro de comunicação: ' + (err.message || err);
+                msgBox.innerHTML = '⚠️ Erro ao processar extração: ' + (err.message || err);
             }
         }
 
