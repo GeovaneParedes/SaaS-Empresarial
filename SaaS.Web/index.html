@@ -818,12 +818,20 @@
         <!-- SEÇÃO 4: EXTRAÇÃO TICKETS FIREBIRD -->
         <section id="sec-tickets-firebird" class="tab-section">
             <div class="panel-box">
-                <div class="panel-header">
-                    <div class="panel-title">Extração em Tempo Real dos Tickets / Cupons de Vendas do Firebird</div>
-                    <button class="btn-action" onclick="executarExtracaoTicketsFirebird()"><i class="fa-solid fa-bolt"></i> Extrair & Lançar no Banco de Dados</button>
+                <div class="panel-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div class="panel-title"><i class="fa-solid fa-fire-burner" style="color: var(--accent-amber);"></i> Extração em Tempo Real dos Tickets / Cupons de Vendas do Firebird</div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <select id="ext-loja" class="form-input-saas">
+                            <option value="1">Excelência (Loja 1)</option>
+                            <option value="2">Pit Stop (Loja 2)</option>
+                            <option value="3">Cunha (Loja 3)</option>
+                        </select>
+                        <input type="date" id="ext-data" class="form-input-saas" value="2026-08-16">
+                        <button class="btn-action" style="background: linear-gradient(135deg, var(--accent-amber), #d97706); color: #000; font-weight: 800;" onclick="executarExtracaoTicketsFirebird()"><i class="fa-solid fa-bolt"></i> Extrair & Lançar no Banco</button>
+                    </div>
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                    Este módulo realiza uma varredura direta via TCP/IP nas portas dos bancos de dados Firebird dos açougues, importando os cupons unitários.
+                    Este módulo realiza uma varredura direta via TCP/IP no banco de dados Firebird da unidade escolhida, higienizando acentos e lançando os cupons e itens no banco de dados SaaS.
                 </p>
                 <div id="status-extracao-msg" style="margin-top: 1rem; font-weight: 700; color: var(--accent-cyan);"></div>
             </div>
@@ -2590,6 +2598,37 @@
                 }
             } catch (err) {
                 alert("⚠️ Falha ao conectar com o servidor C# de WhatsApp!");
+            }
+        }
+
+        async function executarExtracaoTicketsFirebird() {
+            const lojaId = document.getElementById('ext-loja') ? document.getElementById('ext-loja').value : 1;
+            const dataVal = document.getElementById('ext-data') ? document.getElementById('ext-data').value : '2026-08-16';
+            const msgBox = document.getElementById('status-extracao-msg');
+
+            msgBox.style.color = 'var(--accent-amber)';
+            msgBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando via TCP/IP ao banco Firebird do Açougue, higienizando acentos e extraindo cupons... Por favor aguarde.';
+
+            try {
+                const res = await fetchWithAuth(`/Sincronizador/extrair-pagamentos?lojaId=${lojaId}&dataInicio=${dataVal}&dataFim=${dataVal}`);
+                const data = await res.json();
+
+                if (res.ok && data.status === 'Sucesso' || data.TotalCupons !== undefined) {
+                    msgBox.style.color = 'var(--accent-green)';
+                    msgBox.innerHTML = `✅ Extração concluída com sucesso! <strong>${data.TotalCupons} cupons</strong> processados e higienizados sem acentos (Faturamento Bruto: R$ ${data.FaturamentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}).`;
+                    
+                    // Atualiza a tabela de cupons da tela se estiver visível
+                    if (data.AmostraCupons) {
+                        window.cuponsCache = data.AmostraCupons;
+                    }
+                } else {
+                    msgBox.style.color = 'var(--accent-rose)';
+                    msgBox.innerHTML = '⚠️ ' + (data.Erro || 'Erro ao realizar a varredura TCP no Firebird.');
+                }
+            } catch (err) {
+                console.error("Erro ao executar extração Firebird:", err);
+                msgBox.style.color = 'var(--accent-rose)';
+                msgBox.innerHTML = '⚠️ Falha ao se comunicar com o serviço de sincronização C#. Verifique a conexão com o banco Firebird.';
             }
         }
 
