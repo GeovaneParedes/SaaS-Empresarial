@@ -60,6 +60,9 @@ namespace SaaS.Api.Controllers
                 
                 decimal totalTaxasEstimadasMaquininha = cupons.SelectMany(c => c.Pagamentos).Sum(p => p.Valor - p.ValorLiquidoRecebido);
 
+                // 💾 GRAVAÇÃO AUTOMÁTICA NO POSTGRESQL (tabela public.vendas_itens)
+                _syncService.PersistirItensNoPostgres("Host=localhost;Database=acougue;Username=harrison;Password=felipemiguel", lojaId, dIni, cupons);
+
                 var responseData = new
                 {
                     Status = "Sucesso",

@@ -462,5 +462,54 @@ namespace SaaS.Data.Services
             }
             return false;
         }
+
+        public bool PersistirItensNoPostgres(string pgConnStr, int lojaId, DateTime dataVenda, List<CupomVenda> cupons)
+        {
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
+                {
+                    conn.Open();
+
+                    // Limpa vendas da loja/data específica para evitar duplicidade
+                    using (var cmdDel = new Npgsql.NpgsqlCommand("DELETE FROM public.vendas_itens WHERE loja_id = @LojaId AND data_venda = @DataVenda;", conn))
+                    {
+                        cmdDel.Parameters.AddWithValue("@LojaId", lojaId);
+                        cmdDel.Parameters.AddWithValue("@DataVenda", dataVenda.Date);
+                        cmdDel.ExecuteNonQuery();
+                    }
+
+                    // Insere todos os itens higienizados na tabela vendas_itens
+                    string sqlInsert = @"
+                        INSERT INTO public.vendas_itens (data_venda, loja_id, produto_nome, preco_unitario, unidade, quantidade, total_item, oferta)
+                        VALUES (@DataVenda, @LojaId, @ProdutoNome, @PrecoUnitario, @Unidade, @Quantidade, @TotalItem, @Oferta);";
+
+                    foreach (var cupom in cupons)
+                    {
+                        foreach (var item in cupom.Itens)
+                        {
+                            using (var cmdIns = new Npgsql.NpgsqlCommand(sqlInsert, conn))
+                            {
+                                cmdIns.Parameters.AddWithValue("@DataVenda", dataVenda.Date);
+                                cmdIns.Parameters.AddWithValue("@LojaId", lojaId);
+                                cmdIns.Parameters.AddWithValue("@ProdutoNome", item.ProdutoDescricao);
+                                cmdIns.Parameters.AddWithValue("@PrecoUnitario", item.PrecoUnitario);
+                                cmdIns.Parameters.AddWithValue("@Unidade", item.Unidade);
+                                cmdIns.Parameters.AddWithValue("@Quantidade", item.Quantidade);
+                                cmdIns.Parameters.AddWithValue("@TotalItem", item.ValorTotal);
+                                cmdIns.Parameters.AddWithValue("@Oferta", false);
+                                cmdIns.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERRO POSTGRES] Falha ao persistir vendas_itens: {ex.Message}");
+            }
+            return false;
+        }
     }
 }
