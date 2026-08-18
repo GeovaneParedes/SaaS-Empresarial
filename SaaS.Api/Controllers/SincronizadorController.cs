@@ -87,7 +87,8 @@ namespace SaaS.Api.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Erro = ex.Message });
+                Console.WriteLine($"[ERRO EXTRACAO FIREBIRD] {ex}");
+                return StatusCode(500, new { Erro = ex.Message, Detalhes = ex.ToString() });
             }
         }
     }

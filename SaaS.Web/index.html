@@ -2613,22 +2613,21 @@
                 const res = await fetchWithAuth(`/Sincronizador/extrair-pagamentos?lojaId=${lojaId}&dataInicio=${dataVal}&dataFim=${dataVal}`);
                 const data = await res.json();
 
-                if (res.ok && data.status === 'Sucesso' || data.TotalCupons !== undefined) {
+                if (res.ok && (data.Status === 'Sucesso' || data.TotalCupons !== undefined)) {
                     msgBox.style.color = 'var(--accent-green)';
                     msgBox.innerHTML = `✅ Extração concluída com sucesso! <strong>${data.TotalCupons} cupons</strong> processados e higienizados sem acentos (Faturamento Bruto: R$ ${data.FaturamentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}).`;
                     
-                    // Atualiza a tabela de cupons da tela se estiver visível
                     if (data.AmostraCupons) {
                         window.cuponsCache = data.AmostraCupons;
                     }
                 } else {
                     msgBox.style.color = 'var(--accent-rose)';
-                    msgBox.innerHTML = '⚠️ ' + (data.Erro || 'Erro ao realizar a varredura TCP no Firebird.');
+                    msgBox.innerHTML = '⚠️ ' + (data.Erro || data.erro || 'Erro ao realizar a varredura TCP no Firebird.');
                 }
             } catch (err) {
                 console.error("Erro ao executar extração Firebird:", err);
                 msgBox.style.color = 'var(--accent-rose)';
-                msgBox.innerHTML = '⚠️ Falha ao se comunicar com o serviço de sincronização C#. Verifique a conexão com o banco Firebird.';
+                msgBox.innerHTML = '⚠️ Erro de comunicação: ' + (err.message || err);
             }
         }
 
