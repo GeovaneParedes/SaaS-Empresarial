@@ -471,7 +471,34 @@ namespace SaaS.Data.Services
                 {
                     conn.Open();
 
-                    // Limpa vendas da loja/data específica para evitar duplicidade
+                    // 1. Busca produtos que estão em AgendamentoOferta ativo para a loja e data informadas
+                    var ofertasSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    string sqlOfertas = @"
+                        SELECT UPPER(TRIM(p.nome)) AS produto_nome
+                        FROM nucleo_agendamentooferta a
+                        JOIN produtos p ON p.id = a.produto_id
+                        WHERE a.loja_id = @LojaId
+                          AND a.ativo = true
+                          AND @DataVenda BETWEEN a.data_inicio AND a.data_fim;";
+
+                    using (var cmdOf = new Npgsql.NpgsqlCommand(sqlOfertas, conn))
+                    {
+                        cmdOf.Parameters.AddWithValue("@LojaId", lojaId);
+                        cmdOf.Parameters.AddWithValue("@DataVenda", dataVenda.Date);
+                        using (var reader = cmdOf.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string nomeOf = reader["produto_nome"]?.ToString() ?? string.Empty;
+                                if (!string.IsNullOrWhiteSpace(nomeOf))
+                                {
+                                    ofertasSet.Add(SanitizarTextoCompleto(nomeOf));
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. Limpa vendas anteriores da loja/data específica para evitar duplicidade
                     using (var cmdDel = new Npgsql.NpgsqlCommand("DELETE FROM public.vendas_itens WHERE loja_id = @LojaId AND data_venda = @DataVenda;", conn))
                     {
                         cmdDel.Parameters.AddWithValue("@LojaId", lojaId);
@@ -479,27 +506,36 @@ namespace SaaS.Data.Services
                         cmdDel.ExecuteNonQuery();
                     }
 
-                    // Insere todos os itens higienizados na tabela vendas_itens
+                    // 3. Agrupa e consolida os itens por produto para respeitar a constraint UNIQUE (data_venda, loja_id, produto_nome)
+                    var itensAgrupados = cupons.SelectMany(c => c.Itens)
+                        .GroupBy(i => SanitizarTextoCompleto(i.ProdutoDescricao))
+                        .Select(g => new
+                        {
+                            ProdutoNome = g.Key,
+                            Unidade = g.First().Unidade,
+                            PrecoUnitario = g.First().PrecoUnitario,
+                            QuantidadeTotal = g.Sum(i => i.Quantidade),
+                            TotalItem = g.Sum(i => i.ValorTotal),
+                            EhOferta = ofertasSet.Any(of => g.Key.Contains(of) || of.Contains(g.Key))
+                        }).ToList();
+
                     string sqlInsert = @"
                         INSERT INTO public.vendas_itens (data_venda, loja_id, produto_nome, preco_unitario, unidade, quantidade, total_item, oferta)
                         VALUES (@DataVenda, @LojaId, @ProdutoNome, @PrecoUnitario, @Unidade, @Quantidade, @TotalItem, @Oferta);";
 
-                    foreach (var cupom in cupons)
+                    foreach (var item in itensAgrupados)
                     {
-                        foreach (var item in cupom.Itens)
+                        using (var cmdIns = new Npgsql.NpgsqlCommand(sqlInsert, conn))
                         {
-                            using (var cmdIns = new Npgsql.NpgsqlCommand(sqlInsert, conn))
-                            {
-                                cmdIns.Parameters.AddWithValue("@DataVenda", dataVenda.Date);
-                                cmdIns.Parameters.AddWithValue("@LojaId", lojaId);
-                                cmdIns.Parameters.AddWithValue("@ProdutoNome", item.ProdutoDescricao);
-                                cmdIns.Parameters.AddWithValue("@PrecoUnitario", item.PrecoUnitario);
-                                cmdIns.Parameters.AddWithValue("@Unidade", item.Unidade);
-                                cmdIns.Parameters.AddWithValue("@Quantidade", item.Quantidade);
-                                cmdIns.Parameters.AddWithValue("@TotalItem", item.ValorTotal);
-                                cmdIns.Parameters.AddWithValue("@Oferta", false);
-                                cmdIns.ExecuteNonQuery();
-                            }
+                            cmdIns.Parameters.AddWithValue("@DataVenda", dataVenda.Date);
+                            cmdIns.Parameters.AddWithValue("@LojaId", lojaId);
+                            cmdIns.Parameters.AddWithValue("@ProdutoNome", item.ProdutoNome);
+                            cmdIns.Parameters.AddWithValue("@PrecoUnitario", item.PrecoUnitario);
+                            cmdIns.Parameters.AddWithValue("@Unidade", item.Unidade);
+                            cmdIns.Parameters.AddWithValue("@Quantidade", item.QuantidadeTotal);
+                            cmdIns.Parameters.AddWithValue("@TotalItem", item.TotalItem);
+                            cmdIns.Parameters.AddWithValue("@Oferta", item.EhOferta);
+                            cmdIns.ExecuteNonQuery();
                         }
                     }
                     return true;
