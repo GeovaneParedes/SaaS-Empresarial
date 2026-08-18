@@ -1349,6 +1349,61 @@
 
         <!-- SEÇÃO 6: LANÇAMENTOS E BOLETOS -->
         <section id="sec-lancamentos" class="tab-section">
+            <!-- 3 Cards KPIs Financeiros de Lançamentos -->
+            <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 1.5rem;">
+                <div class="kpi-card" style="border-left: 4px solid var(--accent-cyan);">
+                    <div class="kpi-header">
+                        <span>💵 TOTAL RECEBIDO (ENTRADA)</span>
+                        <div class="kpi-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                    </div>
+                    <div class="kpi-value" style="color: var(--accent-cyan);" id="card-lanc-entrada">R$ 0,00</div>
+                    <div class="kpi-subtext" style="color: var(--text-muted); font-size: 0.75rem;">📈 Total de Entradas e Recebimentos no Período</div>
+                </div>
+
+                <div class="kpi-card" style="border-left: 4px solid var(--accent-amber);">
+                    <div class="kpi-header">
+                        <span>⏳ TOTAL A PAGAR (BOLETOS)</span>
+                        <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-amber);"><i class="fa-solid fa-clock"></i></div>
+                    </div>
+                    <div class="kpi-value" style="color: var(--accent-amber);" id="card-lanc-apagar">R$ 0,00</div>
+                    <div class="kpi-subtext" style="color: var(--accent-amber); font-size: 0.75rem;">🕒 Boletos Pendentes / A Vencer</div>
+                </div>
+
+                <div class="kpi-card" style="border-left: 4px solid var(--accent-green);">
+                    <div class="kpi-header">
+                        <span>💰 TOTAL PAGO (SAÍDA)</span>
+                        <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green);"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    </div>
+                    <div class="kpi-value" style="color: var(--accent-green);" id="card-lanc-pago">R$ 0,00</div>
+                    <div class="kpi-subtext" style="color: var(--accent-green); font-size: 0.75rem;">📉 Saídas Líquidas Efetivadas</div>
+                </div>
+            </div>
+
+            <!-- Navegador de Filtro por Mês e Dias (Estilo Django Admin Drilldown) -->
+            <div class="panel-box" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem;">
+                    <div style="font-weight: 800; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-calendar-days" style="color: var(--primary);"></i>
+                        <span>FILTRAR PERÍODO DE LANÇAMENTOS:</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button type="button" class="btn-action" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: var(--bg-card-hover);" onclick="mudarAnoFiltroLancamentos(-1)">‹</button>
+                        <span id="lbl-filtro-ano" style="font-weight: 800; font-size: 1rem; color: var(--accent-cyan);">2026</span>
+                        <button type="button" class="btn-action" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: var(--bg-card-hover);" onclick="mudarAnoFiltroLancamentos(1)">›</button>
+                    </div>
+                </div>
+
+                <!-- Links dos Meses do Ano -->
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.75rem;" id="nav-meses-container">
+                    <!-- Inserido via JS: Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez -->
+                </div>
+
+                <!-- Links dos Dias do Mês Selecionado -->
+                <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;" id="nav-dias-container">
+                    <!-- Inserido via JS: 1 de Agosto, 2 de Agosto, ..., Todos do Mês -->
+                </div>
+            </div>
+
             <div class="panel-box" style="margin-bottom: 1.5rem;">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-plus-circle" style="color: var(--accent-green);"></i> Novo Lançamento Financeiro & Boleto</div>
@@ -1971,9 +2026,8 @@
                     msgDiv.style.display = 'block';
                     msgDiv.style.color = 'var(--accent-green)';
                     msgDiv.innerText = `✅ Oferta para ${data.produtoNome} (R$ ${data.precoOferta.toFixed(2)}) agendada com sucesso para a Loja ${data.lojaNome}! Balanças sincronizadas.`;
+                    setTimeout(() => { msgDiv.style.display = 'none'; }, 4000);
                 }
-                
-                alert(`✅ Oferta para ${data.produtoNome} agendada com sucesso para a Loja ${data.lojaNome}!`);
 
                 document.getElementById('of-produto').value = '';
                 document.getElementById('of-preco').value = '';
@@ -2056,80 +2110,185 @@
             }
         }
 
+        // Estado de Filtro de Data para Lançamentos (Estilo Django Admin)
+        let filtroAnoLanc = new Date().getFullYear();
+        let filtroMesLanc = new Date().getMonth() + 1; // 1-12
+        let filtroDiaLanc = null; // null = mês inteiro, ou 1-31
+
+        const nomesMesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+        function mudarAnoFiltroLancamentos(delta) {
+            filtroAnoLanc += delta;
+            document.getElementById('lbl-filtro-ano').innerText = filtroAnoLanc;
+            renderizarNavegadorDataLancamentos();
+            carregarApenasLancamentos();
+        }
+
+        function selecionarMesFiltroLancamentos(mesIdx) {
+            filtroMesLanc = mesIdx;
+            filtroDiaLanc = null; // reseta para o mês inteiro ao mudar de mês
+            renderizarNavegadorDataLancamentos();
+            carregarApenasLancamentos();
+        }
+
+        function selecionarDiaFiltroLancamentos(diaNum) {
+            filtroDiaLanc = diaNum;
+            renderizarNavegadorDataLancamentos();
+            renderizarEFiltrarLancamentosLocal();
+        }
+
+        function renderizarNavegadorDataLancamentos() {
+            const containerMeses = document.getElementById('nav-meses-container');
+            const containerDias = document.getElementById('nav-dias-container');
+            if (!containerMeses || !containerDias) return;
+
+            // Renderizar Botoes dos 12 Meses
+            let htmlMeses = '';
+            nomesMesesPt.forEach((mNome, idx) => {
+                const mesNum = idx + 1;
+                const activeStyle = mesNum === filtroMesLanc
+                    ? 'background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 800;'
+                    : 'background: var(--bg-card); color: var(--text-muted); border-color: var(--border-color);';
+                htmlMeses += `<button type="button" class="btn-action" style="padding: 0.3rem 0.65rem; font-size: 0.78rem; border-radius: 6px; border: 1px solid; ${activeStyle}" onclick="selecionarMesFiltroLancamentos(${mesNum})">${mNome.substring(0, 3)}</button>`;
+            });
+            containerMeses.innerHTML = htmlMeses;
+
+            // Renderizar Dias do Mês Selecionado
+            const qtdDiasNoMes = new Date(filtroAnoLanc, filtroMesLanc, 0).getDate();
+            const nomeMesSel = nomesMesesPt[filtroMesLanc - 1];
+            
+            let htmlDias = `<span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-right: 0.25rem;">DIAS DE ${nomeMesSel.toUpperCase()}:</span>`;
+            
+            // Botão "Mês Inteiro"
+            const activeMesInteiro = filtroDiaLanc === null
+                ? 'background: var(--accent-cyan); color: #000; font-weight: 800;'
+                : 'background: var(--bg-card); color: var(--text-muted);';
+            htmlDias += `<button type="button" class="btn-action" style="padding: 0.25rem 0.55rem; font-size: 0.75rem; border-radius: 6px; ${activeMesInteiro}" onclick="selecionarDiaFiltroLancamentos(null)">Todos (${nomeMesSel})</button>`;
+
+            for (let d = 1; d <= qtdDiasNoMes; d++) {
+                const activeDia = filtroDiaLanc === d
+                    ? 'background: var(--accent-cyan); color: #000; font-weight: 800;'
+                    : 'background: var(--bg-card); color: var(--text-muted);';
+                htmlDias += `<button type="button" class="btn-action" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 6px; ${activeDia}" onclick="selecionarDiaFiltroLancamentos(${d})">${d} de ${nomeMesSel}</button>`;
+            }
+            containerDias.innerHTML = htmlDias;
+        }
+
+        function renderizarEFiltrarLancamentosLocal() {
+            const todosLancs = window.lancamentosCache || [];
+
+            // Filtrar os Lançamentos pelo Dia Selecionado (ou Mês Inteiro)
+            const lancs = todosLancs.filter(l => {
+                if (!l.data) return false;
+                const dStr = l.data.split('T')[0];
+                const [ano, mes, dia] = dStr.split('-').map(Number);
+
+                if (ano !== filtroAnoLanc) return false;
+                if (mes !== filtroMesLanc) return false;
+                if (filtroDiaLanc !== null && dia !== filtroDiaLanc) return false;
+                return true;
+            });
+
+            // Calcular KPIs Financeiros para o Dia/Mês Filtrado
+            let totEntrada = 0;
+            let totAPagar = 0;
+            let totPago = 0;
+
+            lancs.forEach(l => {
+                totEntrada += (l.valorRecebidoEntrada || 0);
+                totAPagar += (l.valorAPagar || 0);
+                totPago += (l.valorPago || 0);
+            });
+
+            const lblEntrada = document.getElementById('card-lanc-entrada');
+            const lblAPagar = document.getElementById('card-lanc-apagar');
+            const lblPago = document.getElementById('card-lanc-pago');
+
+            if (lblEntrada) lblEntrada.innerText = 'R$ ' + totEntrada.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            if (lblAPagar) lblAPagar.innerText = 'R$ ' + totAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            if (lblPago) lblPago.innerText = 'R$ ' + totPago.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            const tbodyLanc = document.getElementById('table-lancamentos-body');
+            const cardsContainerLanc = document.getElementById('lancamentos-cards-container');
+            
+            let htmlTbody = '';
+            let htmlCards = '';
+
+            lancs.forEach(l => {
+                const statusPagoStr = l.statusPago || (l.valorPago > 0 && (l.valorPago >= l.valorAPagar || l.valorAPagar == 0) ? 'PAGO' : 'A VENCER');
+                const statusBadge = statusPagoStr === 'PAGO'
+                    ? '<span class="badge-payment badge-dinheiro">🟢 PAGO</span>'
+                    : statusPagoStr === 'ATRASADO'
+                    ? '<span class="badge-payment badge-voucher" style="background: rgba(244, 63, 94, 0.2); color: var(--accent-rose);">🔴 ATRASADO</span>'
+                    : '<span class="badge-payment badge-debito">🟡 A VENCER</span>';
+
+                const confBadge = (l.confirmadoStatus || 'SIM') === 'SIM'
+                    ? '<span class="badge-payment badge-dinheiro" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green);">SIM</span>'
+                    : (l.confirmadoStatus === 'NAO' ? '<span class="badge-payment badge-voucher">NÃO</span>' : '<span class="badge-payment badge-debito">DESCONHECIDO</span>');
+
+                const catStr = l.categoria || 'MERCADORIA';
+                const entradaVal = l.valorRecebidoEntrada || 0;
+
+                htmlTbody += `
+                    <tr>
+                        <td style="font-weight: 700;">
+                            <a href="javascript:void(0)" onclick="preencherFormularioEdicaoLancamento(${l.id})" style="color: var(--accent-cyan); text-decoration: underline; font-weight: 800;" title="Clique para editar este lançamento">#${l.id}</a>
+                        </td>
+                        <td style="font-weight: 700;">${sanitizeHTML(l.lojaNome)}</td>
+                        <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${sanitizeHTML(catStr)}</span></td>
+                        <td>${l.data ? l.data.split('T')[0] : '-'}</td>
+                        <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sanitizeHTML(l.descricao)}</td>
+                        <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
+                        <td style="color: var(--accent-cyan); font-weight: 700;">R$ ${entradaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td><span class="badge-payment badge-debito">${sanitizeHTML(l.formaPagamento)}</span></td>
+                        <td>${confBadge}</td>
+                        <td>${statusBadge}</td>
+                    </tr>`;
+
+                htmlCards += `
+                    <div class="lancamento-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 800;">
+                                <a href="javascript:void(0)" onclick="preencherFormularioEdicaoLancamento(${l.id})" style="color: var(--accent-cyan); text-decoration: underline;" title="Clique para editar este lançamento">#${l.id}</a> • ${sanitizeHTML(l.lojaNome)}
+                            </span>
+                            <div>${statusBadge}</div>
+                        </div>
+                        <div style="font-weight: 700; color: #fff; font-size: 0.95rem; margin: 0.25rem 0;">${sanitizeHTML(l.descricao)}</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; color: var(--text-muted);">
+                            <div><i class="fa-solid fa-tag"></i> <strong>Categoria:</strong> ${sanitizeHTML(catStr)}</div>
+                            <div><i class="fa-solid fa-credit-card"></i> <strong>PGTO:</strong> ${sanitizeHTML(l.formaPagamento)}</div>
+                            <div><i class="fa-solid fa-calendar"></i> <strong>Data:</strong> ${l.data ? l.data.split('T')[0] : '-'}</div>
+                            <div><i class="fa-solid fa-clock"></i> <strong>Vencimento:</strong> ${l.vencimento ? l.vencimento.split('T')[0] : '-'}</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); padding: 0.65rem 0.85rem; border-radius: 8px; margin-top: 0.35rem;">
+                            <div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">A PAGAR (BOLETO)</div>
+                                <div style="color: var(--accent-rose); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">VALOR PAGO</div>
+                                <div style="color: var(--accent-green); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            if (tbodyLanc) tbodyLanc.innerHTML = htmlTbody || '<tr><td colspan="12" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhum lançamento encontrado para este período.</td></tr>';
+            if (cardsContainerLanc) cardsContainerLanc.innerHTML = htmlCards || '<div style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhum lançamento para este período.</div>';
+        }
+
         async function carregarApenasLancamentos() {
             try {
-                const resLanc = await fetchWithAuth('/ModulosSaaS/lancamentos');
-                const lancs = await resLanc.json();
-                window.lancamentosCache = lancs;
-                const tbodyLanc = document.getElementById('table-lancamentos-body');
-                const cardsContainerLanc = document.getElementById('lancamentos-cards-container');
-                
-                let htmlTbody = '';
-                let htmlCards = '';
+                renderizarNavegadorDataLancamentos();
 
-                lancs.forEach(l => {
-                    const statusPagoStr = l.statusPago || (l.valorPago > 0 && (l.valorPago >= l.valorAPagar || l.valorAPagar == 0) ? 'PAGO' : 'A VENCER');
-                    const statusBadge = statusPagoStr === 'PAGO'
-                        ? '<span class="badge-payment badge-dinheiro">🟢 PAGO</span>'
-                        : statusPagoStr === 'ATRASADO'
-                        ? '<span class="badge-payment badge-voucher" style="background: rgba(244, 63, 94, 0.2); color: var(--accent-rose);">🔴 ATRASADO</span>'
-                        : '<span class="badge-payment badge-debito">🟡 A VENCER</span>';
+                const urlLanc = `/ModulosSaaS/lancamentos?ano=${filtroAnoLanc}&mes=${filtroMesLanc}`;
+                const resLanc = await fetchWithAuth(urlLanc);
+                const todosLancs = await resLanc.json();
+                window.lancamentosCache = todosLancs;
 
-                    const confBadge = (l.confirmadoStatus || 'SIM') === 'SIM'
-                        ? '<span class="badge-payment badge-dinheiro" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green);">SIM</span>'
-                        : (l.confirmadoStatus === 'NAO' ? '<span class="badge-payment badge-voucher">NÃO</span>' : '<span class="badge-payment badge-debito">DESCONHECIDO</span>');
-
-                    const catStr = l.categoria || 'MERCADORIA';
-                    const entradaVal = l.valorRecebidoEntrada || 0;
-
-                    htmlTbody += `
-                        <tr>
-                            <td style="font-weight: 700;">
-                                <a href="javascript:void(0)" onclick="preencherFormularioEdicaoLancamento(${l.id})" style="color: var(--accent-cyan); text-decoration: underline; font-weight: 800;" title="Clique para editar este lançamento">#${l.id}</a>
-                            </td>
-                            <td style="font-weight: 700;">${sanitizeHTML(l.lojaNome)}</td>
-                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${sanitizeHTML(catStr)}</span></td>
-                            <td>${l.data ? l.data.split('T')[0] : '-'}</td>
-                            <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sanitizeHTML(l.descricao)}</td>
-                            <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
-                            <td style="color: var(--accent-cyan); font-weight: 700;">R$ ${entradaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                            <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                            <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                            <td><span class="badge-payment badge-debito">${sanitizeHTML(l.formaPagamento)}</span></td>
-                            <td>${confBadge}</td>
-                            <td>${statusBadge}</td>
-                        </tr>`;
-
-                    htmlCards += `
-                        <div class="lancamento-card">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-weight: 800;">
-                                    <a href="javascript:void(0)" onclick="preencherFormularioEdicaoLancamento(${l.id})" style="color: var(--accent-cyan); text-decoration: underline;" title="Clique para editar este lançamento">#${l.id}</a> • ${sanitizeHTML(l.lojaNome)}
-                                </span>
-                                <div>${statusBadge}</div>
-                            </div>
-                            <div style="font-weight: 700; color: #fff; font-size: 0.95rem; margin: 0.25rem 0;">${sanitizeHTML(l.descricao)}</div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; color: var(--text-muted);">
-                                <div><i class="fa-solid fa-tag"></i> <strong>Categoria:</strong> ${sanitizeHTML(catStr)}</div>
-                                <div><i class="fa-solid fa-credit-card"></i> <strong>PGTO:</strong> ${sanitizeHTML(l.formaPagamento)}</div>
-                                <div><i class="fa-solid fa-calendar"></i> <strong>Data:</strong> ${l.data ? l.data.split('T')[0] : '-'}</div>
-                                <div><i class="fa-solid fa-clock"></i> <strong>Vencimento:</strong> ${l.vencimento ? l.vencimento.split('T')[0] : '-'}</div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); padding: 0.65rem 0.85rem; border-radius: 8px; margin-top: 0.35rem;">
-                                <div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">A PAGAR (BOLETO)</div>
-                                    <div style="color: var(--accent-rose); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">VALOR PAGO</div>
-                                    <div style="color: var(--accent-green); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-
-                if (tbodyLanc) tbodyLanc.innerHTML = htmlTbody;
-                if (cardsContainerLanc) cardsContainerLanc.innerHTML = htmlCards;
+                renderizarEFiltrarLancamentosLocal();
             } catch (err) {
                 console.error("Erro ao carregar apenas lançamentos:", err);
             }

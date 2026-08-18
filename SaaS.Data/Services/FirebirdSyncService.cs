@@ -265,6 +265,79 @@ namespace SaaS.Data.Services
             return ofertas;
         }
 
+        public bool SalvarAgendamentoOfertaPostgres(string pgConnStr, AgendamentoOfertaSaaS dto)
+        {
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
+                {
+                    conn.Open();
+
+                    long prodId = 0;
+                    // Procura o ID do produto pelo nome na mesma loja
+                    using (var cmdP = new Npgsql.NpgsqlCommand("SELECT id FROM produtos WHERE loja_id = @LojaId AND UPPER(nome) = UPPER(@Nome) LIMIT 1;", conn))
+                    {
+                        cmdP.Parameters.AddWithValue("@LojaId", dto.LojaId);
+                        cmdP.Parameters.AddWithValue("@Nome", dto.ProdutoNome.Trim());
+                        var obj = cmdP.ExecuteScalar();
+                        if (obj != null) prodId = Convert.ToInt64(obj);
+                    }
+
+                    // Se não achou por nome exato na loja, cria o produto no PostgreSQL
+                    if (prodId == 0)
+                    {
+                        using (var cmdInsP = new Npgsql.NpgsqlCommand("INSERT INTO produtos (nome, preco_venda, oferta_praticada, loja_id, categoria) VALUES (@Nome, @Preco, @Oferta, @LojaId, 'CARNE') RETURNING id;", conn))
+                        {
+                            cmdInsP.Parameters.AddWithValue("@Nome", dto.ProdutoNome.Trim());
+                            cmdInsP.Parameters.AddWithValue("@Preco", dto.PrecoOferta);
+                            cmdInsP.Parameters.AddWithValue("@Oferta", dto.PrecoOferta);
+                            cmdInsP.Parameters.AddWithValue("@LojaId", dto.LojaId);
+                            var objIns = cmdInsP.ExecuteScalar();
+                            if (objIns != null) prodId = Convert.ToInt64(objIns);
+                        }
+                    }
+                    else
+                    {
+                        // Atualiza a oferta praticada na tabela produtos
+                        using (var cmdUpdP = new Npgsql.NpgsqlCommand("UPDATE produtos SET oferta_praticada = @Oferta WHERE id = @Id;", conn))
+                        {
+                            cmdUpdP.Parameters.AddWithValue("@Oferta", dto.PrecoOferta);
+                            cmdUpdP.Parameters.AddWithValue("@Id", prodId);
+                            cmdUpdP.ExecuteNonQuery();
+                        }
+                    }
+
+                    dto.ProdutoId = (int)prodId;
+
+                    string sql = @"
+                        INSERT INTO nucleo_agendamentooferta (loja_id, produto_id, preco_oferta, data_inicio, data_fim, ativo)
+                        VALUES (@LojaId, @ProdId, @Preco, @DtIni, @DtFim, true)
+                        RETURNING id;";
+
+                    using (var cmd = new Npgsql.NpgsqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@LojaId", dto.LojaId);
+                        cmd.Parameters.AddWithValue("@ProdId", prodId);
+                        cmd.Parameters.AddWithValue("@Preco", dto.PrecoOferta);
+                        cmd.Parameters.AddWithValue("@DtIni", dto.DataInicio.Date);
+                        cmd.Parameters.AddWithValue("@DtFim", dto.DataFim.Date);
+
+                        var newId = cmd.ExecuteScalar();
+                        if (newId != null)
+                        {
+                            dto.Id = Convert.ToInt32(newId);
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERRO POSTGRES] Falha ao salvar agendamento de oferta: {ex.Message}");
+            }
+            return false;
+        }
+
         public class ProdutoTabelaTvDto
         {
             public int Id { get; set; }
@@ -338,7 +411,7 @@ namespace SaaS.Data.Services
             return produtos;
         }
 
-        public List<LancamentoFinanceiroSaaS> ObterLancamentosPostgres(string pgConnStr)
+        public List<LancamentoFinanceiroSaaS> ObterLancamentosPostgres(string pgConnStr, int? ano = null, int? mes = null)
         {
             var lancamentos = new List<LancamentoFinanceiroSaaS>();
             try
@@ -346,7 +419,17 @@ namespace SaaS.Data.Services
                 using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
                 {
                     conn.Open();
-                    string sql = @"
+                    string whereClause = "";
+                    if (ano.HasValue && mes.HasValue)
+                    {
+                        whereClause = "WHERE EXTRACT(YEAR FROM l.data) = @Ano AND EXTRACT(MONTH FROM l.data) = @Mes ";
+                    }
+                    else if (ano.HasValue)
+                    {
+                        whereClause = "WHERE EXTRACT(YEAR FROM l.data) = @Ano ";
+                    }
+
+                    string sql = $@"
                         SELECT 
                             l.id,
                             l.loja_id,
@@ -363,10 +446,13 @@ namespace SaaS.Data.Services
                         FROM lancamentos l
                         LEFT JOIN lojas lj ON lj.id = l.loja_id
                         LEFT JOIN categorias_financeiras cat ON cat.id = l.categoria_id
-                        ORDER BY l.id DESC LIMIT 500;";
+                        {whereClause}
+                        ORDER BY l.id DESC;";
 
                     using (var cmd = new Npgsql.NpgsqlCommand(sql, conn))
                     {
+                        if (ano.HasValue) cmd.Parameters.AddWithValue("@Ano", ano.Value);
+                        if (mes.HasValue) cmd.Parameters.AddWithValue("@Mes", mes.Value);
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())

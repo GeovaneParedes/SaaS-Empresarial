@@ -54,7 +54,7 @@
         <div class="bg-gradient-to-r from-red-950 via-slate-900 to-amber-950/40 border border-red-500/30 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
             <div class="relative z-10 max-w-2xl">
                 <span class="bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                    🥩 GUIA DE CORTES & SUGGESTÕES DO CHEFE
+                    🥩 GUIA DE CORTES & SUGESTÕES DO CHEFE
                 </span>
                 <h2 class="text-2xl sm:text-4xl font-black text-white mt-3 mb-2 tracking-tight">
                     Qual o prato ideal para a sua receita hoje?
@@ -237,7 +237,7 @@
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-2">
                             <h4 class="text-lg font-black text-white uppercase">Costela Ripa Bovina Especial</h4>
-                            <span class="text-lg font-black text-amber-400 font-mono">R$ 20,99<span class="text-xs text-slate-400 font-normal">/kg</span></span>
+                            <span class="text-lg font-black text-amber-400 font-mono">R$ 28,99<span class="text-xs text-slate-400 font-normal">/kg</span></span>
                         </div>
                         <p class="text-xs text-slate-400 mb-4 line-clamp-2">
                             Corte tradicional gaúcho com sabor inconfundível do osso e gordura entrelaçada.
@@ -431,10 +431,10 @@
         const DADOS_LOJAS = {
             "1": {
                 nome: "CASA DE CARNES EXCELÊNCIA",
-                subtitulo: "Unidade Nova Lima / Moreninhas • Carnes Frescas & Cortes Especiais",
+                subtitulo: "Unidade Nova Lima / Parque Iguatemi• Carnes Frescas & Cortes Especiais",
                 logo: "excelencia_logo_edited_edited.png",
                 whatsapp: "5567992487022",
-                endereco: "R. Francisco Pereira Coutinho, 1279 - Nova Lima - Campo Grande/MS"
+                endereco: "R. Francisco Pereira Coutinho, 1279 - Parque Iguatem - Campo Grande/MS"
             },
             "2": {
                 nome: "PIT STOP DA CARNE",
@@ -470,6 +470,49 @@
                 btn.setAttribute('href', `https://wa.me/${configLoja.whatsapp}?text=${textParam}`);
             }
         });
+
+        // Atualização Dinâmica dos Preços de Venda Reais do PostgreSQL por Loja
+        async function atualizarPrecosAoVivoCardapio() {
+            try {
+                const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                    ? 'http://localhost:5064/api/ModulosSaaS/cardapio-precos?lojaId=' + lojaId 
+                    : '/api/ModulosSaaS/cardapio-precos?lojaId=' + lojaId;
+
+                const res = await fetch(apiUrl);
+                if (!res.ok) return;
+                const produtosBd = await res.json();
+
+                // Varre cada card de corte no HTML e busca o preço exato atual no banco de dados da loja
+                document.querySelectorAll('.glass-card').forEach(card => {
+                    const tituloElem = card.querySelector('h4');
+                    const precoElem = card.querySelector('span.font-mono');
+                    if (!tituloElem || !precoElem) return;
+
+                    const nomeHtml = tituloElem.innerText.toUpperCase().trim();
+
+                    // Procura o produto correspondente no banco de dados
+                    const prodMatch = produtosBd.find(p => {
+                        const pNome = p.nome.toUpperCase().trim();
+                        return pNome === nomeHtml || nomeHtml.includes(pNome) || pNome.includes(nomeHtml.replace('SELECIONADA', '').replace('BOVINO', '').replace('ESPECIAL', '').trim());
+                    });
+
+                    if (prodMatch && prodMatch.precoFinal > 0) {
+                        const valFormatado = prodMatch.precoFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        precoElem.innerHTML = `R$ ${valFormatado}<span class="text-xs text-slate-400 font-normal">/kg</span>`;
+
+                        // Se estiver em oferta especial, destaca em verde neon
+                        if (prodMatch.emOferta) {
+                            precoElem.classList.remove('text-amber-400');
+                            precoElem.classList.add('text-emerald-400');
+                        }
+                    }
+                });
+            } catch (err) {
+                console.warn("[CARDÁPIO] Mantidos preços padrão devido a erro de conexão:", err);
+            }
+        }
+
+        atualizarPrecosAoVivoCardapio();
     </script>
 </body>
 </html>

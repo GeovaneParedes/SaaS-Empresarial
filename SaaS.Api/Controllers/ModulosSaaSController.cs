@@ -64,6 +64,32 @@ namespace SaaS.Api.Controllers
         [HttpGet("lojas")]
         public IActionResult GetLojas() => Ok(LojasMock);
 
+        [HttpGet("cardapio-precos")]
+        public IActionResult GetCardapioPrecos([FromQuery] int lojaId = 1)
+        {
+            var syncService = new FirebirdSyncService();
+            var produtosPostgres = syncService.ObterProdutosPostgresDjango(PgConnStr, lojaId, new List<int>());
+            var ofertasPostgres = syncService.ObterOfertasPostgresDjango(PgConnStr, DateTime.Today)
+                                            .Where(o => o.LojaId == lojaId && o.Ativo).ToList();
+
+            var resultado = produtosPostgres.Select(p => {
+                var oferta = ofertasPostgres.FirstOrDefault(o => o.ProdutoId == p.Id);
+                decimal precoFinal = (oferta != null && oferta.PrecoOferta > 0) ? oferta.PrecoOferta : 
+                                     (p.OfertaPraticada > 0 ? p.OfertaPraticada : p.PrecoVenda);
+                return new
+                {
+                    id = p.Id,
+                    nome = p.Nome,
+                    precoVenda = p.PrecoVenda,
+                    precoOferta = p.OfertaPraticada,
+                    precoFinal = precoFinal,
+                    emOferta = (oferta != null || p.OfertaPraticada > 0)
+                };
+            }).ToList();
+
+            return Ok(resultado);
+        }
+
         [HttpGet("ofertas")]
         public IActionResult GetOfertas([FromQuery] bool somenteVigentes = true, [FromQuery] int? lojaId = null)
         {
@@ -82,11 +108,19 @@ namespace SaaS.Api.Controllers
         [HttpPost("ofertas")]
         public IActionResult CriarAgendamentoOferta([FromBody] AgendamentoOfertaSaaS dto)
         {
-            dto.Id = OfertasMock.Max(o => o.Id) + 1;
+            var syncService = new FirebirdSyncService();
+            bool salvoPostgres = syncService.SalvarAgendamentoOfertaPostgres(PgConnStr, dto);
+
             var loja = LojasMock.FirstOrDefault(l => l.Id == dto.LojaId);
             if (loja != null) dto.LojaNome = loja.Nome;
             dto.SincronizadoBalanca = true;
-            OfertasMock.Insert(0, dto);
+
+            if (!salvoPostgres)
+            {
+                dto.Id = OfertasMock.Count > 0 ? OfertasMock.Max(o => o.Id) + 1 : 1;
+                OfertasMock.Insert(0, dto);
+            }
+
             return Ok(dto);
         }
 
@@ -94,10 +128,10 @@ namespace SaaS.Api.Controllers
         public IActionResult GetPrecificacao() => Ok(PrecificacaoMock);
 
         [HttpGet("lancamentos")]
-        public IActionResult GetLancamentos()
+        public IActionResult GetLancamentos([FromQuery] int? ano = null, [FromQuery] int? mes = null)
         {
             var syncService = new FirebirdSyncService();
-            var lancamentosPostgres = syncService.ObterLancamentosPostgres(PgConnStr);
+            var lancamentosPostgres = syncService.ObterLancamentosPostgres(PgConnStr, ano, mes);
             if (lancamentosPostgres.Count > 0)
             {
                 return Ok(lancamentosPostgres);
