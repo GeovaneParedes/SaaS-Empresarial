@@ -20,7 +20,8 @@ namespace SaaS.Api.Controllers
         {
             new Loja { Id = 1, Nome = "EXCELENCIA", Cnpj = "15.439.136/0001-70", Endereco = "Rua Francisco Pereira Coutinho, 1.279 - Parque Iguatemi - Campo Grande/MS", Telefone = "(67) 99248-7022" },
             new Loja { Id = 2, Nome = "PIT STOP", Cnpj = "20.123.456/0001-88", Endereco = "Rua Abraão Anache, 8 - Jardim Anache - Campo Grande/MS", Telefone = "(67) 99298-8507" },
-            new Loja { Id = 3, Nome = "CUNHA", Cnpj = "33.987.654/0001-12", Endereco = "Av. Gualter Barbosa, 297 - Jardim Campo Belo - Campo Grande/MS", Telefone = "(67) 99171-9841" }
+            new Loja { Id = 3, Nome = "CUNHA", Cnpj = "33.987.654/0001-12", Endereco = "Av. Gualter Barbosa, 297 - Jardim Campo Belo - Campo Grande/MS", Telefone = "(67) 99171-9841" },
+            new Loja { Id = 5, Nome = "HFCM", Cnpj = "44.111.222/0001-99", Endereco = "Campo Grande/MS", Telefone = "(67) 99999-0000" }
         };
 
         private static readonly List<AgendamentoOfertaSaaS> OfertasMock = new()
@@ -116,14 +117,49 @@ namespace SaaS.Api.Controllers
                 var loja = LojasMock.FirstOrDefault(l => l.Id == dto.LojaId);
                 if (loja != null) dto.LojaNome = loja.Nome;
 
-                if (dto.ValorPago > 0 && (dto.ValorPago >= dto.ValorAPagar || dto.ValorAPagar == 0)) dto.StatusPago = "PAGO";
-                else if (dto.Vencimento < DateTime.Today) dto.StatusPago = "ATRASADO";
+                if (dto.ValorPago > 0 && (dto.ValorAPagar == 0 || dto.ValorPago >= dto.ValorAPagar)) dto.StatusPago = "PAGO";
+                else if (dto.ValorPago == 0 && dto.ValorAPagar > 0 && dto.Vencimento < DateTime.Today) dto.StatusPago = "ATRASADO";
+                else if (dto.ValorPago == 0 && dto.ValorAPagar > 0) dto.StatusPago = "A VENCER";
+                else if (dto.ValorRecebidoEntrada > 0 && dto.ValorAPagar == 0) dto.StatusPago = "RECEBIDO";
                 else dto.StatusPago = "A VENCER";
 
                 LancamentosMock.Insert(0, dto);
             }
 
             return Ok(new { Status = "Sucesso", Mensagem = "Lançamento financeiro cadastrado com sucesso no banco de dados!", Lancamento = dto });
+        }
+
+        [HttpPut("lancamentos/{id:int}")]
+        public IActionResult AtualizarLancamento(int id, [FromBody] LancamentoFinanceiroSaaS dto)
+        {
+            dto.Id = id;
+            var syncService = new FirebirdSyncService();
+            bool salvoPostgres = syncService.SalvarLancamentoPostgres(PgConnStr, dto);
+
+            var lanc = LancamentosMock.FirstOrDefault(l => l.Id == id);
+            if (lanc != null)
+            {
+                var loja = LojasMock.FirstOrDefault(l => l.Id == dto.LojaId);
+                lanc.LojaId = dto.LojaId;
+                if (loja != null) lanc.LojaNome = loja.Nome;
+                lanc.Categoria = dto.Categoria;
+                lanc.Data = dto.Data;
+                lanc.Descricao = dto.Descricao;
+                lanc.FormaPagamento = dto.FormaPagamento;
+                lanc.Vencimento = dto.Vencimento;
+                lanc.ValorRecebidoEntrada = dto.ValorRecebidoEntrada;
+                lanc.ValorAPagar = dto.ValorAPagar;
+                lanc.ValorPago = dto.ValorPago;
+                lanc.ConfirmadoStatus = dto.ConfirmadoStatus;
+                
+                if (dto.ValorPago > 0 && (dto.ValorAPagar == 0 || dto.ValorPago >= dto.ValorAPagar)) lanc.StatusPago = "PAGO";
+                else if (dto.ValorPago == 0 && dto.ValorAPagar > 0 && dto.Vencimento < DateTime.Today) lanc.StatusPago = "ATRASADO";
+                else if (dto.ValorPago == 0 && dto.ValorAPagar > 0) lanc.StatusPago = "A VENCER";
+                else if (dto.ValorRecebidoEntrada > 0 && dto.ValorAPagar == 0) lanc.StatusPago = "RECEBIDO";
+                else lanc.StatusPago = "A VENCER";
+            }
+
+            return Ok(new { Status = "Sucesso", Mensagem = $"Lançamento #${id} atualizado com sucesso!", Lancamento = dto });
         }
 
         [HttpPost("simular-rateio")]

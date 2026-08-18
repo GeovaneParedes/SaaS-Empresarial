@@ -429,29 +429,66 @@ namespace SaaS.Data.Services
                         if (objCat != null) catId = Convert.ToInt32(objCat);
                     }
 
-                    string sqlInsert = @"
-                        INSERT INTO lancamentos (loja_id, categoria_id, data, descricao, forma_pgto, vencimento, valor_recebido, valor_a_pagar, valor_pago, confirmado)
-                        VALUES (@LojaId, @CatId, @Data, @Desc, @Forma, @Venc, @ValRec, @ValPag, @ValPago, @Conf)
-                        RETURNING id;";
-
-                    using (var cmd = new Npgsql.NpgsqlCommand(sqlInsert, conn))
+                    if (dto.Id > 0)
                     {
-                        cmd.Parameters.AddWithValue("@LojaId", dto.LojaId);
-                        cmd.Parameters.AddWithValue("@CatId", catId);
-                        cmd.Parameters.AddWithValue("@Data", dto.Data.Date);
-                        cmd.Parameters.AddWithValue("@Desc", dto.Descricao);
-                        cmd.Parameters.AddWithValue("@Forma", dto.FormaPagamento);
-                        cmd.Parameters.AddWithValue("@Venc", dto.Vencimento.Date);
-                        cmd.Parameters.AddWithValue("@ValRec", dto.ValorRecebidoEntrada);
-                        cmd.Parameters.AddWithValue("@ValPag", dto.ValorAPagar);
-                        cmd.Parameters.AddWithValue("@ValPago", dto.ValorPago);
-                        cmd.Parameters.AddWithValue("@Conf", dto.ConfirmadoStatus == "SIM");
+                        string sqlUpdate = @"
+                            UPDATE lancamentos 
+                            SET loja_id = @LojaId, 
+                                categoria_id = @CatId, 
+                                data = @Data, 
+                                descricao = @Desc, 
+                                forma_pgto = @Forma, 
+                                vencimento = @Venc, 
+                                valor_recebido = @ValRec, 
+                                valor_a_pagar = @ValPag, 
+                                valor_pago = @ValPago, 
+                                confirmado = @Conf
+                            WHERE id = @Id;";
 
-                        var newId = cmd.ExecuteScalar();
-                        if (newId != null)
+                        using (var cmdUpd = new Npgsql.NpgsqlCommand(sqlUpdate, conn))
                         {
-                            dto.Id = Convert.ToInt32(newId);
+                            cmdUpd.Parameters.AddWithValue("@Id", dto.Id);
+                            cmdUpd.Parameters.AddWithValue("@LojaId", dto.LojaId);
+                            cmdUpd.Parameters.AddWithValue("@CatId", catId);
+                            cmdUpd.Parameters.AddWithValue("@Data", dto.Data.Date);
+                            cmdUpd.Parameters.AddWithValue("@Desc", dto.Descricao);
+                            cmdUpd.Parameters.AddWithValue("@Forma", dto.FormaPagamento);
+                            cmdUpd.Parameters.AddWithValue("@Venc", dto.Vencimento.Date);
+                            cmdUpd.Parameters.AddWithValue("@ValRec", dto.ValorRecebidoEntrada);
+                            cmdUpd.Parameters.AddWithValue("@ValPag", dto.ValorAPagar);
+                            cmdUpd.Parameters.AddWithValue("@ValPago", dto.ValorPago);
+                            cmdUpd.Parameters.AddWithValue("@Conf", dto.ConfirmadoStatus == "SIM");
+
+                            cmdUpd.ExecuteNonQuery();
                             return true;
+                        }
+                    }
+                    else
+                    {
+                        string sqlInsert = @"
+                            INSERT INTO lancamentos (loja_id, categoria_id, data, descricao, forma_pgto, vencimento, valor_recebido, valor_a_pagar, valor_pago, confirmado)
+                            VALUES (@LojaId, @CatId, @Data, @Desc, @Forma, @Venc, @ValRec, @ValPag, @ValPago, @Conf)
+                            RETURNING id;";
+
+                        using (var cmd = new Npgsql.NpgsqlCommand(sqlInsert, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@LojaId", dto.LojaId);
+                            cmd.Parameters.AddWithValue("@CatId", catId);
+                            cmd.Parameters.AddWithValue("@Data", dto.Data.Date);
+                            cmd.Parameters.AddWithValue("@Desc", dto.Descricao);
+                            cmd.Parameters.AddWithValue("@Forma", dto.FormaPagamento);
+                            cmd.Parameters.AddWithValue("@Venc", dto.Vencimento.Date);
+                            cmd.Parameters.AddWithValue("@ValRec", dto.ValorRecebidoEntrada);
+                            cmd.Parameters.AddWithValue("@ValPag", dto.ValorAPagar);
+                            cmd.Parameters.AddWithValue("@ValPago", dto.ValorPago);
+                            cmd.Parameters.AddWithValue("@Conf", dto.ConfirmadoStatus == "SIM");
+
+                            var newId = cmd.ExecuteScalar();
+                            if (newId != null)
+                            {
+                                dto.Id = Convert.ToInt32(newId);
+                                return true;
+                            }
                         }
                     }
                 }

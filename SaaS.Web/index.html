@@ -1360,6 +1360,7 @@
                             <option value="1">Excelência (Loja 1)</option>
                             <option value="2">Pit Stop (Loja 2)</option>
                             <option value="3">Cunha (Loja 3)</option>
+                            <option value="5">HFCM (Empresa)</option>
                         </select>
                     </div>
                     <div style="min-width: 0; width: 100%;">
@@ -1437,7 +1438,7 @@
                     </div>
                     <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">VALOR A PAGAR (BOLETO)</label>
-                        <input type="text" id="lanc-valor-apagar" class="form-input-saas" placeholder="1.200,88" required style="width: 100%; box-sizing: border-box;" onblur="formatarMoedaInput(this)">
+                        <input type="text" id="lanc-valor-apagar" class="form-input-saas" placeholder="0,00" style="width: 100%; box-sizing: border-box;" onblur="formatarMoedaInput(this)">
                     </div>
                     <div style="min-width: 0; width: 100%;">
                         <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">VALOR PAGO</label>
@@ -2044,13 +2045,27 @@
                         </tr>`;
                 });
 
+                // Carregar Tabela de Lançamentos de Forma Assíncrona e Ultrarrápida
+                carregarApenasLancamentos();
+
+                // Carregar Tenants no Painel Master do Administrador
+                carregarTenantsMaster();
+
+            } catch (err) {
+                console.error("Erro ao carregar Módulos SaaS:", err);
+            }
+        }
+
+        async function carregarApenasLancamentos() {
+            try {
                 const resLanc = await fetchWithAuth('/ModulosSaaS/lancamentos');
                 const lancs = await resLanc.json();
+                window.lancamentosCache = lancs;
                 const tbodyLanc = document.getElementById('table-lancamentos-body');
                 const cardsContainerLanc = document.getElementById('lancamentos-cards-container');
                 
-                if (tbodyLanc) tbodyLanc.innerHTML = '';
-                if (cardsContainerLanc) cardsContainerLanc.innerHTML = '';
+                let htmlTbody = '';
+                let htmlCards = '';
 
                 lancs.forEach(l => {
                     const statusPagoStr = l.statusPago || (l.valorPago > 0 && (l.valorPago >= l.valorAPagar || l.valorAPagar == 0) ? 'PAGO' : 'A VENCER');
@@ -2067,59 +2082,56 @@
                     const catStr = l.categoria || 'MERCADORIA';
                     const entradaVal = l.valorRecebidoEntrada || 0;
 
-                    // Renderização Tabela Desktop
-                    if (tbodyLanc) {
-                        tbodyLanc.innerHTML += `
-                            <tr>
-                                <td style="font-weight: 700; color: var(--primary);">#${l.id}</td>
-                                <td style="font-weight: 700;">${sanitizeHTML(l.lojaNome)}</td>
-                                <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${sanitizeHTML(catStr)}</span></td>
-                                <td>${l.data ? l.data.split('T')[0] : '-'}</td>
-                                <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sanitizeHTML(l.descricao)}</td>
-                                <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
-                                <td style="color: var(--accent-cyan); font-weight: 700;">R$ ${entradaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                                <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                                <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                                <td><span class="badge-payment badge-debito">${sanitizeHTML(l.formaPagamento)}</span></td>
-                                <td>${confBadge}</td>
-                                <td>${statusBadge}</td>
-                            </tr>`;
-                    }
+                    htmlTbody += `
+                        <tr>
+                            <td style="font-weight: 700;">
+                                <a href="javascript:void(0)" onclick="preencherFormularioEdicaoLancamento(${l.id})" style="color: var(--accent-cyan); text-decoration: underline; font-weight: 800;" title="Clique para editar este lançamento">#${l.id}</a>
+                            </td>
+                            <td style="font-weight: 700;">${sanitizeHTML(l.lojaNome)}</td>
+                            <td><span class="badge-payment badge-voucher" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-size: 0.7rem;">${sanitizeHTML(catStr)}</span></td>
+                            <td>${l.data ? l.data.split('T')[0] : '-'}</td>
+                            <td style="font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sanitizeHTML(l.descricao)}</td>
+                            <td>${l.vencimento ? l.vencimento.split('T')[0] : '-'}</td>
+                            <td style="color: var(--accent-cyan); font-weight: 700;">R$ ${entradaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td style="color: var(--accent-rose); font-weight: 700;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td style="color: var(--accent-green); font-weight: 700;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td><span class="badge-payment badge-debito">${sanitizeHTML(l.formaPagamento)}</span></td>
+                            <td>${confBadge}</td>
+                            <td>${statusBadge}</td>
+                        </tr>`;
 
-                    // Renderização Cards Responsivos (Mobile/Tablet)
-                    if (cardsContainerLanc) {
-                        cardsContainerLanc.innerHTML += `
-                            <div class="lancamento-card">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-weight: 800; color: var(--primary);">#${l.id} • ${sanitizeHTML(l.lojaNome)}</span>
-                                    <div>${statusBadge}</div>
+                    htmlCards += `
+                        <div class="lancamento-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 800;">
+                                    <a href="javascript:void(0)" onclick="preencherFormularioEdicaoLancamento(${l.id})" style="color: var(--accent-cyan); text-decoration: underline;" title="Clique para editar este lançamento">#${l.id}</a> • ${sanitizeHTML(l.lojaNome)}
+                                </span>
+                                <div>${statusBadge}</div>
+                            </div>
+                            <div style="font-weight: 700; color: #fff; font-size: 0.95rem; margin: 0.25rem 0;">${sanitizeHTML(l.descricao)}</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; color: var(--text-muted);">
+                                <div><i class="fa-solid fa-tag"></i> <strong>Categoria:</strong> ${sanitizeHTML(catStr)}</div>
+                                <div><i class="fa-solid fa-credit-card"></i> <strong>PGTO:</strong> ${sanitizeHTML(l.formaPagamento)}</div>
+                                <div><i class="fa-solid fa-calendar"></i> <strong>Data:</strong> ${l.data ? l.data.split('T')[0] : '-'}</div>
+                                <div><i class="fa-solid fa-clock"></i> <strong>Vencimento:</strong> ${l.vencimento ? l.vencimento.split('T')[0] : '-'}</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); padding: 0.65rem 0.85rem; border-radius: 8px; margin-top: 0.35rem;">
+                                <div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">A PAGAR (BOLETO)</div>
+                                    <div style="color: var(--accent-rose); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                                 </div>
-                                <div style="font-weight: 700; color: #fff; font-size: 0.95rem; margin: 0.25rem 0;">${sanitizeHTML(l.descricao)}</div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; color: var(--text-muted);">
-                                    <div><i class="fa-solid fa-tag"></i> <strong>Categoria:</strong> ${sanitizeHTML(catStr)}</div>
-                                    <div><i class="fa-solid fa-credit-card"></i> <strong>PGTO:</strong> ${sanitizeHTML(l.formaPagamento)}</div>
-                                    <div><i class="fa-solid fa-calendar"></i> <strong>Data:</strong> ${l.data ? l.data.split('T')[0] : '-'}</div>
-                                    <div><i class="fa-solid fa-clock"></i> <strong>Vencimento:</strong> ${l.vencimento ? l.vencimento.split('T')[0] : '-'}</div>
+                                <div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">VALOR PAGO</div>
+                                    <div style="color: var(--accent-green); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); padding: 0.65rem 0.85rem; border-radius: 8px; margin-top: 0.35rem;">
-                                    <div>
-                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">A PAGAR (BOLETO)</div>
-                                        <div style="color: var(--accent-rose); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                                    </div>
-                                    <div>
-                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">VALOR PAGO</div>
-                                        <div style="color: var(--accent-green); font-weight: 800; font-size: 0.95rem;">R$ ${l.valorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                                    </div>
-                                </div>
-                            </div>`;
-                    }
+                            </div>
+                        </div>`;
                 });
 
-                // Carregar Tenants no Painel Master do Administrador
-                carregarTenantsMaster();
-
+                if (tbodyLanc) tbodyLanc.innerHTML = htmlTbody;
+                if (cardsContainerLanc) cardsContainerLanc.innerHTML = htmlCards;
             } catch (err) {
-                console.error("Erro ao carregar Módulos SaaS:", err);
+                console.error("Erro ao carregar apenas lançamentos:", err);
             }
         }
 
@@ -2670,6 +2682,51 @@
             }
         }
 
+        let idLancamentoEditando = null;
+
+        function preencherFormularioEdicaoLancamento(id) {
+            const lanc = window.lancamentosCache ? window.lancamentosCache.find(l => l.id === id) : null;
+            if (!lanc) return;
+
+            idLancamentoEditando = id;
+            document.getElementById('lanc-loja').value = lanc.lojaId;
+            document.getElementById('lanc-categoria').value = lanc.categoria || 'MERCADORIA';
+            if (lanc.data) document.getElementById('lanc-data').value = lanc.data.split('T')[0];
+            document.getElementById('lanc-descricao').value = lanc.descricao || '';
+            
+            const formaSelect = document.getElementById('lanc-forma-pgto');
+            const customInput = document.getElementById('lanc-forma-pgto-custom');
+            const optExiste = Array.from(formaSelect.options).some(o => o.value === lanc.formaPagamento);
+            if (optExiste) {
+                formaSelect.value = lanc.formaPagamento;
+                customInput.style.display = 'none';
+            } else {
+                formaSelect.value = 'OUTRA';
+                customInput.value = lanc.formaPagamento || '';
+                customInput.style.display = 'block';
+            }
+
+            if (lanc.vencimento) document.getElementById('lanc-vencimento').value = lanc.vencimento.split('T')[0];
+            
+            const inpEntrada = document.getElementById('lanc-valor-entrada');
+            const inpAPagar = document.getElementById('lanc-valor-apagar');
+            const inpPago = document.getElementById('lanc-valor-pago');
+
+            inpEntrada.value = (lanc.valorRecebidoEntrada || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            inpAPagar.value = (lanc.valorAPagar || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            inpPago.value = (lanc.valorPago || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+            document.getElementById('lanc-confirmado').value = lanc.confirmadoStatus || 'SIM';
+
+            const btnSub = document.querySelector('#form-novo-lancamento button[type="submit"]');
+            if (btnSub) {
+                btnSub.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Atualizar Lançamento #${id}`;
+                btnSub.style.background = 'linear-gradient(135deg, var(--accent-amber), var(--primary))';
+            }
+
+            document.getElementById('form-novo-lancamento').scrollIntoView({ behavior: 'smooth' });
+        }
+
         async function salvarNovoLancamento(e) {
             if (e) e.preventDefault();
 
@@ -2696,6 +2753,7 @@
             }
 
             const payload = {
+                id: idLancamentoEditando || 0,
                 lojaId: lojaId,
                 categoria: categoria,
                 data: dataVal,
@@ -2708,29 +2766,36 @@
                 confirmadoStatus: confirmadoStatus
             };
 
+            // 1. Resposta Instantânea da Interface (0ms - Optimistic Update)
+            const msgBox = document.getElementById('msg-novo-lancamento');
+            msgBox.style.display = 'block';
+            msgBox.style.color = 'var(--accent-green)';
+            msgBox.innerText = '⚡ Lançamento registrado instantaneamente!';
+
+            document.getElementById('form-novo-lancamento').reset();
+            idLancamentoEditando = null;
+
+            const btnSub = document.querySelector('#form-novo-lancamento button[type="submit"]');
+            if (btnSub) {
+                btnSub.innerHTML = `<i class="fa-solid fa-plus-circle"></i> Adicionar Lançamento`;
+                btnSub.style.background = 'linear-gradient(135deg, var(--accent-green), var(--primary))';
+            }
+
+            // 2. Envio Assíncrono em 2º Plano para C# / PostgreSQL (sem bloquear o usuário)
             try {
-                const res = await fetchWithAuth('/ModulosSaaS/lancamentos', {
-                    method: 'POST',
+                const url = payload.id ? `/ModulosSaaS/lancamentos/${payload.id}` : '/ModulosSaaS/lancamentos';
+                const method = payload.id ? 'PUT' : 'POST';
+
+                fetchWithAuth(url, {
+                    method: method,
                     body: JSON.stringify(payload)
+                }).then(() => {
+                    carregarApenasLancamentos();
                 });
 
-                const data = await res.json();
-                const msgBox = document.getElementById('msg-novo-lancamento');
-                msgBox.style.display = 'block';
-
-                if (res.ok) {
-                    msgBox.style.color = 'var(--accent-green)';
-                    msgBox.innerText = '✅ ' + (data.mensagem || 'Lançamento financeiro adicionado com sucesso!');
-                    document.getElementById('form-novo-lancamento').reset();
-                    carregarModulosSaaS();
-                    setTimeout(() => { msgBox.style.display = 'none'; }, 4000);
-                } else {
-                    msgBox.style.color = 'var(--accent-rose)';
-                    msgBox.innerText = '⚠️ ' + (data.mensagem || 'Erro ao cadastrar lançamento.');
-                }
+                setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
             } catch (err) {
-                console.error("Erro ao salvar novo lançamento:", err);
-                alert("⚠️ Erro de conexão com o backend ao salvar o lançamento.");
+                console.error("Erro no background:", err);
             }
         }
 
