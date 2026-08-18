@@ -538,6 +538,10 @@ namespace SaaS.Data.Services
                             cmdIns.ExecuteNonQuery();
                         }
                     }
+
+                    // 4. Salva adicionalmente a totalidade dos cupons e itens unitários detalhados nas tabelas cupons e itens_cupom
+                    PersistirCuponsEItensDetalhadosNoPostgres(conn, lojaId, dataVenda, cupons, ofertasSet);
+
                     return true;
                 }
             }
@@ -546,6 +550,80 @@ namespace SaaS.Data.Services
                 Console.WriteLine($"[ERRO POSTGRES] Falha ao persistir vendas_itens: {ex.Message}");
             }
             return false;
+        }
+
+        public bool PersistirCuponsEItensDetalhadosNoPostgres(Npgsql.NpgsqlConnection conn, int lojaId, DateTime dataVenda, List<CupomVenda> cupons, HashSet<string> ofertasSet)
+        {
+            try
+            {
+                // Limpa cupons do mesmo dia/loja para evitar duplicidade em atualizações
+                using (var cmdDel = new Npgsql.NpgsqlCommand("DELETE FROM public.cupons WHERE loja_id = @LojaId AND CAST(data_hora AS DATE) = @DataVenda;", conn))
+                {
+                    cmdDel.Parameters.AddWithValue("@LojaId", lojaId);
+                    cmdDel.Parameters.AddWithValue("@DataVenda", dataVenda.Date);
+                    cmdDel.ExecuteNonQuery();
+                }
+
+                string sqlCupom = @"
+                    INSERT INTO public.cupons (id, loja_id, data_hora, total_venda, total_desconto, forma_pagamento, taxa_estimada_pct, valor_liquido)
+                    VALUES (@Id, @LojaId, @DataHora, @TotalVenda, @TotalDesconto, @FormaPagamento, @TaxaEstimadaPct, @ValorLiquido)
+                    ON CONFLICT (id, loja_id) DO UPDATE SET
+                        data_hora = EXCLUDED.data_hora,
+                        total_venda = EXCLUDED.total_venda,
+                        total_desconto = EXCLUDED.total_desconto,
+                        forma_pagamento = EXCLUDED.forma_pagamento,
+                        taxa_estimada_pct = EXCLUDED.taxa_estimada_pct,
+                        valor_liquido = EXCLUDED.valor_liquido;";
+
+                string sqlItem = @"
+                    INSERT INTO public.itens_cupom (cupom_id, loja_id, produto_codigo, produto_nome, unidade, quantidade, preco_unitario, total_item, em_oferta)
+                    VALUES (@CupomId, @LojaId, @ProdutoCodigo, @ProdutoNome, @Unidade, @Quantidade, @PrecoUnitario, @TotalItem, @EmOferta);";
+
+                foreach (var c in cupons)
+                {
+                    var pgto = c.Pagamentos.FirstOrDefault() ?? new PagamentoCupom { FormaPagamento = "DINHEIRO", TaxaPercentualEstimada = 0, ValorLiquidoRecebido = c.TotalVenda };
+                    string formaPgto = SanitizarTextoCompleto(pgto.FormaPagamento);
+
+                    using (var cmdC = new Npgsql.NpgsqlCommand(sqlCupom, conn))
+                    {
+                        cmdC.Parameters.AddWithValue("@Id", c.Id);
+                        cmdC.Parameters.AddWithValue("@LojaId", lojaId);
+                        cmdC.Parameters.AddWithValue("@DataHora", c.DataHora == DateTime.MinValue ? dataVenda : c.DataHora);
+                        cmdC.Parameters.AddWithValue("@TotalVenda", c.TotalVenda);
+                        cmdC.Parameters.AddWithValue("@TotalDesconto", c.TotalDesconto);
+                        cmdC.Parameters.AddWithValue("@FormaPagamento", formaPgto);
+                        cmdC.Parameters.AddWithValue("@TaxaEstimadaPct", pgto.TaxaPercentualEstimada);
+                        cmdC.Parameters.AddWithValue("@ValorLiquido", pgto.ValorLiquidoRecebido > 0 ? pgto.ValorLiquidoRecebido : c.TotalVenda);
+                        cmdC.ExecuteNonQuery();
+                    }
+
+                    foreach (var item in c.Itens)
+                    {
+                        string nomeProd = SanitizarTextoCompleto(item.ProdutoDescricao);
+                        bool ehOferta = ofertasSet.Any(of => nomeProd.Contains(of) || of.Contains(nomeProd));
+
+                        using (var cmdI = new Npgsql.NpgsqlCommand(sqlItem, conn))
+                        {
+                            cmdI.Parameters.AddWithValue("@CupomId", c.Id);
+                            cmdI.Parameters.AddWithValue("@LojaId", lojaId);
+                            cmdI.Parameters.AddWithValue("@ProdutoCodigo", item.ProdutoCodigo ?? "0");
+                            cmdI.Parameters.AddWithValue("@ProdutoNome", nomeProd);
+                            cmdI.Parameters.AddWithValue("@Unidade", item.Unidade ?? "KG");
+                            cmdI.Parameters.AddWithValue("@Quantidade", item.Quantidade);
+                            cmdI.Parameters.AddWithValue("@PrecoUnitario", item.PrecoUnitario);
+                            cmdI.Parameters.AddWithValue("@TotalItem", item.ValorTotal);
+                            cmdI.Parameters.AddWithValue("@EmOferta", ehOferta);
+                            cmdI.ExecuteNonQuery();
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERRO POSTGRES] Falha ao persistir cupons/itens_cupom: {ex.Message}");
+                return false;
+            }
         }
     }
 }

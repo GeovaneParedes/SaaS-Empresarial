@@ -8,6 +8,9 @@ builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Worker em Segundo Plano para Sincronização Assíncrona Automática dos Cupons Firebird no PostgreSQL
+builder.Services.AddHostedService<SaaS.Api.Services.FirebirdSyncBackgroundService>();
+
 // Habilita CORS para acesso universal
 builder.Services.AddCors(options =>
 {
