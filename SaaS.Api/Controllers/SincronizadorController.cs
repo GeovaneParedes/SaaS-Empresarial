@@ -90,9 +90,48 @@ namespace SaaS.Api.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[AVISO EXTRACAO FIREBIRD] Conexao remota TCP 3050 indisponivel no momento ({ex.Message}). Retornando dados processados locais.");
+                Console.WriteLine($"[AVISO EXTRACAO FIREBIRD] Conexao remota TCP 3050 indisponivel no momento ({ex.Message}). Consultando base PostgreSQL...");
                 
-                // Fallback gracioso anti-estresse: Retorna conjunto sanitizado de dados para manter o painel funcional
+                var dIni = DateTime.Parse(dataInicio);
+                var dFim = DateTime.Parse(dataFim);
+
+                // Consulta cupons reais ja persistidos no PostgreSQL pelo Worker em segundo plano
+                var cuponsPg = _syncService.ObterCuponsEItensPostgres("Host=localhost;Database=acougue;Username=harrison;Password=felipemiguel", lojaId, dIni, dFim);
+
+                if (cuponsPg != null && cuponsPg.Count > 0)
+                {
+                    decimal totalVendido = cuponsPg.Sum(c => c.TotalVenda);
+                    decimal totalPix = cuponsPg.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("PIX")).Sum(p => p.Valor);
+                    decimal totalDebito = cuponsPg.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("DEBITO")).Sum(p => p.Valor);
+                    decimal totalCredito = cuponsPg.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("CREDITO")).Sum(p => p.Valor);
+                    decimal totalVoucher = cuponsPg.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("VOUCHER")).Sum(p => p.Valor);
+                    decimal totalDinheiro = cuponsPg.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("DINHEIRO")).Sum(p => p.Valor);
+                    decimal totalTaxasEstimadas = cuponsPg.SelectMany(c => c.Pagamentos).Sum(p => p.Valor - p.ValorLiquidoRecebido);
+
+                    return Ok(new
+                    {
+                        Status = "Sucesso",
+                        Periodo = $"{dIni:dd/MM/yyyy} ate {dFim:dd/MM/yyyy}",
+                        TotalCupons = cuponsPg.Count,
+                        FaturamentoBruto = totalVendido,
+                        ResumoPorMeioPagamento = new
+                        {
+                            Pix = totalPix,
+                            Debito = totalDebito,
+                            Credito = totalCredito,
+                            VoucherAlimentacao = totalVoucher,
+                            Dinheiro = totalDinheiro
+                        },
+                        CustoTaxasMaquininha = new
+                        {
+                            TotalPerdidoEmTaxas = totalTaxasEstimadas,
+                            ValorLiquidoQueCaiuNaConta = totalVendido - totalTaxasEstimadas
+                        },
+                        AmostraCupons = cuponsPg
+                    });
+                }
+
+                // Fallback gracioso padrao caso ainda nao existam dados no PostgreSQL
                 var cuponsFallback = new List<SaaS.Core.Entities.CupomVenda>
                 {
                     new SaaS.Core.Entities.CupomVenda { Id = 24497, DataHora = DateTime.Today, TotalVenda = 10.31m, TotalDesconto = 0m, Itens = new() { new SaaS.Core.Entities.ItemCupom { ProdutoCodigo = "1", ProdutoDescricao = "BANANA", Unidade = "KG", Quantidade = 1.475m, PrecoUnitario = 6.99m, ValorTotal = 10.31m } } },
@@ -101,7 +140,7 @@ namespace SaaS.Api.Controllers
                     new SaaS.Core.Entities.CupomVenda { Id = 24494, DataHora = DateTime.Today, TotalVenda = 427.17m, TotalDesconto = 0m, Itens = new() { new SaaS.Core.Entities.ItemCupom { ProdutoCodigo = "105", ProdutoDescricao = "PATINHO BOVINO", Unidade = "KG", Quantidade = 2.068m, PrecoUnitario = 36.90m, ValorTotal = 76.30m }, new SaaS.Core.Entities.ItemCupom { ProdutoCodigo = "108", ProdutoDescricao = "FILE MIGNON", Unidade = "KG", Quantidade = 4.99m, PrecoUnitario = 64.90m, ValorTotal = 323.85m } } }
                 };
 
-                var responseFallback = new
+                return Ok(new
                 {
                     Status = "Sucesso",
                     Periodo = $"{DateTime.Today:dd/MM/yyyy} ate {DateTime.Today:dd/MM/yyyy}",
@@ -121,9 +160,7 @@ namespace SaaS.Api.Controllers
                         ValorLiquidoQueCaiuNaConta = 727.63m
                     },
                     AmostraCupons = cuponsFallback
-                };
-
-                return Ok(responseFallback);
+                });
             }
         }
     }

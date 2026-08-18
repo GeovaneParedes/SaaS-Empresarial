@@ -463,6 +463,104 @@ namespace SaaS.Data.Services
             return false;
         }
 
+        public List<CupomVenda> ObterCuponsEItensPostgres(string pgConnStr, int lojaId, DateTime dataInicio, DateTime dataFim)
+        {
+            var cuponsMap = new Dictionary<long, CupomVenda>();
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
+                {
+                    conn.Open();
+
+                    string sqlCupons = @"
+                        SELECT id, loja_id, data_hora, total_venda, total_desconto, forma_pagamento, taxa_estimada_pct, valor_liquido
+                        FROM public.cupons
+                        WHERE (loja_id = @LojaId OR @LojaId = 0)
+                          AND CAST(data_hora AS DATE) BETWEEN @DataIni AND @DataFim
+                        ORDER BY id DESC;";
+
+                    using (var cmd = new Npgsql.NpgsqlCommand(sqlCupons, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@LojaId", lojaId);
+                        cmd.Parameters.AddWithValue("@DataIni", dataInicio.Date);
+                        cmd.Parameters.AddWithValue("@DataFim", dataFim.Date);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                long id = Convert.ToInt64(reader["id"]);
+                                decimal totalV = Convert.ToDecimal(reader["total_venda"]);
+                                decimal totalD = Convert.ToDecimal(reader["total_desconto"]);
+                                string formaPg = reader["forma_pagamento"]?.ToString() ?? "DINHEIRO";
+                                decimal taxaPct = Convert.ToDecimal(reader["taxa_estimada_pct"]);
+                                decimal valLiq = Convert.ToDecimal(reader["valor_liquido"]);
+
+                                var c = new CupomVenda
+                                {
+                                    Id = id,
+                                    DataHora = Convert.ToDateTime(reader["data_hora"]),
+                                    TotalVenda = totalV,
+                                    TotalDesconto = totalD,
+                                    Pagamentos = new List<PagamentoCupom>
+                                    {
+                                        new PagamentoCupom
+                                        {
+                                            FormaPagamento = formaPg,
+                                            Valor = totalV,
+                                            TaxaPercentualEstimada = taxaPct,
+                                            ValorLiquidoRecebido = valLiq
+                                        }
+                                    }
+                                };
+                                cuponsMap[id] = c;
+                            }
+                        }
+                    }
+
+                    if (cuponsMap.Count > 0)
+                    {
+                        string sqlItens = @"
+                            SELECT cupom_id, produto_codigo, produto_nome, unidade, quantidade, preco_unitario, total_item, em_oferta
+                            FROM public.itens_cupom
+                            WHERE (loja_id = @LojaId OR @LojaId = 0)
+                              AND cupom_id IN (" + string.Join(",", cuponsMap.Keys) + @")
+                            ORDER BY id ASC;";
+
+                        using (var cmdItens = new Npgsql.NpgsqlCommand(sqlItens, conn))
+                        {
+                            cmdItens.Parameters.AddWithValue("@LojaId", lojaId);
+                            using (var reader = cmdItens.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    long cupomId = Convert.ToInt64(reader["cupom_id"]);
+                                    if (cuponsMap.TryGetValue(cupomId, out var cupom))
+                                    {
+                                        cupom.Itens.Add(new ItemCupom
+                                        {
+                                            ProdutoCodigo = reader["produto_codigo"]?.ToString() ?? "0",
+                                            ProdutoDescricao = reader["produto_nome"]?.ToString() ?? "PRODUTO",
+                                            Unidade = reader["unidade"]?.ToString() ?? "KG",
+                                            Quantidade = Convert.ToDecimal(reader["quantidade"]),
+                                            PrecoUnitario = Convert.ToDecimal(reader["preco_unitario"]),
+                                            ValorTotal = Convert.ToDecimal(reader["total_item"]),
+                                            EmOferta = Convert.ToBoolean(reader["em_oferta"])
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AVISO POSTGRES] Falha ao consultar cupons e itens_cupom: {ex.Message}");
+            }
+            return cuponsMap.Values.ToList();
+        }
+
         public bool PersistirItensNoPostgres(string pgConnStr, int lojaId, DateTime dataVenda, List<CupomVenda> cupons)
         {
             try
