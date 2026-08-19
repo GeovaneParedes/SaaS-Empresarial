@@ -10,12 +10,13 @@ namespace SaaS.Api.Services
     public class FirebirdSyncBackgroundService : BackgroundService
     {
         private readonly ILogger<FirebirdSyncBackgroundService> _logger;
+        private readonly IConfiguration _config;
         private readonly FirebirdSyncService _syncService;
-        private static readonly string PgConnStr = "Host=localhost;Database=acougue;Username=harrison;Password=felipemiguel";
 
-        public FirebirdSyncBackgroundService(ILogger<FirebirdSyncBackgroundService> logger)
+        public FirebirdSyncBackgroundService(ILogger<FirebirdSyncBackgroundService> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
             _syncService = new FirebirdSyncService();
         }
 
@@ -45,7 +46,7 @@ namespace SaaS.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning("⚠️ [WORKER SEGUNDO PLANO] Conexão remota indisponível neste ciclo: {Msg}", ex.Message);
+                    _logger.LogError(ex, "❌ [WORKER SEGUNDO PLANO] Erro ao sincronizar cupons do Firebird.");
                 }
 
                 // Executa o ciclo periodicamente a cada 15 minutos em segundo plano sem travar requisições
@@ -57,18 +58,23 @@ namespace SaaS.Api.Services
         {
             try
             {
+                string ip = _config["FirebirdSettings:Ip"] ?? "200.150.202.5";
+                string user = _config["FirebirdSettings:Usuario"] ?? "SYSDBA";
+                string pass = _config["FirebirdSettings:Senha"] ?? "";
+                string pgConn = _config.GetConnectionString("PostgreSQL") ?? "Host=localhost;Database=acougue;Username=harrison;Password=felipemiguel";
+
                 var cupons = _syncService.ExtrairVendasEFormasPagamentoCompleto(
-                    "200.150.202.5",
+                    ip,
                     dbPath,
-                    "SYSDBA",
-                    "***REMOVED***",
+                    user,
+                    pass,
                     DateTime.Today,
                     DateTime.Today
                 );
 
                 if (cupons != null && cupons.Count > 0)
                 {
-                    _syncService.PersistirItensNoPostgres(PgConnStr, lojaId, DateTime.Today, cupons);
+                    _syncService.PersistirItensNoPostgres(pgConn, lojaId, DateTime.Today, cupons);
                     _logger.LogInformation("  ✔ [LOJA {LojaId}] {Qtd} cupons unitários sincronizados no PostgreSQL.", lojaId, cupons.Count);
                 }
             }

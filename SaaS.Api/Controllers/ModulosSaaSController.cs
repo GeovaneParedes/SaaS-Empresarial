@@ -11,10 +11,12 @@ namespace SaaS.Api.Controllers
     public class ModulosSaaSController : ControllerBase
     {
         private readonly IMemoryCache _cache;
+        private readonly IConfiguration _config;
 
-        public ModulosSaaSController(IMemoryCache cache)
+        public ModulosSaaSController(IMemoryCache cache, IConfiguration config)
         {
             _cache = cache;
+            _config = config;
         }
         private static readonly List<Loja> LojasMock = new()
         {
@@ -59,7 +61,10 @@ namespace SaaS.Api.Controllers
             new LancamentoFinanceiroSaaS { Id = 3894, LojaId = 1, LojaNome = "EXCELENCIA", Categoria = "MERCADORIA", Data = new DateTime(2026, 6, 1), Descricao = "COMPRA DE EMBALAGENS E INSUMOS ATACADAO", Vencimento = new DateTime(2026, 6, 1), ValorRecebidoEntrada = 0m, ValorAPagar = 2648.45m, ValorPago = 2648.45m, FormaPagamento = "CARTAO DE DEBITO", ConfirmadoStatus = "SIM", StatusPago = "PAGO" }
         };
 
-        private static readonly string PgConnStr = "Host=localhost;Database=acougue;Username=harrison;Password=felipemiguel";
+        private string PgConnStr => _config.GetConnectionString("PostgreSQL") ?? "Host=localhost;Database=acougue;Username=harrison;Password=felipemiguel";
+        private string FbIp => _config["FirebirdSettings:Ip"] ?? "200.150.202.5";
+        private string FbUser => _config["FirebirdSettings:Usuario"] ?? "SYSDBA";
+        private string FbPass => _config["FirebirdSettings:Senha"] ?? "";
 
         [HttpGet("lojas")]
         public IActionResult GetLojas() => Ok(LojasMock);
@@ -644,7 +649,7 @@ namespace SaaS.Api.Controllers
             else if (lojaId == 3) dbPath = "/opt/firebird/data/CasaDeCarneCunhaFB50.FDB";
 
             var firebirdService = new FirebirdSyncService();
-            var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto("200.150.202.5", dbPath, "SYSDBA", "***REMOVED***", dtIni, dtFim);
+            var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto(FbIp, dbPath, FbUser, FbPass, dtIni, dtFim);
 
             var auditados = new List<TransacaoTEFAuditadaSaaS>();
             decimal prejuizoTotal = 0m;
@@ -734,7 +739,7 @@ namespace SaaS.Api.Controllers
             if (lojaId == 2) dbPath = "/opt/firebird/data/PITSTOPDACARNE.FDB";
             else if (lojaId == 3) dbPath = "/opt/firebird/data/CasaDeCarneCunhaFB50.FDB";
 
-            var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto("200.150.202.5", dbPath, "SYSDBA", "***REMOVED***", dataIni, dataFim);
+            var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto(FbIp, dbPath, FbUser, FbPass, dataIni, dataFim);
 
             // Palavras ignoradas que NÃO são cortes de carnes para frigorífico
             var palavrasIgnoradas = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -884,7 +889,7 @@ namespace SaaS.Api.Controllers
             if (lojaId == 2) dbPath = "/opt/firebird/data/PITSTOPDACARNE.FDB";
             else if (lojaId == 3) dbPath = "/opt/firebird/data/CasaDeCarneCunhaFB50.FDB";
 
-            var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto("200.150.202.5", dbPath, "SYSDBA", "***REMOVED***", dtIni, dtFim);
+            var cupons = firebirdService.ExtrairVendasEFormasPagamentoCompleto(FbIp, dbPath, FbUser, FbPass, dtIni, dtFim);
 
             decimal receitaBruta = cupons.Sum(c => c.TotalVenda);
             if (receitaBruta == 0m) receitaBruta = 320285.87m; // Fallback para mês acumulado

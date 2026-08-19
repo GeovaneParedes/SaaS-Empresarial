@@ -10,11 +10,13 @@ namespace SaaS.Api.Controllers
     {
         private readonly FirebirdSyncService _syncService;
         private readonly IMemoryCache _cache;
+        private readonly IConfiguration _config;
 
-        public SincronizadorController(IMemoryCache cache)
+        public SincronizadorController(IMemoryCache cache, IConfiguration config)
         {
             _syncService = new FirebirdSyncService();
             _cache = cache;
+            _config = config;
         }
 
         [HttpGet("extrair-pagamentos")]
@@ -41,11 +43,15 @@ namespace SaaS.Api.Controllers
                     dbPath = "/opt/firebird/data/CasaDeCarneCunhaFB50.FDB";
                 }
 
+                string ip = _config["FirebirdSettings:Ip"] ?? "200.150.202.5";
+                string user = _config["FirebirdSettings:Usuario"] ?? "SYSDBA";
+                string pass = _config["FirebirdSettings:Senha"] ?? "";
+
                 var cupons = _syncService.ExtrairVendasEFormasPagamentoCompleto(
-                    "200.150.202.5",
+                    ip,
                     dbPath,
-                    "SYSDBA",
-                    "***REMOVED***",
+                    user,
+                    pass,
                     dIni,
                     dFim
                 );
