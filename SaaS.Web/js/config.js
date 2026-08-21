@@ -1,9 +1,7 @@
 // SaaS Central Configuration & API Environment
 const API_CONFIG = {
     // URL Base da API do SaaS Empresarial.
-    BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-        ? 'http://localhost:5064/api' 
-        : 'https://ties-villas-partially-trans.trycloudflare.com/api',
+    BASE_URL: 'https://remark-recommendation-stopped-savings.trycloudflare.com/api',
         
     ENDPOINTS: {
         LOGIN: '/ModulosSaaS/auth/login',

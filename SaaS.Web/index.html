@@ -303,26 +303,52 @@
         .badge-voucher { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
         .badge-dinheiro { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
 
-        /* Botão de Toggle Menu para Tablets/Pequenas Telas */
+        /* Botão de Toggle Menu Retrátil (Visível em PCs, Tablets e Celulares) */
         .mobile-menu-btn {
-            display: none;
-            background: var(--bg-card-hover);
-            border: 1px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.4);
             color: #fff;
-            padding: 0.5rem 0.85rem;
-            border-radius: 8px;
+            padding: 0.5rem 0.9rem;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
         }
 
-        /* Responsividade para Tablets e iPads (820px, 834px, 1180px, 1210px) */
+        .mobile-menu-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Sidebar Retrátil Universal (Escondida por Padrão ao Abrir Páginas / Clicar em Abas) */
+        aside.sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            width: 280px;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        aside.sidebar.mobile-open {
+            transform: translateX(0);
+        }
+
+        /* Conteúdo Principal Ocupa 100% da Largura do Monitor/Dispositivo */
+        main.content {
+            margin-left: 0 !important;
+            width: 100% !important;
+            max-width: 100vw;
+            padding: 1.5rem 2rem;
+            transition: all 0.3s ease;
+        }
+
         @media (max-width: 1250px) {
-            :root {
-                --sidebar-width: 220px;
-            }
             main.content {
-                padding: 1.25rem 1.5rem;
-                width: calc(100% - var(--sidebar-width));
+                padding: 1.25rem 1.25rem;
             }
             .kpi-grid {
                 grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -330,23 +356,7 @@
         }
 
         @media (max-width: 980px) {
-            .mobile-menu-btn {
-                display: inline-flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-            aside.sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                width: 260px;
-                box-shadow: 10px 0 30px rgba(0,0,0,0.8);
-            }
-            aside.sidebar.mobile-open {
-                transform: translateX(0);
-            }
             main.content {
-                margin-left: 0;
-                width: 100%;
                 padding: 1rem;
             }
             .dashboard-grid {
@@ -533,6 +543,9 @@
             <li class="nav-item" onclick="trocarAba('sec-saude-financeira', this)">
                 <a><i class="fa-solid fa-heart-pulse"></i> Saúde Financeira & Caixa</a>
             </li>
+            <li class="nav-item" onclick="trocarAba('sec-entrada-valores', this)">
+                <a style="color: var(--accent-green); font-weight: 800;"><i class="fa-solid fa-vault"></i> Entrada de Valores & Auditoria</a>
+            </li>
             <li class="nav-item" onclick="trocarAba('sec-lancamentos', this)">
                 <a><i class="fa-solid fa-receipt"></i> Lançamentos & Boletos</a>
             </li>
@@ -586,12 +599,12 @@
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-filter"></i> Filtro de Vendas por Loja e Período</div>
                     <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                        <select id="dash-loja" class="form-input-saas">
+                        <select id="dash-loja" class="form-input-saas" onchange="carregarDashboardSaaS()">
                             <option value="1">Excelência (Loja 1)</option>
                             <option value="2">Pit Stop (Loja 2)</option>
                             <option value="3">Cunha (Loja 3)</option>
                         </select>
-                        <input type="date" id="dash-data" class="form-input-saas" value="2026-08-16">
+                        <input type="date" id="dash-data" class="form-input-saas" value="2026-08-20" onchange="carregarDashboardSaaS()">
                         <button class="btn-action" onclick="carregarDashboardSaaS()"><i class="fa-solid fa-sync"></i> Filtrar</button>
                         <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-dashboard', 'Dashboard Geral de Vendas')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
@@ -690,12 +703,12 @@
                 <div class="panel-header">
                     <div class="panel-title">Resumo do Fechamento do Caixa Diário</div>
                     <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                        <select id="vd-loja" class="form-input-saas">
-                            <option value="1">Excelência</option>
-                            <option value="2">Pit Stop</option>
-                            <option value="3">Cunha</option>
+                        <select id="vd-loja" class="form-input-saas" onchange="carregarResumoVendasDiarias()">
+                            <option value="1">Excelência (Loja 1)</option>
+                            <option value="2">Pit Stop (Loja 2)</option>
+                            <option value="3">Cunha (Loja 3)</option>
                         </select>
-                        <input type="date" id="vd-data" class="form-input-saas" value="2026-08-16">
+                        <input type="date" id="vd-data" class="form-input-saas" value="2026-08-20" onchange="carregarResumoVendasDiarias()">
                         <button class="btn-action" onclick="carregarResumoVendasDiarias()"><i class="fa-solid fa-search"></i> Carregar</button>
                         <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-vendas-diarias', 'Resumo de Vendas Diarias e Fechamento de Caixa')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
@@ -765,12 +778,12 @@
                 <div class="panel-header">
                     <div class="panel-title">Consulta de Itens Vendidos por Período e Unidade</div>
                     <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                        <select id="iv-loja" class="form-input-saas">
-                            <option value="1">Excelência</option>
-                            <option value="2">Pit Stop</option>
-                            <option value="3">Cunha</option>
+                        <select id="iv-loja" class="form-input-saas" onchange="puxarVendasDoDia()">
+                            <option value="1">Excelência (Loja 1)</option>
+                            <option value="2">Pit Stop (Loja 2)</option>
+                            <option value="3">Cunha (Loja 3)</option>
                         </select>
-                        <input type="date" id="iv-data" class="form-input-saas" value="2026-08-16">
+                        <input type="date" id="iv-data" class="form-input-saas" value="2026-08-20" onchange="puxarVendasDoDia()">
                         <button class="btn-action" onclick="puxarVendasDoDia()"><i class="fa-solid fa-download"></i> Puxar Vendas do Dia</button>
                         <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-itens-vendidos', 'Relatorio de Itens Vendidos e Curva de Saida')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
@@ -849,7 +862,7 @@
                             <option value="2">Pit Stop</option>
                             <option value="3">Cunha</option>
                         </select>
-                        <input type="date" id="tef-data" class="form-input-saas" value="2026-08-09">
+                        <input type="date" id="tef-data" class="form-input-saas" value="2026-08-20" onchange="executarAuditoriaTEF()">
                         <button class="btn-action" style="background: var(--accent-rose);" onclick="executarAuditoriaTEF()"><i class="fa-solid fa-magnifying-glass-dollar"></i> Auditar</button>
                         <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-fintech-tef', 'Auditoria Fintech de Taxas de Cartao e TEF')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
                     </div>
@@ -857,24 +870,41 @@
 
                 <!-- BOX CONFIGURAÇÃO DE TAXAS CONTRATADAS POR LOJA -->
                 <div id="box-taxas-contratadas" style="display: none; margin-top: 1.25rem; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem;">
-                    <div style="font-weight: 800; color: var(--accent-cyan); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-sliders"></i> Ajustar Taxas Contratadas com a Adquirente (Stone / PagSeguro / Cielo / Rede)
+                    <div style="font-weight: 800; color: var(--accent-cyan); margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                        <div><i class="fa-solid fa-sliders"></i> Taxas Contratadas por Adquirente (Safra / Cielo / Rede / Stone)</div>
+                        <div id="lbl-operadora-loja" style="font-size: 0.85rem; font-weight: 800; color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); padding: 0.2rem 0.6rem; border-radius: 6px;"></div>
                     </div>
-                    <form id="form-taxas-contratadas" onsubmit="salvarTaxasContratadas(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
+                    <form id="form-taxas-contratadas" onsubmit="salvarTaxasContratadas(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; align-items: end;">
                         <div>
-                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">TAXA DÉBITO (%)</label>
-                            <input type="number" step="0.01" id="cfg-taxa-debito" class="form-input-saas" value="1.29" required style="width: 100%;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">ADQUIRENTE / OPERADOR</label>
+                            <input type="text" id="cfg-adquirente" class="form-input-saas" value="CIELO" required style="width: 100%; text-transform: uppercase;">
                         </div>
                         <div>
-                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">TAXA CRÉDITO À VISTA (%)</label>
-                            <input type="number" step="0.01" id="cfg-taxa-credito" class="form-input-saas" value="2.49" required style="width: 100%;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">DÉBITO (VISA/MASTER %)</label>
+                            <input type="number" step="0.01" id="cfg-debito-vm" class="form-input-saas" value="1.07" required style="width: 100%;">
                         </div>
                         <div>
-                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">TAXA VOUCHER / VR (%)</label>
-                            <input type="number" step="0.01" id="cfg-taxa-voucher" class="form-input-saas" value="4.50" required style="width: 100%;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">DÉBITO (ELO %)</label>
+                            <input type="number" step="0.01" id="cfg-debito-elo" class="form-input-saas" value="1.57" required style="width: 100%;">
                         </div>
                         <div>
-                            <button type="submit" class="btn-action" style="background: var(--accent-green); font-weight: 800; width: 100%; justify-content: center;"><i class="fa-solid fa-save"></i> Salvar Taxas</button>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">CRÉDITO (VISA/MASTER %)</label>
+                            <input type="number" step="0.01" id="cfg-credito-vm" class="form-input-saas" value="3.48" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">CRÉDITO (ELO %)</label>
+                            <input type="number" step="0.01" id="cfg-credito-elo" class="form-input-saas" value="3.98" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">VENDA PIX (%)</label>
+                            <input type="number" step="0.01" id="cfg-pix" class="form-input-saas" value="0.95" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">VOUCHER / VR (PAT %)</label>
+                            <input type="number" step="0.01" id="cfg-taxa-voucher" class="form-input-saas" value="3.60" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <button type="submit" class="btn-action" style="background: var(--accent-green); font-weight: 800; width: 100%; justify-content: center;"><i class="fa-solid fa-save"></i> Salvar Contrato</button>
                         </div>
                     </form>
                 </div>
@@ -1046,10 +1076,10 @@
                 <div class="panel-header">
                     <div class="panel-title"><i class="fa-solid fa-chart-line" style="color: var(--accent-green);"></i> DRE Gerencial & Demonstração do Lucro Líquido Real</div>
                     <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                        <select id="dre-loja" class="form-input-saas">
-                            <option value="1">Loja Excelência</option>
-                            <option value="2">Loja Pit Stop</option>
-                            <option value="3">Loja Cunha</option>
+                        <select id="dre-loja" class="form-input-saas" onchange="carregarDREGerencial()">
+                            <option value="1">Excelência (Loja 1)</option>
+                            <option value="2">Pit Stop (Loja 2)</option>
+                            <option value="3">Cunha (Loja 3)</option>
                         </select>
                         <button class="btn-action" style="background: var(--accent-green); font-weight: 800;" onclick="carregarDREGerencial()"><i class="fa-solid fa-calculator"></i> Processar DRE</button>
                         <button class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-dre-curva-abc', 'DRE Gerencial e Curva ABC 80-20')"><i class="fa-solid fa-file-pdf"></i> PDF Relatório</button>
@@ -1381,17 +1411,27 @@
 
             <!-- Navegador de Filtro por Mês e Dias (Estilo Django Admin Drilldown) -->
             <div class="panel-box" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem;">
-                    <div style="font-weight: 800; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-calendar-days" style="color: var(--primary);"></i>
-                        <span>FILTRAR PERÍODO DE LANÇAMENTOS:</span>
+                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                        <div style="font-weight: 800; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-calendar-days" style="color: var(--primary);"></i>
+                            <span>FILTRAR PERÍODO DE LANÇAMENTOS:</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">LOJA:</span>
+                            <select id="filtro-lanc-loja" class="form-input-saas" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;" onchange="renderizarEFiltrarLancamentosLocal()">
+                                <option value="0">TODAS AS LOJAS</option>
+                                <option value="1">EXCELENCIA</option>
+                                <option value="2">PIT STOP</option>
+                                <option value="3">CUNHA</option>
+                                <option value="5">HFCM</option>
+                            </select>
+                        </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button type="button" class="btn-action" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: var(--bg-card-hover);" onclick="mudarAnoFiltroLancamentos(-1)">‹</button>
                         <span id="lbl-filtro-ano" style="font-weight: 800; font-size: 1rem; color: var(--accent-cyan);">2026</span>
                         <button type="button" class="btn-action" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: var(--bg-card-hover);" onclick="mudarAnoFiltroLancamentos(1)">›</button>
                     </div>
-                </div>
 
                 <!-- Links dos Meses do Ano -->
                 <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.75rem;" id="nav-meses-container">
@@ -1545,6 +1585,281 @@
 
                 <!-- Visão Cards Responsivos para Mobile e Tablets -->
                 <div id="lancamentos-cards-container" class="lancamento-card-grid"></div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO ENTRADA DE VALORES: PAINEL DE CONCILIAÇÃO & AUDITORIA DE CAIXA -->
+        <section id="sec-entrada-valores" class="tab-section">
+            <div class="panel-box" style="margin-bottom: 1.5rem;">
+                <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-vault" style="color: var(--accent-green);"></i> 📊 Painel de Entrada de Valores (public.vendas_diarias)
+                        <span id="ev-dias-count" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); margin-left: 0.5rem;">(0 dias exibidos)</span>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                        <button type="button" class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary)); font-weight: 800;" onclick="window.EV_abrirModalNovaVendaDiaria()">
+                            <i class="fa-solid fa-plus-circle"></i> Adicionar Venda Diária
+                        </button>
+                        <button type="button" class="btn-action" style="background: var(--accent-rose); font-weight: 700;" onclick="gerarPDFRelatorioAba('sec-entrada-valores', 'Relatorio de Entrada de Valores e Conciliacao PostgreSQL')">
+                            <i class="fa-solid fa-file-pdf"></i> PDF Relatório
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 14 CARDS PEQUENOS: DIVIDIDOS RIGOROSAMENTE EM 7 CARDS EM CIMA E 7 EM BAIXO -->
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; margin-bottom: 1rem;" class="ev-kpi-grid">
+                    <!-- 1. Dinheiro -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(16, 185, 129, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💵 Dinheiro</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-green);" id="ev-card-dinheiro">R$ 0,00</div>
+                    </div>
+                    <!-- 2. Troco Para Amanha -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(245, 158, 11, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🔄 Troco Amanhã</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-amber);" id="ev-card-troco-amanha">R$ 0,00</div>
+                    </div>
+                    <!-- 3. Cartao Vendido -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(245, 158, 11, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💳 Cartão Vendido</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-amber);" id="ev-card-cartao-vendido">R$ 0,00</div>
+                    </div>
+                    <!-- 4. Cartao Recebido -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(245, 158, 11, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📥 Cartão Recebido</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-amber);" id="ev-card-cartao-recebido">R$ 0,00</div>
+                    </div>
+                    <!-- 5. Pix Vendido -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(6, 182, 212, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📱 Pix Vendido</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-cyan);" id="ev-card-pix-vendido">R$ 0,00</div>
+                    </div>
+                    <!-- 6. Convenio Pago -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(99, 102, 241, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🤝 Convênio Pago</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary);" id="ev-card-convenio-pago">R$ 0,00</div>
+                    </div>
+                    <!-- 7. Tarifa Pix -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(244, 63, 94, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💸 Tarifa Pix</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-rose);" id="ev-card-tarifa-pix">R$ 0,00</div>
+                    </div>
+                    <!-- 8. Convenio Venda -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(99, 102, 241, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📑 Convênio Venda</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary);" id="ev-card-convenio-venda">R$ 0,00</div>
+                    </div>
+                    <!-- 9. Taxa Entrega -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(16, 185, 129, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🛵 Taxa Entrega</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-green);" id="ev-card-taxa-entrega">R$ 0,00</div>
+                    </div>
+                    <!-- 10. Tarifa Cartao -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(244, 63, 94, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📉 Tarifa Cartão</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-rose);" id="ev-card-tarifa-cartao">R$ 0,00</div>
+                    </div>
+                    <!-- 11. Sangria -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(244, 63, 94, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🩸 Sangria</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-rose);" id="ev-card-sangria">R$ 0,00</div>
+                    </div>
+                    <!-- 12. Desconto -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(245, 158, 11, 0.35);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏷️ Desconto</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-amber);" id="ev-card-desconto">R$ 0,00</div>
+                    </div>
+                    <!-- 13. Total Gaveta -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(99, 102, 241, 0.5); background: rgba(99, 102, 241, 0.12);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💰 Total Gaveta</div>
+                        <div style="font-size: 1.05rem; font-weight: 900; color: #fff;" id="ev-card-total-gaveta">R$ 0,00</div>
+                    </div>
+                    <!-- 14. Quebra de Caixa -->
+                    <div class="kpi-card" style="padding: 0.55rem 0.65rem; border-color: rgba(244, 63, 94, 0.4);">
+                        <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">⚠️ Quebra Caixa</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: var(--accent-rose);" id="ev-card-quebra-caixa">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <style>
+                    @media (max-width: 1200px) {
+                        .ev-kpi-grid { grid-template-columns: repeat(4, 1fr) !important; }
+                    }
+                    @media (max-width: 768px) {
+                        .ev-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+                    }
+                </style>
+
+                <!-- FILTROS POR LOJA, ANO, MÊS E DIAS -->
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; margin-bottom: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted);"><i class="fa-solid fa-filter"></i> POR LOJA:</span>
+                            <select id="ev-filtro-loja" class="form-input-saas" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" onchange="window.EV_carregarVendasDiariasEntrada()">
+                                <option value="0">TODAS AS LOJAS</option>
+                                <option value="1">EXCELENCIA</option>
+                                <option value="2">PIT STOP</option>
+                                <option value="3">CUNHA</option>
+                                <option value="5">HFCM</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted);">ANO:</span>
+                            <button type="button" class="btn-action" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: var(--bg-card-hover);" onclick="window.EV_mudarAnoFiltro(-1)">‹</button>
+                            <span id="ev-lbl-filtro-ano" style="font-weight: 800; font-size: 1rem; color: var(--accent-cyan);">2026</span>
+                            <button type="button" class="btn-action" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: var(--bg-card-hover);" onclick="window.EV_mudarAnoFiltro(1)">›</button>
+                        </div>
+                    </div>
+
+                    <!-- Links dos Meses do Ano -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.75rem;" id="ev-nav-meses-container">
+                        <!-- Preenchido via entrada_valores.js -->
+                    </div>
+
+                    <!-- Links dos Dias do Mês Selecionado -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;" id="ev-nav-dias-container">
+                        <!-- Preenchido via entrada_valores.js -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD DE EDIÇÃO / INJEÇÃO INLINE (APARECE LOGO ABAIXO DO PAINEL PRINCIPAL) -->
+            <div class="panel-box" id="ev-panel-inline-edit" style="display: none; border-color: var(--accent-green); box-shadow: 0 0 25px rgba(16, 185, 129, 0.15); margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                    <h3 style="font-weight: 800; font-size: 1.15rem; color: var(--accent-green);" id="ev-modal-title">
+                        <i class="fa-solid fa-edit"></i> Formulário de Edição / Lançamento
+                    </h3>
+                    <button type="button" onclick="window.EV_fecharModalVendaDiaria()" style="background: none; border: none; color: var(--accent-rose); font-size: 1.4rem; cursor: pointer;">&times;</button>
+                </div>
+
+                <form id="form-venda-diaria" onsubmit="window.EV_salvarVendaDiariaModal(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.85rem;">
+                    <input type="hidden" id="ev-id" value="0">
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">LOJA</label>
+                        <select id="ev-loja" class="form-input-saas" style="width: 100%;" required>
+                            <option value="1">Excelência (Loja 1)</option>
+                            <option value="2">Pit Stop (Loja 2)</option>
+                            <option value="3">Cunha (Loja 3)</option>
+                            <option value="5">HFCM (Empresa)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">DATA DA ENTRADA</label>
+                        <input type="date" id="ev-data" class="form-input-saas" style="width: 100%;" required>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">DINHEIRO (R$)</label>
+                        <input type="text" id="ev-dinheiro" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">TROCO AMANHÃ (R$)</label>
+                        <input type="text" id="ev-troco-amanha" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">CARTÃO VENDIDO (R$)</label>
+                        <input type="text" id="ev-cartao-vendido" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">CARTÃO RECEBIDO (R$)</label>
+                        <input type="text" id="ev-cartao-recebido" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">PIX VENDIDO (R$)</label>
+                        <input type="text" id="ev-pix" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">CONVÊNIO PAGO (R$)</label>
+                        <input type="text" id="ev-convenio-pago" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">TARIFA PIX (R$)</label>
+                        <input type="text" id="ev-tarifa-pix" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">CONVÊNIO VENDA (R$)</label>
+                        <input type="text" id="ev-convenio-venda" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">TAXA ENTREGA (R$)</label>
+                        <input type="text" id="ev-taxa-entrega" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">TARIFA CARTÃO (R$)</label>
+                        <input type="text" id="ev-tarifa-cartao" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">SANGRIA (R$)</label>
+                        <input type="text" id="ev-sangria" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">DESCONTO (R$)</label>
+                        <input type="text" id="ev-desconto" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">TOTAL GAVETA (R$)</label>
+                        <input type="text" id="ev-total-gaveta" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">QUEBRA DE CAIXA (R$)</label>
+                        <input type="text" id="ev-quebra-caixa" class="form-input-saas" placeholder="0,00" onblur="formatarMoedaInput(this)">
+                    </div>
+
+                    <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                        <button type="button" class="btn-action" style="background: var(--bg-card-hover);" onclick="window.EV_fecharModalVendaDiaria()">Cancelar</button>
+                        <button type="submit" class="btn-action" style="background: linear-gradient(135deg, var(--accent-green), var(--primary)); font-weight: 800; padding: 0.6rem 1.6rem;">
+                            <i class="fa-solid fa-database"></i> Salvar / Injetar no PostgreSQL
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TABELA DE VENDAS DIÁRIAS / ENTRADAS (CLIQUE NA DATA ABRE O PAINEL DE EDIÇÃO ACIMA) -->
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-list-check"></i> Tabela public.vendas_diarias (PostgreSQL)</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>DATA (CLIQUE P/ EDITAR)</th>
+                                <th>LOJA</th>
+                                <th>DINHEIRO</th>
+                                <th>TROCO AMANHÃ</th>
+                                <th>CARTÃO VENDIDO</th>
+                                <th>CARTÃO RECEBIDO</th>
+                                <th>PIX VENDIDO</th>
+                                <th>CONVÊNIO PAGO</th>
+                                <th>TARIFA PIX</th>
+                                <th>CONVÊNIO VENDA</th>
+                                <th>TAXA ENTREGA</th>
+                                <th>TARIFA CARTÃO</th>
+                                <th>SANGRIA</th>
+                                <th>DESCONTO</th>
+                                <th>TOTAL GAVETA</th>
+                                <th>QUEBRA CAIXA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ev-table-body">
+                            <!-- Preenchido via entrada_valores.js -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -1802,6 +2117,9 @@
         </div>
     </div>
 
+    <!-- Módulo Autônomo de Entrada de Valores PostgreSQL -->
+    <script src="js/entrada_valores.js"></script>
+
     <!-- Script JavaScript Completo de Roteamento e Comunicação C# -->
     <script>
         function toggleMobileSidebar() {
@@ -1822,7 +2140,11 @@
                 sidebar.classList.remove('mobile-open');
             }
 
-            if (secId === 'sec-dre-curva-abc') {
+            if (secId === 'sec-dashboard') {
+                carregarDashboardSaaS();
+            } else if (secId === 'sec-vendas-diarias') {
+                carregarResumoVendasDiarias();
+            } else if (secId === 'sec-dre-curva-abc') {
                 carregarDREGerencial();
             } else if (secId === 'sec-whatsapp-cardapio') {
                 carregarCardapioDigital();
@@ -1830,6 +2152,12 @@
                 gerarOrdemCompraAI();
             } else if (secId === 'sec-fintech-tef') {
                 executarAuditoriaTEF();
+            } else if (secId === 'sec-entrada-valores') {
+                if (window.EV_carregarVendasDiariasEntrada) window.EV_carregarVendasDiariasEntrada();
+            } else if (secId === 'sec-lancamentos') {
+                carregarApenasLancamentos();
+            } else if (secId === 'sec-ofertas') {
+                carregarModulosSaaS();
             } else if (secId === 'sec-assinaturas-tenants') {
                 carregarModulosSaaS();
             }
@@ -1878,7 +2206,7 @@
                     tbody.appendChild(tr);
                 });
 
-                renderizarGraficos(data.resumoPorMeioPagamento);
+                renderizarGraficos(data.resumoPorMeioPagamento, data.taxasLojaContratadas);
             } catch (err) {
                 console.error("Erro ao carregar Dashboard:", err);
             }
@@ -2176,13 +2504,15 @@
 
         function renderizarEFiltrarLancamentosLocal() {
             const todosLancs = window.lancamentosCache || [];
+            const lojaSel = parseInt(document.getElementById('filtro-lanc-loja') ? document.getElementById('filtro-lanc-loja').value : 0);
 
-            // Filtrar os Lançamentos pelo Dia Selecionado (ou Mês Inteiro)
+            // Filtrar os Lançamentos pelo Dia Selecionado (ou Mês Inteiro) e Loja
             const lancs = todosLancs.filter(l => {
                 if (!l.data) return false;
                 const dStr = l.data.split('T')[0];
                 const [ano, mes, dia] = dStr.split('-').map(Number);
 
+                if (lojaSel > 0 && l.lojaId !== lojaSel) return false;
                 if (ano !== filtroAnoLanc) return false;
                 if (mes !== filtroMesLanc) return false;
                 if (filtroDiaLanc !== null && dia !== filtroDiaLanc) return false;
@@ -2400,9 +2730,17 @@
                 const res = await fetchWithAuth(`/ModulosSaaS/taxas-contratadas/${lojaId}`);
                 if (res.ok) {
                     const data = await res.json();
-                    document.getElementById('cfg-taxa-debito').value = data.taxaDebito || 1.29;
-                    document.getElementById('cfg-taxa-credito').value = data.taxaCredito || 2.49;
-                    document.getElementById('cfg-taxa-voucher').value = data.taxaVoucher || 4.50;
+                    const opName = data.adquirente || (lojaId == "2" ? "SAFRA" : "CIELO");
+
+                    document.getElementById('lbl-operadora-loja').innerText = `Operadora: ${opName}`;
+                    document.getElementById('cfg-adquirente').value = opName;
+
+                    document.getElementById('cfg-debito-vm').value = data.taxaDebitoVisaMaster !== undefined ? data.taxaDebitoVisaMaster : (lojaId == "2" ? 0.75 : 1.07);
+                    document.getElementById('cfg-debito-elo').value = data.taxaDebitoElo !== undefined ? data.taxaDebitoElo : (lojaId == "2" ? 1.75 : 1.57);
+                    document.getElementById('cfg-credito-vm').value = data.taxaCreditoVisaMaster !== undefined ? data.taxaCreditoVisaMaster : (lojaId == "2" ? 2.94 : 3.48);
+                    document.getElementById('cfg-credito-elo').value = data.taxaCreditoElo !== undefined ? data.taxaCreditoElo : (lojaId == "2" ? 3.94 : 3.98);
+                    document.getElementById('cfg-pix').value = data.taxaPix !== undefined ? data.taxaPix : (lojaId == "2" ? 0.59 : 0.95);
+                    document.getElementById('cfg-taxa-voucher').value = data.taxaVoucher !== undefined ? data.taxaVoucher : 3.60;
                 }
             } catch (err) {
                 console.error("Erro ao carregar taxas contratadas da loja:", err);
@@ -2414,9 +2752,13 @@
             const lojaId = parseInt(document.getElementById('tef-loja').value);
             const dto = {
                 lojaId: lojaId,
-                taxaDebito: parseFloat(document.getElementById('cfg-taxa-debito').value),
-                taxaCredito: parseFloat(document.getElementById('cfg-taxa-credito').value),
-                taxaVoucher: parseFloat(document.getElementById('cfg-taxa-voucher').value)
+                adquirente: document.getElementById('cfg-adquirente').value.toUpperCase(),
+                taxaDebitoVisaMaster: parseFloat(document.getElementById('cfg-debito-vm').value) || 0,
+                taxaDebitoElo: parseFloat(document.getElementById('cfg-debito-elo').value) || 0,
+                taxaCreditoVisaMaster: parseFloat(document.getElementById('cfg-credito-vm').value) || 0,
+                taxaCreditoElo: parseFloat(document.getElementById('cfg-credito-elo').value) || 0,
+                taxaPix: parseFloat(document.getElementById('cfg-pix').value) || 0,
+                taxaVoucher: parseFloat(document.getElementById('cfg-taxa-voucher').value) || 0
             };
 
             try {
@@ -2481,15 +2823,21 @@
             document.getElementById('status-balanca-msg').innerText = "✅ " + data.mensagem;
         }
 
-        function renderizarGraficos(resumo) {
+        function renderizarGraficos(resumo, taxasLoja) {
+            const tx = taxasLoja || { taxaDebitoVisaMaster: 1.07, taxaCreditoVisaMaster: 3.48, taxaPix: 0.95, taxaVoucher: 4.50, adquirente: 'CIELO' };
+
+            // Instâncias globais para destruir gráficos anteriores ao alternar de loja
+            if (window.chartPagamentosInstance) window.chartPagamentosInstance.destroy();
+            if (window.chartTaxasInstance) window.chartTaxasInstance.destroy();
+
             const ctx1 = document.getElementById('chartPagamentos').getContext('2d');
-            new Chart(ctx1, {
+            window.chartPagamentosInstance = new Chart(ctx1, {
                 type: 'bar',
                 data: {
                     labels: ['Débito', 'Crédito', 'Dinheiro', 'PIX', 'Voucher VR'],
                     datasets: [{
                         label: 'Faturamento (R$)',
-                        data: [resumo.debito, resumo.credito, resumo.dinheiro, resumo.pix, resumo.voucherAlimentacao],
+                        data: [resumo.debito || 0, resumo.credito || 0, resumo.dinheiro || 0, resumo.pix || 0, resumo.voucherAlimentacao || 0],
                         backgroundColor: ['#6366f1', '#f59e0b', '#10b981', '#06b6d4', '#f43f5e'],
                         borderRadius: 8
                     }]
@@ -2497,13 +2845,23 @@
                 options: { responsive: true, plugins: { legend: { display: false } } }
             });
 
+            const valDebitoTaxa = (resumo.debito || 0) * (tx.taxaDebitoVisaMaster / 100);
+            const valCreditoTaxa = (resumo.credito || 0) * (tx.taxaCreditoVisaMaster / 100);
+            const valPixTaxa = (resumo.pix || 0) * (tx.taxaPix / 100);
+            const valVoucherTaxa = (resumo.voucherAlimentacao || 0) * (tx.taxaVoucher / 100);
+
             const ctx2 = document.getElementById('chartTaxas').getContext('2d');
-            new Chart(ctx2, {
+            window.chartTaxasInstance = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Débito (1.29%)', 'Crédito (2.49%)', 'Voucher (4.50%)', 'Pix (0%)'],
+                    labels: [
+                        `Débito (${tx.taxaDebitoVisaMaster}%)`,
+                        `Crédito (${tx.taxaCreditoVisaMaster}%)`,
+                        `Voucher (${tx.taxaVoucher}%)`,
+                        `Pix (${tx.taxaPix}%)`
+                    ],
                     datasets: [{
-                        data: [resumo.debito * 0.0129, resumo.credito * 0.0249, resumo.voucherAlimentacao * 0.045, 0],
+                        data: [valDebitoTaxa, valCreditoTaxa, valVoucherTaxa, valPixTaxa],
                         backgroundColor: ['#6366f1', '#f59e0b', '#f43f5e', '#06b6d4']
                     }]
                 },
@@ -3114,31 +3472,79 @@
 
             containerPDF.querySelector('#pdf-conteudo-body').appendChild(clone);
 
-            // Ajusta tabelas, cards e textos do clone para ficarem perfeitos em fundo branco no PDF e sem cortar elementos
-            clone.querySelectorAll('.panel-box, .kpi-card, tr, .kpi-grid').forEach(el => {
-                el.style.pageBreakInside = 'avoid';
-                el.style.breakInside = 'avoid';
+            // Limpa elementos desnecessários no clone do PDF (Painel de edição inline e ícones interativos)
+            const pEditClone = clone.querySelector('#ev-panel-inline-edit');
+            if (pEditClone) pEditClone.remove();
+
+            // Ajuste específico do Grid dos 14 Cards no PDF (Compacto, elegante e fundo branco empresarial)
+            const kpiGridClone = clone.querySelector('.ev-kpi-grid');
+            if (kpiGridClone) {
+                kpiGridClone.style.display = 'grid';
+                kpiGridClone.style.gridTemplateColumns = 'repeat(7, 1fr)';
+                kpiGridClone.style.gap = '6px';
+                kpiGridClone.style.marginBottom = '12px';
+            }
+
+            clone.querySelectorAll('.kpi-card').forEach(card => {
+                card.style.background = '#ffffff';
+                card.style.border = '1px solid #e2e8f0';
+                card.style.padding = '4px 8px';
+                card.style.borderRadius = '8px';
+                card.style.boxShadow = 'none';
             });
+
+            // Ajuste e sanitização da Tabela no PDF: Remove o lápis de edição e deixa apenas o DIA (DD)
+            clone.querySelectorAll('tr').forEach(tr => {
+                const firstTd = tr.querySelector('td:first-child');
+                if (firstTd && firstTd.querySelector('a')) {
+                    const fullDateStr = firstTd.textContent.trim(); // Ex: '2026-08-19'
+                    const parts = fullDateStr.split('-');
+                    if (parts.length === 3) {
+                        // Exibe a data formatada limpa no PDF: DD/MM
+                        firstTd.innerHTML = `<strong>${parts[2]}/${parts[1]}</strong>`;
+                    }
+                }
+            });
+
+            // Ajusta cabeçalho da tabela no PDF (Muda 'DATA (CLIQUE P/ EDITAR)' para 'DATA')
+            const thData = clone.querySelector('th:first-child');
+            if (thData && thData.textContent.includes('DATA')) {
+                thData.textContent = 'DATA';
+            }
 
             clone.querySelectorAll('*').forEach(el => {
                 el.style.color = '#0f172a';
-                if (el.tagName === 'TABLE' || el.classList.contains('panel-box') || el.classList.contains('kpi-card')) {
+                if (el.classList.contains('panel-box')) {
                     el.style.background = '#ffffff';
-                    el.style.border = '1px solid #cbd5e1';
+                    el.style.border = '1px solid #e2e8f0';
                     el.style.boxShadow = 'none';
+                    el.style.padding = '12px 16px';
                     el.style.marginBottom = '12px';
                 }
                 if (el.tagName === 'TABLE') {
                     el.style.width = '100%';
-                    el.style.fontSize = '10px';
+                    el.style.fontSize = '9px';
+                    el.style.borderCollapse = 'collapse';
+                    el.style.background = '#ffffff';
+                    el.style.border = '1px solid #cbd5e1';
+                    el.style.boxShadow = 'none';
                 }
                 if (el.tagName === 'TH') {
-                    el.style.background = '#f1f5f9';
+                    el.style.background = '#f8fafc';
                     el.style.color = '#1e293b';
-                    el.style.padding = '6px';
+                    el.style.padding = '5px 6px';
+                    el.style.border = '1px solid #cbd5e1';
+                    el.style.fontSize = '9px';
+                    el.style.fontWeight = '800';
+                    el.style.whiteSpace = 'nowrap';
+                    el.style.textAlign = 'center';
                 }
                 if (el.tagName === 'TD') {
-                    el.style.padding = '5px';
+                    el.style.padding = '4px 6px';
+                    el.style.border = '1px solid #e2e8f0';
+                    el.style.fontSize = '8.5px';
+                    el.style.whiteSpace = 'nowrap';
+                    el.style.textAlign = 'center';
                 }
             });
 
@@ -3165,6 +3571,8 @@
         amanha.setDate(hoje.getDate() + 1);
         const dataAmanhaStr = amanha.toISOString().split('T')[0];
 
+        const dataHojeStr = hoje.toISOString().split('T')[0];
+        if (document.getElementById('dash-data')) document.getElementById('dash-data').value = dataHojeStr;
         if (document.getElementById('of-data-ini')) document.getElementById('of-data-ini').value = dataAmanhaStr;
         if (document.getElementById('of-data-fim')) document.getElementById('of-data-fim').value = dataAmanhaStr;
 
