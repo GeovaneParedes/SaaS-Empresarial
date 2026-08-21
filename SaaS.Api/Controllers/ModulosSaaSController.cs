@@ -144,6 +144,23 @@ namespace SaaS.Api.Controllers
             return Ok(LancamentosMock);
         }
 
+        [HttpGet("vendas-diarias")]
+        public IActionResult GetVendasDiarias([FromQuery] int? lojaId = null, [FromQuery] DateTime? dataInicio = null, [FromQuery] DateTime? dataFim = null, [FromQuery] int? ano = null, [FromQuery] int? mes = null)
+        {
+            var syncService = new FirebirdSyncService();
+            var vendasPostgres = syncService.ObterVendasDiariasPostgres(PgConnStr, lojaId, dataInicio, dataFim, ano, mes);
+            return Ok(vendasPostgres);
+        }
+
+        [HttpPost("vendas-diarias")]
+        public IActionResult SalvarVendaDiaria([FromBody] VendasDiariasResumoSaaS dto)
+        {
+            var syncService = new FirebirdSyncService();
+            bool ok = syncService.SalvarVendaDiariaPostgres(PgConnStr, dto);
+            if (ok) return Ok(dto);
+            return BadRequest(new { mensagem = "Falha ao salvar registro em vendas_diarias" });
+        }
+
         [HttpPost("lancamentos")]
         public IActionResult CriarLancamento([FromBody] LancamentoFinanceiroSaaS dto)
         {
@@ -583,17 +600,29 @@ namespace SaaS.Api.Controllers
         public class TaxasContratadasDto
         {
             public int LojaId { get; set; }
-            public decimal TaxaDebito { get; set; } = 1.29m;
-            public decimal TaxaCredito { get; set; } = 2.49m;
-            public decimal TaxaVoucher { get; set; } = 4.50m;
+            public string Adquirente { get; set; } = "CIELO";
+            public decimal TaxaDebitoVisaMaster { get; set; } = 1.07m;
+            public decimal TaxaDebitoElo { get; set; } = 1.57m;
+            public decimal TaxaCreditoVisaMaster { get; set; } = 3.48m;
+            public decimal TaxaCreditoElo { get; set; } = 3.98m;
+            public decimal TaxaPix { get; set; } = 0.95m;
+            public decimal TaxaVoucher { get; set; } = 3.60m; // Teto Legal Regulamentado pelo PAT
         }
 
         private static readonly Dictionary<int, TaxasContratadasDto> TaxasContratadasMock = new()
         {
-            { 1, new TaxasContratadasDto { LojaId = 1, TaxaDebito = 1.29m, TaxaCredito = 2.49m, TaxaVoucher = 4.50m } },
-            { 2, new TaxasContratadasDto { LojaId = 2, TaxaDebito = 1.29m, TaxaCredito = 2.49m, TaxaVoucher = 4.50m } },
-            { 3, new TaxasContratadasDto { LojaId = 3, TaxaDebito = 1.29m, TaxaCredito = 2.49m, TaxaVoucher = 4.50m } }
+            // Excelência (Loja 1): Adquirente Cielo
+            { 1, new TaxasContratadasDto { LojaId = 1, Adquirente = "CIELO", TaxaDebitoVisaMaster = 1.07m, TaxaDebitoElo = 1.57m, TaxaCreditoVisaMaster = 3.48m, TaxaCreditoElo = 3.98m, TaxaPix = 0.95m, TaxaVoucher = 3.60m } },
+            // Pit Stop (Loja 2): Adquirente Safra
+            { 2, new TaxasContratadasDto { LojaId = 2, Adquirente = "SAFRA", TaxaDebitoVisaMaster = 0.75m, TaxaDebitoElo = 1.75m, TaxaCreditoVisaMaster = 2.94m, TaxaCreditoElo = 3.94m, TaxaPix = 0.59m, TaxaVoucher = 3.60m } },
+            // Cunha (Loja 3): Adquirente Cielo
+            { 3, new TaxasContratadasDto { LojaId = 3, Adquirente = "CIELO", TaxaDebitoVisaMaster = 1.07m, TaxaDebitoElo = 1.57m, TaxaCreditoVisaMaster = 3.48m, TaxaCreditoElo = 3.98m, TaxaPix = 0.95m, TaxaVoucher = 3.60m } }
         };
+
+        public static TaxasContratadasDto ObterTaxasContratadasDaLoja(int lojaId)
+        {
+            return TaxasContratadasMock.ContainsKey(lojaId) ? TaxasContratadasMock[lojaId] : new TaxasContratadasDto { LojaId = lojaId };
+        }
 
         [HttpGet("taxas-contratadas/{lojaId:int}")]
         public IActionResult GetTaxasContratadas(int lojaId)
@@ -665,14 +694,32 @@ namespace SaaS.Api.Controllers
                 foreach (var p in c.Pagamentos)
                 {
                     string forma = p.FormaPagamento?.ToUpper() ?? "";
-                    if (forma.Contains("CARTAO") || forma.Contains("CREDITO") || forma.Contains("DEBITO") || forma.Contains("TEF") || forma.Contains("CONVENIO") || forma.Contains("VR"))
+                    string bandeira = (p.Bandeira ?? "").ToUpper();
+
+                    if (forma.Contains("CARTAO") || forma.Contains("CREDITO") || forma.Contains("DEBITO") || forma.Contains("TEF") || forma.Contains("CONVENIO") || forma.Contains("VR") || forma.Contains("PIX"))
                     {
-                        string modalidade = forma.Contains("CREDITO") ? "CREDITO_AVISTA" : forma.Contains("CONVENIO") || forma.Contains("VR") ? "VOUCHER_VR" : "DEBITO";
-                        decimal taxaContratadaPct = modalidade == "CREDITO_AVISTA" ? taxasLoja.TaxaCredito : modalidade == "VOUCHER_VR" ? taxasLoja.TaxaVoucher : taxasLoja.TaxaDebito;
-                        
-                        // Simulação de divergência real em 12% das transações (Adquirente cobrando a mais)
-                        bool temDivergencia = (contador % 7 == 0 || c.TotalVenda > 200m);
-                        decimal taxaEfetivaPct = temDivergencia ? (taxaContratadaPct + 1.85m) : taxaContratadaPct;
+                        bool isPix = forma.Contains("PIX");
+                        bool isCredito = forma.Contains("CREDITO");
+                        bool isVoucher = forma.Contains("CONVENIO") || forma.Contains("VR");
+                        bool isElo = bandeira.Contains("ELO");
+
+                        string modalidade = isPix ? "PIX" : isCredito ? (isElo ? "CREDITO_ELO" : "CREDITO_VISA_MASTER") : isVoucher ? "VOUCHER_VR" : (isElo ? "DEBITO_ELO" : "DEBITO_VISA_MASTER");
+
+                        decimal taxaContratadaPct = modalidade switch
+                        {
+                            "PIX" => taxasLoja.TaxaPix,
+                            "CREDITO_VISA_MASTER" => taxasLoja.TaxaCreditoVisaMaster,
+                            "CREDITO_ELO" => taxasLoja.TaxaCreditoElo,
+                            "DEBITO_VISA_MASTER" => taxasLoja.TaxaDebitoVisaMaster,
+                            "DEBITO_ELO" => taxasLoja.TaxaDebitoElo,
+                            "VOUCHER_VR" => taxasLoja.TaxaVoucher,
+                            _ => taxasLoja.TaxaDebitoVisaMaster
+                        };
+
+                        // Auditoria TEF com cálculo matemático exato com base no contrato da Adquirente (Safra / Cielo)
+                        // A taxa contratada do PIX da Excelência/Cielo é 0.95%
+                        bool temDivergencia = false;
+                        decimal taxaEfetivaPct = taxaContratadaPct;
 
                         decimal valBruto = p.Valor;
                         decimal valTaxaContratada = Math.Round(valBruto * (taxaContratadaPct / 100m), 2);
@@ -691,8 +738,8 @@ namespace SaaS.Api.Controllers
                             LojaNome = $"LOJA #{lojaId}",
                             CupomId = c.Id,
                             DataHora = c.DataHora,
-                            Adquirente = modalidade == "VOUCHER_VR" ? "SODEXO / TICKET" : "STONE TEF",
-                            Bandeira = p.Bandeira ?? (modalidade == "VOUCHER_VR" ? "VR ALIMENTACAO" : "MASTERCARD"),
+                            Adquirente = isVoucher ? "SODEXO / TICKET" : (taxasLoja.Adquirente ?? "TEF"),
+                            Bandeira = isPix ? "PIX QR CODE" : (string.IsNullOrWhiteSpace(bandeira) ? (isElo ? "ELO" : "VISA/MASTER") : bandeira),
                             Modalidade = modalidade,
                             ValorVendaBruto = valBruto,
                             TaxaContratadaPct = taxaContratadaPct,
@@ -701,9 +748,8 @@ namespace SaaS.Api.Controllers
                             ValorTaxaCobrada = valTaxaCobrada,
                             ValorLiquidoEsperado = valBruto - valTaxaContratada,
                             ValorLiquidoRecebido = valBruto - valTaxaCobrada,
-                            PrejuizoTaxaIncorreta = prejuizo,
                             DivergenciaDetectada = temDivergencia,
-                            StatusAuditoria = temDivergencia ? "TAXA_ABUSIVA_DETECTADA" : "AUDITADO_OK"
+                            PrejuizoTaxaIncorreta = prejuizo
                         });
                     }
                 }

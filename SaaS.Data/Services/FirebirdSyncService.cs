@@ -586,6 +586,194 @@ namespace SaaS.Data.Services
             return false;
         }
 
+        public List<VendasDiariasResumoSaaS> ObterVendasDiariasPostgres(string pgConnStr, int? lojaId = null, DateTime? dataInicio = null, DateTime? dataFim = null, int? ano = null, int? mes = null)
+        {
+            var lista = new List<VendasDiariasResumoSaaS>();
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
+                {
+                    conn.Open();
+
+                    var conds = new List<string>();
+                    if (lojaId.HasValue && lojaId.Value > 0) conds.Add("v.loja_id = @LojaId");
+                    if (dataInicio.HasValue) conds.Add("v.data >= @DataInicio");
+                    if (dataFim.HasValue) conds.Add("v.data <= @DataFim");
+                    if (ano.HasValue && ano.Value > 0) conds.Add("EXTRACT(YEAR FROM v.data) = @Ano");
+                    if (mes.HasValue && mes.Value > 0) conds.Add("EXTRACT(MONTH FROM v.data) = @Mes");
+
+                    string whereClause = conds.Count > 0 ? "WHERE " + string.Join(" AND ", conds) : "";
+
+                    string sql = $@"
+                        SELECT 
+                            v.id,
+                            v.loja_id,
+                            COALESCE(l.nome, 'LOJA ' || v.loja_id) AS loja_nome,
+                            v.data,
+                            COALESCE(v.dinheiro, 0) AS dinheiro,
+                            COALESCE(v.troco_para_amanha, 0) AS troco_para_amanha,
+                            COALESCE(v.cartao_vendido, 0) AS cartao_vendido,
+                            COALESCE(v.cartao_recebido, 0) AS cartao_recebido,
+                            COALESCE(v.pix, 0) AS pix,
+                            COALESCE(v.convenio_pago, 0) AS convenio_pago,
+                            COALESCE(v.tarifa_pix, 0) AS tarifa_pix,
+                            COALESCE(v.convenio_venda, 0) AS convenio_venda,
+                            COALESCE(v.taxa_entrega, 0) AS taxa_entrega,
+                            COALESCE(v.tarifa_cartao, 0) AS tarifa_cartao,
+                            COALESCE(v.sangria, 0) AS sangria,
+                            COALESCE(v.desconto, 0) AS desconto,
+                            COALESCE(v.total_gaveta, 0) AS total_gaveta,
+                            COALESCE(v.quebra_caixa, 0) AS quebra_caixa
+                        FROM vendas_diarias v
+                        LEFT JOIN lojas l ON l.id = v.loja_id
+                        {whereClause}
+                        ORDER BY v.data DESC, v.id DESC;";
+
+                    using (var cmd = new Npgsql.NpgsqlCommand(sql, conn))
+                    {
+                        if (lojaId.HasValue && lojaId.Value > 0) cmd.Parameters.AddWithValue("@LojaId", lojaId.Value);
+                        if (dataInicio.HasValue) cmd.Parameters.AddWithValue("@DataInicio", dataInicio.Value.Date);
+                        if (dataFim.HasValue) cmd.Parameters.AddWithValue("@DataFim", dataFim.Value.Date);
+                        if (ano.HasValue && ano.Value > 0) cmd.Parameters.AddWithValue("@Ano", ano.Value);
+                        if (mes.HasValue && mes.Value > 0) cmd.Parameters.AddWithValue("@Mes", mes.Value);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var dObj = reader["data"];
+                                DateTime dt = dObj is DateOnly d1 ? d1.ToDateTime(TimeOnly.MinValue) : Convert.ToDateTime(dObj);
+
+                                lista.Add(new VendasDiariasResumoSaaS
+                                {
+                                    Id = Convert.ToInt32(reader["id"]),
+                                    LojaId = reader["loja_id"] == DBNull.Value ? 1 : Convert.ToInt32(reader["loja_id"]),
+                                    LojaNome = SanitizarTextoCompleto(reader["loja_nome"].ToString()),
+                                    Data = dt,
+                                    Dinheiro = Convert.ToDecimal(reader["dinheiro"]),
+                                    TrocoParaAmanha = Convert.ToDecimal(reader["troco_para_amanha"]),
+                                    CartaoVendido = Convert.ToDecimal(reader["cartao_vendido"]),
+                                    CartaoRecebido = Convert.ToDecimal(reader["cartao_recebido"]),
+                                    PixVendido = Convert.ToDecimal(reader["pix"]),
+                                    ConvenioPago = Convert.ToDecimal(reader["convenio_pago"]),
+                                    TarifaPix = Convert.ToDecimal(reader["tarifa_pix"]),
+                                    ConvenioVenda = Convert.ToDecimal(reader["convenio_venda"]),
+                                    TaxaEntrega = Convert.ToDecimal(reader["taxa_entrega"]),
+                                    TarifaCartao = Convert.ToDecimal(reader["tarifa_cartao"]),
+                                    Sangria = Convert.ToDecimal(reader["sangria"]),
+                                    Desconto = Convert.ToDecimal(reader["desconto"]),
+                                    TotalGaveta = Convert.ToDecimal(reader["total_gaveta"]),
+                                    QuebraCaixa = Convert.ToDecimal(reader["quebra_caixa"])
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERRO POSTGRES] Falha ao consultar vendas_diarias: {ex.Message}");
+            }
+            return lista;
+        }
+
+        public bool SalvarVendaDiariaPostgres(string pgConnStr, VendasDiariasResumoSaaS dto)
+        {
+            try
+            {
+                using (var conn = new Npgsql.NpgsqlConnection(pgConnStr))
+                {
+                    conn.Open();
+
+                    if (dto.Id > 0)
+                    {
+                        string sqlUpdate = @"
+                            UPDATE vendas_diarias
+                            SET loja_id = @LojaId,
+                                data = @Data,
+                                dinheiro = @Dinheiro,
+                                troco_para_amanha = @Troco,
+                                cartao_vendido = @CartaoVendido,
+                                cartao_recebido = @CartaoRecebido,
+                                pix = @Pix,
+                                convenio_pago = @ConvenioPago,
+                                tarifa_pix = @TarifaPix,
+                                convenio_venda = @ConvenioVenda,
+                                taxa_entrega = @TaxaEntrega,
+                                tarifa_cartao = @TarifaCartao,
+                                sangria = @Sangria,
+                                desconto = @Desconto,
+                                total_gaveta = @TotalGaveta,
+                                quebra_caixa = @QuebraCaixa
+                            WHERE id = @Id;";
+
+                        using (var cmd = new Npgsql.NpgsqlCommand(sqlUpdate, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Id", dto.Id);
+                            cmd.Parameters.AddWithValue("@LojaId", dto.LojaId);
+                            cmd.Parameters.AddWithValue("@Data", dto.Data.Date);
+                            cmd.Parameters.AddWithValue("@Dinheiro", dto.Dinheiro);
+                            cmd.Parameters.AddWithValue("@Troco", dto.TrocoParaAmanha);
+                            cmd.Parameters.AddWithValue("@CartaoVendido", dto.CartaoVendido);
+                            cmd.Parameters.AddWithValue("@CartaoRecebido", dto.CartaoRecebido);
+                            cmd.Parameters.AddWithValue("@Pix", dto.PixVendido);
+                            cmd.Parameters.AddWithValue("@ConvenioPago", dto.ConvenioPago);
+                            cmd.Parameters.AddWithValue("@TarifaPix", dto.TarifaPix);
+                            cmd.Parameters.AddWithValue("@ConvenioVenda", dto.ConvenioVenda);
+                            cmd.Parameters.AddWithValue("@TaxaEntrega", dto.TaxaEntrega);
+                            cmd.Parameters.AddWithValue("@TarifaCartao", dto.TarifaCartao);
+                            cmd.Parameters.AddWithValue("@Sangria", dto.Sangria);
+                            cmd.Parameters.AddWithValue("@Desconto", dto.Desconto);
+                            cmd.Parameters.AddWithValue("@TotalGaveta", dto.TotalGaveta);
+                            cmd.Parameters.AddWithValue("@QuebraCaixa", dto.QuebraCaixa);
+
+                            cmd.ExecuteNonQuery();
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        string sqlInsert = @"
+                            INSERT INTO vendas_diarias (loja_id, data, dinheiro, troco_para_amanha, cartao_vendido, cartao_recebido, pix, convenio_pago, tarifa_pix, convenio_venda, taxa_entrega, tarifa_cartao, sangria, desconto, total_gaveta, quebra_caixa)
+                            VALUES (@LojaId, @Data, @Dinheiro, @Troco, @CartaoVendido, @CartaoRecebido, @Pix, @ConvenioPago, @TarifaPix, @ConvenioVenda, @TaxaEntrega, @TarifaCartao, @Sangria, @Desconto, @TotalGaveta, @QuebraCaixa)
+                            RETURNING id;";
+
+                        using (var cmd = new Npgsql.NpgsqlCommand(sqlInsert, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@LojaId", dto.LojaId);
+                            cmd.Parameters.AddWithValue("@Data", dto.Data.Date);
+                            cmd.Parameters.AddWithValue("@Dinheiro", dto.Dinheiro);
+                            cmd.Parameters.AddWithValue("@Troco", dto.TrocoParaAmanha);
+                            cmd.Parameters.AddWithValue("@CartaoVendido", dto.CartaoVendido);
+                            cmd.Parameters.AddWithValue("@CartaoRecebido", dto.CartaoRecebido);
+                            cmd.Parameters.AddWithValue("@Pix", dto.PixVendido);
+                            cmd.Parameters.AddWithValue("@ConvenioPago", dto.ConvenioPago);
+                            cmd.Parameters.AddWithValue("@TarifaPix", dto.TarifaPix);
+                            cmd.Parameters.AddWithValue("@ConvenioVenda", dto.ConvenioVenda);
+                            cmd.Parameters.AddWithValue("@TaxaEntrega", dto.TaxaEntrega);
+                            cmd.Parameters.AddWithValue("@TarifaCartao", dto.TarifaCartao);
+                            cmd.Parameters.AddWithValue("@Sangria", dto.Sangria);
+                            cmd.Parameters.AddWithValue("@Desconto", dto.Desconto);
+                            cmd.Parameters.AddWithValue("@TotalGaveta", dto.TotalGaveta);
+                            cmd.Parameters.AddWithValue("@QuebraCaixa", dto.QuebraCaixa);
+
+                            var newId = cmd.ExecuteScalar();
+                            if (newId != null)
+                            {
+                                dto.Id = Convert.ToInt32(newId);
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERRO POSTGRES] Falha ao salvar em vendas_diarias: {ex.Message}");
+            }
+            return false;
+        }
+
         public List<CupomVenda> ObterCuponsEItensPostgres(string pgConnStr, int lojaId, DateTime dataInicio, DateTime dataFim)
         {
             var cuponsMap = new Dictionary<long, CupomVenda>();
