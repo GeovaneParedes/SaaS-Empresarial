@@ -56,12 +56,46 @@ namespace SaaS.Api.Controllers
                     dFim
                 );
 
+                var taxasLoja = ModulosSaaSController.ObterTaxasContratadasDaLoja(lojaId);
+
+                // Aplica as taxas exatas contratadas da adquirente da loja (Safra vs Cielo) em cada pagamento extraído
+                foreach (var c in cupons)
+                {
+                    foreach (var p in c.Pagamentos)
+                    {
+                        string forma = p.FormaPagamento?.ToUpper() ?? "";
+                        string bandeira = (p.Bandeira ?? "").ToUpper();
+                        bool isDinheiro = forma.Contains("DINHEIRO") || forma.Contains("ESPECIE");
+                        bool isPix = forma.Contains("PIX");
+                        bool isCredito = forma.Contains("CREDITO");
+                        bool isVoucher = forma.Contains("CONVENIO") || forma.Contains("VR");
+                        bool isElo = bandeira.Contains("ELO");
+
+                        string modalidade = isDinheiro ? "DINHEIRO" : isPix ? "PIX" : isCredito ? (isElo ? "CREDITO_ELO" : "CREDITO_VISA_MASTER") : isVoucher ? "VOUCHER_VR" : (isElo ? "DEBITO_ELO" : "DEBITO_VISA_MASTER");
+
+                        decimal pctContratado = modalidade switch
+                        {
+                            "DINHEIRO" => 0.00m,
+                            "PIX" => taxasLoja.TaxaPix,
+                            "CREDITO_VISA_MASTER" => taxasLoja.TaxaCreditoVisaMaster,
+                            "CREDITO_ELO" => taxasLoja.TaxaCreditoElo,
+                            "DEBITO_VISA_MASTER" => taxasLoja.TaxaDebitoVisaMaster,
+                            "DEBITO_ELO" => taxasLoja.TaxaDebitoElo,
+                            "VOUCHER_VR" => taxasLoja.TaxaVoucher,
+                            _ => 0.00m
+                        };
+
+                        p.TaxaPercentualEstimada = pctContratado;
+                        p.ValorLiquidoRecebido = Math.Round(p.Valor * (1m - (pctContratado / 100m)), 2);
+                    }
+                }
+
                 // Cálculo consolidado de Taxas por Meio de Pagamento
                 decimal totalVendido = cupons.Sum(c => c.TotalVenda);
                 decimal totalPix = cupons.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("PIX")).Sum(p => p.Valor);
                 decimal totalDebito = cupons.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("DEBITO")).Sum(p => p.Valor);
                 decimal totalCredito = cupons.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("CREDITO")).Sum(p => p.Valor);
-                decimal totalVoucher = cupons.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("VOUCHER")).Sum(p => p.Valor);
+                decimal totalVoucher = cupons.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("VOUCHER") || p.FormaPagamento.Contains("VR")).Sum(p => p.Valor);
                 decimal totalDinheiro = cupons.SelectMany(c => c.Pagamentos).Where(p => p.FormaPagamento.Contains("DINHEIRO")).Sum(p => p.Valor);
                 
                 decimal totalTaxasEstimadasMaquininha = cupons.SelectMany(c => c.Pagamentos).Sum(p => p.Valor - p.ValorLiquidoRecebido);
@@ -88,6 +122,7 @@ namespace SaaS.Api.Controllers
                         TotalPerdidoEmTaxas = totalTaxasEstimadasMaquininha,
                         ValorLiquidoQueCaiuNaConta = totalVendido - totalTaxasEstimadasMaquininha
                     },
+                    TaxasLojaContratadas = taxasLoja,
                     AmostraCupons = cupons // Retorna a totalidade dos cupons do dia sem limite artificial
                 };
 
